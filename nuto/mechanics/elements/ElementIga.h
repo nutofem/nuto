@@ -5,6 +5,7 @@
 #include "nuto/mechanics/elements/ElementInterface.h"
 #include "nuto/mechanics/iga/Nurbs.h"
 #include "nuto/mechanics/cell/Matrix.h"
+#include "nuto/math/shapes/Spline.h"
 
 namespace NuTo
 {
@@ -15,8 +16,7 @@ public:
     ElementIga(const std::array<int, TDimParameter>& knotIDs, const Nurbs<TDimParameter>& NurbsGeometry)
         : mKnotIDs(knotIDs)
         , mNurbsGeometry(NurbsGeometry)
-    {
-    }
+    {}
 
     //! @brief transforms unit interval [-1, 1] to the interval [firstKnotCoordinate, secondKnotCoordinate]
     Eigen::Matrix<double, TDimParameter, 1> Transformation(Eigen::VectorXd ipCoords) const
@@ -34,7 +34,8 @@ public:
     //! @remark virtual to make it testable
     virtual NodeValues ExtractNodeValues(int instance = 0) const override
     {
-        return NurbsGeometry().GetControlPointsElement(mKnotIDs, instance);
+        (void)instance;
+        return NurbsGeometry().GetControlPointCoordinatesElement(mKnotIDs);
     }
 
     NMatrix GetNMatrix(NaturalCoords ipCoords) const override
@@ -59,12 +60,28 @@ public:
 
     Eigen::VectorXi GetDofNumbering() const override
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "I honestly have no idea. Sorry.");
+        Eigen::VectorXi dofNumbering(GetNumNodes() * GetDofDimension());
+        int i = 0;
+        for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
+        {
+            const auto& node = *(NurbsGeometry().GetControlPointElement(mKnotIDs, iNode));
+            for (int iDof = 0; iDof < GetDofDimension(); ++iDof)
+            {
+                dofNumbering[i++] = node.GetDofNumber(iDof);
+            }
+        }
+        return dofNumbering;
     }
+
 
     int GetNumNodes() const override
     {
         return NurbsGeometry().GetNumControlPointsElement();
+    }
+
+    const Shape& GetShape() const
+    {
+        return mShape;
     }
 
 private:
@@ -75,5 +92,7 @@ private:
 
     std::array<int, TDimParameter> mKnotIDs;
     std::reference_wrapper<const Nurbs<TDimParameter>> mNurbsGeometry;
+    Spline mShape;
+
 };
 } /* NuTo */

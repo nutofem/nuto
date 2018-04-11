@@ -13,7 +13,8 @@ enum class eShape
     Tetrahedron,
     Hexahedron,
     Prism,
-    Pyramid
+    Pyramid,
+    Spline
 };
 
 class Shape

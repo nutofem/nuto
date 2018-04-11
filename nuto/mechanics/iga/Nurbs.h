@@ -6,14 +6,15 @@
 #include <eigen3/Eigen/Dense>
 #include <iostream>
 #include <vector>
+#include "nuto/base/ValueVector.h"
 
 namespace NuTo
 {
 //! @author Peter Otto, BAM
 //! @date September, 2017
-//! @brief Class for NURBS curves, with IGA specific functions.
-//! NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
-//! @tparam TDimParameter dimension of the parametric space: curve is 1D and surface is 2D
+//! @brief ... class for NURBS curves, with IGA specific functions
+//! @brief ... NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
+//! @brief ... TDimParameter is the dimension of the parametric space: curve is 1D and surface is 2D
 template <int TDimParameter>
 class Nurbs
 {
@@ -26,39 +27,52 @@ public:
 
     /** Constructors **/
 
-    //! @brief constructor
-    //! @param degree degree of the polynomial
-    //! @param knots knot vector
-    //! @param controlPoints control points
+    //! @brief ... constructor
+    //! @param rDegree ... degree of the polynomial
+    //! @param rKnots ... knot vector
+    //! @param rControlPoints ... control points
     Nurbs(const std::array<std::vector<double>, TDimParameter>& knots,
-          const std::vector<std::vector<NodeSimple*>>& controlPoints, const std::vector<std::vector<double>>& weights,
+          const std::vector<NodeSimple*>& controlPoints,
+          const std::vector<double>& weights,
           const std::array<int, TDimParameter>& degree)
-        : mKnots(knots)
-        , mControlPoints(controlPoints)
-        , mWeights(weights)
-        , mDegree(degree)
+    :  mKnots(knots),
+       mControlPoints(controlPoints),
+       mWeights(weights),
+       mDegree(degree)
     {
+        assert(degree.size() == knots.size());
+        assert(controlPoints.size() == weights.size());
+
+        size_t numControlPoints = 1;
+        for(size_t i = 0; i < mKnots.size(); i++)
+        {
+            int numControlPointsDir = knots[i].size() - degree[i] - 1;
+            mNumControlPointsInDirection[i] = numControlPointsDir;
+            numControlPoints *= numControlPointsDir;
+        }
+
+        assert(numControlPoints == controlPoints.size());
     }
 
     /** Getter **/
 
-    //! @brief get the dimension of the curve = dimension of each control point
-    //! @return dimension of the curve
+    //! @brief ... get the dimension of the curve = dimension of each control point
+    //! @return ... dimension of the curve
     int GetDimension() const
     {
-        return mControlPoints[0][0]->GetNumValues();
+        return mControlPoints[0]->GetNumValues();
     }
 
-    //! @brief get the number of control points for each IGA element (one parametric span) in a specific direction
-    //! @return degree + 1
+    //! @brief ... get the number of control points for each IGA element (one parametric span) in a specific direction
+    //! @return ... degree + 1
     int GetNumControlPointsElement(int dir) const
     {
         assert(dir <= TDimParameter && dir >= 0);
         return mDegree[dir] + 1;
     }
 
-    //! @brief get the number of control points for each IGA element (one parametric span)
-    //! @return product of the number of control points in each direction
+    //! @brief ... get the number of control points for each IGA element (one parametric span)
+    //! @return ... product of the number of control points in each direction
     int GetNumControlPointsElement() const
     {
         int numCPs = 1;
@@ -68,8 +82,8 @@ public:
         return numCPs;
     }
 
-    //! @brief get the knots to given knot ids
-    //! @return knots
+    //! @brief ... get the knots to given knot ids
+    //! @return ... knots
     std::array<Eigen::Vector2d, TDimParameter> GetKnotVectorElement(std::array<int, TDimParameter> knotIDs) const
     {
         std::array<Eigen::Vector2d, TDimParameter> knots;
@@ -83,7 +97,35 @@ public:
         return knots;
     }
 
-    Eigen::VectorXd GetControlPointsElement(const std::array<int, TDimParameter>& knotID, int instance = 0) const;
+    Eigen::VectorXi GetControlPointCoordinatesElementHelper(const std::array<int, TDimParameter>& knotID) const
+    {
+        for(int i = 0; i < TDimParameter; i++)
+            assert(knotID[i] >= mDegree[i] && knotID[i] < mKnots[i].size());
+
+        Eigen::VectorXi indexBegin(TDimParameter);
+
+        // tensor index
+        for(int i = 0; i < TDimParameter; i++)
+            indexBegin[i] = knotID[i] - mDegree[i];
+
+        return indexBegin;
+    }
+
+    Eigen::VectorXd GetControlPointCoordinatesElement(const std::array<int, TDimParameter>& knotID) const;
+
+    const NodeSimple* GetControlPointElement(const std::array<int, TDimParameter>& knotID, int i) const;
+
+    NodeSimple* GetControlPoint(const Eigen::VectorXi& ids)
+    {
+        int index = ids[0];
+
+        for(int i = 1; i < TDimParameter; i++)
+            for(int j = 0; j < i; j++)
+                index += mNumControlPointsInDirection[j]*ids[i];
+
+        return mControlPoints[index];
+    }
+
     /** Evaluation **/
 
     Eigen::VectorXd Evaluate(const Eigen::Matrix<double, TDimParameter, 1>& parameter, int derivativeOrder = 0) const
@@ -94,7 +136,7 @@ public:
         Eigen::VectorXd coordinates(GetDimension());
         coordinates.setZero(GetDimension());
 
-        Eigen::VectorXd cpCoords = GetControlPointsElement(spanIdx);
+        Eigen::VectorXd cpCoords = GetControlPointCoordinatesElement(spanIdx);
 
         int numCPs = GetNumControlPointsElement();
 
@@ -143,13 +185,13 @@ public:
         return mid;
     }
 
-    //! @brief calculates the basisfunctions and derivatives, see Piegl/Tiller 'NURBS Book' 2nd ed., Page 72
-    //! @param derivativeOrder up to order derivativeOrder
-    //! @param parameter parameter at which the functions are calculated
-    //! @param spanIdx spanIdx to the parameter
-    //! @param degree degree of the given NURBS curve
-    //! @param knots knot vector
-    //! @return Eigen::MatrixXd matrix containing the shape functions up to derivative der, the row index represents
+    //! @brief ... calculates the basisfunctions and derivatives, see Piegl/Tiller 'NURBS Book' 2nd ed., Page 72
+    //! @param der ... up to derivative der
+    //! @param parameter ... parameter at which the functions are calculated
+    //! @param spanIdx ... spanIdx to the parameter
+    //! @param degree ... degree of the given NURBS curve
+    //! @param knots ... knot vector
+    //! @return Eigen::MatrixXd ... matrix containing the shape functions up to derivative der, the row index represents
     //! the derivative order
     static Eigen::MatrixXd BasisFunctionsAndDerivatives(int derivativeOrder, double parameter, int spanIdx, int degree,
                                                         const std::vector<double>& knots)
@@ -244,70 +286,9 @@ public:
         return basisFctsDerivatives;
     }
 
-    //! @brief calculates the basisfunctions and derivatives, see Piegl/Tiller 'NURBS Book' 2nd ed., Page 72
-    //! @param derivativeOrder up to order derivativeOrder
-    //! @param parameter parameter at which the functions are calculated
-    //! @param spanIdx spanIdx to the parameter
-    //! @param degree degree of the given NURBS curve
-    //! @param knots knot vector
-    //! @param weights weights vector
-    //! @return Eigen::VectorXd vector containing the shape functions (no derivatives)
-    static Eigen::VectorXd BasisFunctionsAndDerivativesRational(int derivativeOrder, double parameter, int spanIdx,
-                                                                int degree, const std::vector<double>& knots,
-                                                                const std::vector<double>& weights)
-    {
-        assert(derivativeOrder >= 0 && derivativeOrder <= 2);
-
-        Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(derivativeOrder, parameter, spanIdx, degree, knots);
-
-        // NURBS specific ...
-        Eigen::VectorXd sum(derivativeOrder + 1);
-        sum.setZero(derivativeOrder + 1);
-
-        for (int i = 0; i <= degree; i++)
-        {
-            double weight = weights[spanIdx - degree + i];
-            if (derivativeOrder == 0)
-                sum(0) += ders(0, i) * weight;
-            else if (derivativeOrder == 1)
-            {
-                sum(0) += ders(0, i) * weight;
-                sum(1) += ders(1, i) * weight;
-            }
-            else
-            {
-                sum(0) += ders(0, i) * weight;
-                sum(1) += ders(1, i) * weight;
-                sum(2) += ders(2, i) * weight;
-            }
-        }
-
-        Eigen::VectorXd basisFctsDerivativesRational(degree + 1);
-        basisFctsDerivativesRational.setZero(degree + 1);
-
-        for (int i = 0; i <= degree; i++)
-        {
-            double weight = weights[spanIdx - degree + i];
-            if (derivativeOrder == 0)
-                basisFctsDerivativesRational(i) = ders(0, i) * weight / sum(0);
-            else if (derivativeOrder == 1)
-                basisFctsDerivativesRational(i) =
-                        (ders(1, i) * sum(0) - ders(0, i) * sum(1)) * weight / (sum(0) * sum(0));
-            else
-            {
-                double sum2 = sum(0) * sum(0);
-                basisFctsDerivativesRational(i) =
-                        weight * (ders(2, i) / sum(0) - 2 * ders(1, i) * sum(1) / (sum2)-ders(0, i) * sum(2) / (sum2) +
-                                  2 * ders(0, i) * sum(1) * sum(1) / (sum2 * sum(0)));
-            }
-        }
-
-        return basisFctsDerivativesRational;
-    }
-
-    //! @brief calculates the knot span to given parameters
-    //! @param parameter parameter(s) at which the functions are calculated
-    //! @return std::array knot span(s) to given parameter(s)
+    //! @brief ... calculates the knot span to given parameters
+    //! @param parameter ... parameter(s) at which the functions are calculated
+    //! @return std::array ... knot span(s) to given parameter(s)
     const std::array<int, TDimParameter> FindSpan(const Eigen::Matrix<double, TDimParameter, 1>& parameter) const
     {
         std::array<int, TDimParameter> parameterIDs;
@@ -321,63 +302,110 @@ public:
     Eigen::MatrixXd
     BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, TDimParameter, 1>& parameter) const;
 
+    /** Change the discretization (e.g. refinement) **/
+
+    void InsertKnot(const Eigen::Matrix<double, TDimParameter, 1>& knotToInsert, int rMultiplicity)
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                              "Iga - Not implemented yet!");
+    }
+
+    void RefineKnots(const std::vector<Eigen::Matrix<double, TDimParameter, 1>>& knotsToInsert)
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                              "Iga - Not implemented yet!");
+    }
+
+    void DuplicateKnots()
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                              "Iga - Not implemented yet!");
+    }
+
+    /** Projection (minimumDistance) **/
+
+    Eigen::Matrix<double, TDimParameter, 1> minimumDistance(const Eigen::VectorXd &coordinatesSlave) const
+    {
+        throw NuTo::Exception(__PRETTY_FUNCTION__,
+                              "Iga - Not implemented yet!");
+    }
+
 private:
     //! @brief Knot vector (in isogeometric framework each segment between two
     //! knots is an element)
     std::array<std::vector<double>, TDimParameter> mKnots;
 
     //! @brief Control points of the BSpline curve (# rows = num control points)
-    std::vector<std::vector<NodeSimple*>> mControlPoints;
+    std::vector<NodeSimple*> mControlPoints;
 
     //! @brief Weights to NURBS
-    std::vector<std::vector<double>> mWeights;
+    std::vector<double> mWeights;
 
     //! @brief Degree of the polynomials (order = mDegree+1)
     std::array<int, TDimParameter> mDegree;
+
+    std::array<int, TDimParameter> mNumControlPointsInDirection;
 };
 
 template <>
-inline Eigen::VectorXd Nurbs<1>::GetControlPointsElement(const std::array<int, 1>& knotID, int instance) const
+inline Eigen::VectorXd Nurbs<1>::GetControlPointCoordinatesElement(const std::array<int, 1>& knotID) const
 {
-    assert(knotID[0] >= mDegree[0]);
-    int dim = GetDimension();
+    Eigen::VectorXi indexBegin = GetControlPointCoordinatesElementHelper(knotID);
 
+    int dim = GetDimension();
     int numCPs = GetNumControlPointsElement();
 
     Eigen::VectorXd nodeValues(numCPs * dim);
 
-    for (int i = 0; i < numCPs; i++)
-        nodeValues.segment(dim * i, dim) = mControlPoints[0][knotID[0] - mDegree[0] + i]->GetValues(instance);
+    for (int i = indexBegin[0]; i <= indexBegin[0] + mDegree[0] ; i++)
+        nodeValues.segment(dim * i, dim) = mControlPoints[i]->GetValues();
 
     return nodeValues;
 }
 
 template <>
-inline Eigen::VectorXd Nurbs<2>::GetControlPointsElement(const std::array<int, 2>& knotID, int instance) const
+inline Eigen::VectorXd Nurbs<2>::GetControlPointCoordinatesElement(const std::array<int, 2> &knotID) const
 {
-    assert(knotID[0] >= mDegree[0] && knotID[1] >= mDegree[1]);
     int dim = GetDimension();
-
     int numCPs = GetNumControlPointsElement();
 
     Eigen::VectorXd nodeValues(numCPs * dim);
+
+    Eigen::VectorXi indexBegin = GetControlPointCoordinatesElementHelper(knotID);
 
     int count = 0;
-    for (int i = 0; i <= mDegree[1]; i++)
-    {
-        for (int j = 0; j <= mDegree[0]; j++)
+    for(int j = indexBegin[1]; j <= indexBegin[1] + mDegree[1] ; j++)
+        for (int i = indexBegin[0]; i <= indexBegin[0] + mDegree[0] ; i++)
         {
-            nodeValues.segment(count, dim) =
-                    mControlPoints[knotID[1] - mDegree[1] + i][knotID[0] - mDegree[0] + j]->GetValues(instance);
+            int index = i + j*mNumControlPointsInDirection[0];
+            nodeValues.segment(count, dim) = mControlPoints[index]->GetValues();
             count += dim;
         }
-    }
+
     return nodeValues;
 }
 
+template<>
+inline const NodeSimple* Nurbs<1>::GetControlPointElement(const std::array<int, 1>& knotID, int i) const
+{
+    assert(i >= GetNumControlPointsElement());
+    assert(knotID[0] >= mDegree[0]);
+
+    return mControlPoints[knotID[0] - mDegree[0] + i];
+}
+
+template<>
+inline const NodeSimple* Nurbs<2>::GetControlPointElement(const std::array<int, 2>& knotID, int i) const
+{
+    assert(i < GetNumControlPointsElement());
+    assert(knotID[0] >= mDegree[0] && knotID[1] >= mDegree[1]);
+
+    return mControlPoints[i];
+}
+
+
 template <>
-inline Eigen::MatrixXd
-Nurbs<1>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, 1, 1>& parameter) const
+inline Eigen::MatrixXd Nurbs<1>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, 1, 1>& parameter) const
 {
     assert(der >= 0 && der <= 2);
 
@@ -389,7 +417,7 @@ Nurbs<1>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<doub
 
     for (int i = 0; i <= mDegree[0]; i++)
     {
-        double weight = mWeights[0][spanIdx - mDegree[0] + i];
+        double weight = mWeights[spanIdx - mDegree[0] + i];
         if (der == 0)
             sum(0) += ders(0, i) * weight;
         else if (der == 1)
@@ -410,7 +438,7 @@ Nurbs<1>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<doub
 
     for (int i = 0; i <= mDegree[0]; i++)
     {
-        double weight = mWeights[0][spanIdx - mDegree[0] + i];
+        double weight = mWeights[spanIdx - mDegree[0] + i];
         if (der == 0)
             dersRat(i) = ders(0, i) * weight / sum(0);
         else if (der == 1)
@@ -426,8 +454,8 @@ Nurbs<1>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<doub
 }
 
 template <>
-inline Eigen::MatrixXd
-Nurbs<2>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, 2, 1>& parameter) const
+inline Eigen::MatrixXd Nurbs<2>::BasisFunctionsAndDerivativesRational(int der,
+                                                               const Eigen::Matrix<double, 2, 1>& parameter) const
 {
     assert(der >= 0 && der <= 2);
 
@@ -452,7 +480,8 @@ Nurbs<2>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<doub
     {
         for (int j = 0; j <= mDegree[0]; j++)
         {
-            double weight = mWeights[spanIdx[1] - mDegree[1] + i][spanIdx[0] - mDegree[0] + j];
+            int index = (spanIdx[0] - mDegree[0] + j) + (spanIdx[1] - mDegree[1] + i)*mNumControlPointsInDirection[0];
+            double weight = mWeights[index];
 
             if (der == 0)
             {
@@ -483,7 +512,8 @@ Nurbs<2>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<doub
     {
         for (int j = 0; j <= mDegree[0]; j++)
         {
-            double weight = mWeights[spanIdx[1] - mDegree[1] + i][spanIdx[0] - mDegree[0] + j];
+            int index = (spanIdx[0] - mDegree[0] + j) + (spanIdx[1] - mDegree[1] + i)*mNumControlPointsInDirection[0];
+            double weight = mWeights[index];
 
             if (der == 0)
             {
@@ -528,7 +558,7 @@ Nurbs<2>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<doub
             }
         }
     }
-
     return ders;
 }
+
 }
