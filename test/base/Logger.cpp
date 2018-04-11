@@ -17,19 +17,17 @@ std::string FromFile(std::string filename)
 
 BOOST_AUTO_TEST_CASE(Prefix)
 {
-    NuTo::Logger l("[Prefix]");
-
     std::string filename = "prefixtest.log";
-    l.OpenFile(filename);
-    l.SetQuiet(true);
+    NuTo::Log::Info.OpenFile(filename);
+    NuTo::Log::Info.SetQuiet(true);
 
-    l << "Writing to file " << filename << ".\n";
-    l << "Writing again to file " << filename << '\n';
-    l << "Writing a \nmulti line log \nwith only one prefix.\n";
+    NuTo::Log::Info << "Writing to file " << filename << ".\n";
+    NuTo::Log::Info << "Writing again to file " << filename << '\n';
+    NuTo::Log::Info << "Writing a \nmulti line log \nwith only one prefix.\n";
 
-    std::string expected = R"([Prefix] Writing to file prefixtest.log.
-[Prefix] Writing again to file prefixtest.log
-[Prefix] Writing a 
+    std::string expected = R"([Info ] Writing to file prefixtest.log.
+[Info ] Writing again to file prefixtest.log
+[Info ] Writing a 
 multi line log 
 with only one prefix.)";
 

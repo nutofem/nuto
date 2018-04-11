@@ -77,4 +77,12 @@ inline Logger& operator<<(Logger& rLogger, const T& t)
 Logger& operator<<(Logger& rLogger, const char& t);
 Logger& operator<<(Logger& rLogger, const std::string& t);
 Logger& operator<<(Logger& rLogger, const char* t);
+
+//! @brief set of predefined global loggers
+struct Log
+{
+    static Logger Debug; // prefix "[Debug] "
+    static Logger Info; // prefix "[Info ] "
+    static Logger Error; // prefix "[Error] "
+};
 } // namespace NuTo

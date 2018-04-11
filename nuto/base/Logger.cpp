@@ -4,7 +4,7 @@
 NuTo::Logger::Logger(std::string prefix)
     : mLogFile()
     , mLogFileName()
-    , mPrefix(prefix.empty() ? "" : prefix + " ")
+    , mPrefix(prefix)
 {
 }
 
@@ -75,3 +75,7 @@ NuTo::Logger& operator<<(NuTo::Logger& rLogger, const char* t)
     return rLogger;
 }
 }
+
+NuTo::Logger NuTo::Log::Debug = NuTo::Logger("[Debug] ");
+NuTo::Logger NuTo::Log::Info = NuTo::Logger("[Info ] ");
+NuTo::Logger NuTo::Log::Error = NuTo::Logger("[Error] ");
