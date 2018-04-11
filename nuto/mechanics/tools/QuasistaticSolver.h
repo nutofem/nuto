@@ -60,11 +60,6 @@ public:
     //! tolerance for Norm(R), public member because it is part of NuTo::NewtonRaphson::Problem
     double mTolerance = 1.e-10;
 
-    //! shut up the Info() method
-    void SetQuiet()
-    {
-        mQuiet = true;
-    }
 
     //! Updates mProblem to time `newGlobalTime` and saves the new state mX upon convergence
     //! @param newGlobalTime new global time
@@ -92,8 +87,6 @@ private:
 
     double mGlobalTime = 0;
     double mTimeStep = 0;
-
-    bool mQuiet = false;
 };
 
 } /* NuTo */

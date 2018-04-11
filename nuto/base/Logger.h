@@ -81,8 +81,8 @@ Logger& operator<<(Logger& rLogger, const char* t);
 //! @brief set of predefined global loggers
 struct Log
 {
-    static Logger Debug; // prefix "[Debug] "
-    static Logger Info; // prefix "[Info ] "
-    static Logger Error; // prefix "[Error] "
+    static Logger Debug; // prefix "Debug| "
+    static Logger Info; // prefix "Info|  "
+    static Logger Error; // prefix "Error| "
 };
 } // namespace NuTo

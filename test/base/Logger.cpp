@@ -25,9 +25,9 @@ BOOST_AUTO_TEST_CASE(Prefix)
     NuTo::Log::Info << "Writing again to file " << filename << '\n';
     NuTo::Log::Info << "Writing a \nmulti line log \nwith only one prefix.\n";
 
-    std::string expected = R"([Info ] Writing to file prefixtest.log.
-[Info ] Writing again to file prefixtest.log
-[Info ] Writing a 
+    std::string expected = R"(Info|  Writing to file prefixtest.log.
+Info|  Writing again to file prefixtest.log
+Info|  Writing a 
 multi line log 
 with only one prefix.)";
 

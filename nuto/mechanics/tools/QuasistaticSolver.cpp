@@ -3,6 +3,7 @@
 #include <ostream>
 #include <boost/range/numeric.hpp>
 
+#include "nuto/base/Logger.h"
 #include "nuto/math/EigenSparseSolve.h"
 #include "nuto/math/NewtonRaphson.h"
 #include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
@@ -104,9 +105,7 @@ double QuasistaticSolver::Norm(const Eigen::VectorXd& residual) const
 
 void QuasistaticSolver::Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const
 {
-    if (mQuiet)
-        return;
-    std::cout << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << x.norm() << '\n';
+    Log::Info << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << x.norm() << '\n';
 }
 
 GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x) const
