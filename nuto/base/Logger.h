@@ -14,7 +14,7 @@ class Logger
 
 public:
     //! @brief ...constructor
-    Logger(std::string prefix = "");
+    Logger(std::string prefix = "", bool isQuiet = true);
 
     //! @brief ..opens the file stored in the string mLogFileName
     void OpenFile();

@@ -1,9 +1,10 @@
 #include "nuto/base/Logger.h"
 #include "nuto/base/Exception.h"
 
-NuTo::Logger::Logger(std::string prefix)
+NuTo::Logger::Logger(std::string prefix, bool isQuiet)
     : mLogFile()
     , mLogFileName()
+    , mIsQuiet(isQuiet)
     , mPrefix(prefix)
 {
 }
@@ -76,6 +77,6 @@ NuTo::Logger& operator<<(NuTo::Logger& rLogger, const char* t)
 }
 }
 
-NuTo::Logger NuTo::Log::Debug = NuTo::Logger("Debug| ");
-NuTo::Logger NuTo::Log::Info = NuTo::Logger("Info|  ");
-NuTo::Logger NuTo::Log::Error = NuTo::Logger("Error| ");
+NuTo::Logger NuTo::Log::Debug = NuTo::Logger("Debug| ", true);
+NuTo::Logger NuTo::Log::Info = NuTo::Logger("Info|  ", false);
+NuTo::Logger NuTo::Log::Error = NuTo::Logger("Error| ", false);
