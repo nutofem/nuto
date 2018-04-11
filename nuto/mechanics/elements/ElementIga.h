@@ -16,7 +16,8 @@ public:
     ElementIga(const std::array<int, TDimParameter>& knotIDs, const Nurbs<TDimParameter>& NurbsGeometry)
         : mKnotIDs(knotIDs)
         , mNurbsGeometry(NurbsGeometry)
-    {}
+    {
+    }
 
     //! @brief transforms unit interval [-1, 1] to the interval [firstKnotCoordinate, secondKnotCoordinate]
     Eigen::Matrix<double, TDimParameter, 1> Transformation(Eigen::VectorXd ipCoords) const
@@ -93,6 +94,5 @@ private:
     std::array<int, TDimParameter> mKnotIDs;
     std::reference_wrapper<const Nurbs<TDimParameter>> mNurbsGeometry;
     Spline mShape;
-
 };
 } /* NuTo */

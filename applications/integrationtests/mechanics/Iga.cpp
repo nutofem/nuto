@@ -57,13 +57,11 @@ Nurbs<2> QuadPatchTestNurbsCoordinates(MeshIga<2>& mesh)
     std::vector<NodeSimple*> controlPoints;
 
     int num = 3;
-    int count = 0;
     for (int i = 0; i < num; i++)
         for (int j = 0; j < num; j++)
         {
-            mesh.mNodes.Add(Eigen::Vector2d({j, i}));
-            controlPoints.push_back(&mesh.mNodes[count]);
-            count++;
+            auto& node = mesh.mNodes.Add(Eigen::Vector2d({j, i}));
+            controlPoints.push_back(&node);
         }
 
     std::vector<double> knots1 = {0, 0, 0, 1, 1, 1};
@@ -83,13 +81,11 @@ Nurbs<2> QuadPatchTestNurbsDisplacements(MeshIga<2>& mesh)
     std::vector<NodeSimple*> controlPoints;
 
     int num = 3;
-    int count = 9;
     for (int i = 0; i < num; i++)
         for (int j = 0; j < num; j++)
         {
-            mesh.mNodes.Add(Eigen::Vector2d({0, 0}));
-            controlPoints.push_back(&mesh.mNodes[count]);
-            count++;
+            auto& node = mesh.mNodes.Add(Eigen::Vector2d({0, 0}));
+            controlPoints.push_back(&node);
         }
 
     std::vector<double> knots1 = {0, 0, 0, 1, 1, 1};

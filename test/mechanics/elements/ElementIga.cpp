@@ -16,9 +16,6 @@ BOOST_AUTO_TEST_CASE(ElementCopyMove)
 
 BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
 {
-    // IGA geometry of a circle (Nurbs curve should exactly fit the circle)
-    std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
-
     NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({0, -1}));
     NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({-1, -1}));
     NuTo::NodeSimple n3 = NuTo::NodeSimple(Eigen::Vector2d({-1, 0}));
@@ -28,14 +25,15 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
     NuTo::NodeSimple n7 = NuTo::NodeSimple(Eigen::Vector2d({1, 0}));
     NuTo::NodeSimple n8 = NuTo::NodeSimple(Eigen::Vector2d({1, -1}));
     NuTo::NodeSimple n9 = NuTo::NodeSimple(Eigen::Vector2d({0, -1}));
-    controlPoints.push_back({&n1, &n2, &n3, &n4, &n5, &n6, &n7, &n8, &n9});
+
+    // IGA geometry of a circle (Nurbs curve should exactly fit the circle)
+    std::vector<NuTo::NodeSimple*> controlPoints = {&n1, &n2, &n3, &n4, &n5, &n6, &n7, &n8, &n9};
 
     std::vector<double> knots1D = {0, 0, 0, 1 / 4., 1 / 4., 1 / 2., 1 / 2., 3 / 4., 3 / 4., 1, 1, 1};
     std::array<std::vector<double>, 1> knots = {knots1D};
 
-    std::vector<double> weights1D = {1, std::sqrt(2) / 2, 1, std::sqrt(2) / 2, 1, std::sqrt(2) / 2,
-                                     1, std::sqrt(2) / 2, 1};
-    std::vector<std::vector<double>> weights = {weights1D};
+    std::vector<double> weights = {1, std::sqrt(2) / 2, 1, std::sqrt(2) / 2, 1, std::sqrt(2) / 2,
+                                   1, std::sqrt(2) / 2, 1};
 
     std::array<int, 1> degree = {2};
 
@@ -61,18 +59,22 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
 
 BOOST_AUTO_TEST_CASE(ExtractNodeValuesInstance)
 {
-    std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
     NuTo::NodeSimple n1 = NuTo::NodeSimple(2, 2);
     NuTo::NodeSimple n2 = NuTo::NodeSimple(2, 2);
 
     n1.SetValues(Eigen::Vector2d(11, 12), 1);
     n2.SetValues(Eigen::Vector2d(13, 14), 1);
-    controlPoints.push_back({&n1, &n2});
+
+    std::vector<NuTo::NodeSimple*> controlPoints = {&n1, &n2};
 
     std::vector<double> knots1D = {0, 0, 1, 1};
-    std::vector<double> weights1D = {1, std::sqrt(2) / 2};
+    std::array<std::vector<double>, 1> knots = {knots1D};
 
-    NuTo::Nurbs<1> curve({knots1D}, controlPoints, {weights1D}, {1});
+    std::vector<double> weights = {1, std::sqrt(2) / 2};
+
+    std::array<int, 1> degree = {{1}};
+
+    NuTo::Nurbs<1> curve(knots, controlPoints, weights, degree);
 
     NuTo::ElementIga<1> iga({1}, curve);
     BoostUnitTest::CheckEigenMatrix(iga.ExtractNodeValues(1), Eigen::Vector4d(11, 12, 13, 14));

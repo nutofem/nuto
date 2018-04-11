@@ -4,6 +4,7 @@
 #include "nuto/mechanics/DirectionEnum.h"
 #include "nuto/mechanics/nodes/NodeSimple.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
+#include "nuto/mechanics/iga/Nurbs.h"
 
 #include <memory>
 #include <vector>
