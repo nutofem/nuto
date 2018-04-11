@@ -9,18 +9,6 @@ NuTo::Logger::Logger(std::string prefix, bool isQuiet)
 {
 }
 
-void NuTo::Logger::OpenFile()
-{
-    mLogFile.close();
-    mLogFile.clear();
-    if (mLogFileName.length() != 0)
-    {
-        mLogFile.open(mLogFileName, std::fstream::in | std::fstream::out | std::fstream::app);
-        if (!mLogFile.is_open())
-            throw Exception(__PRETTY_FUNCTION__, "File " + mLogFileName + " could not be opened.");
-    }
-}
-
 void NuTo::Logger::OpenFile(std::string filename)
 {
     mLogFileName = filename;
