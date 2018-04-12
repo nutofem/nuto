@@ -7,4 +7,3 @@ add_unit_test(DofMatrixSparseConvertEigen)
 add_unit_test(DofType)
 add_unit_test(DofNumbering
     mechanics/constraints/Constraints.cpp)
-add_unit_test(GlobalDofVector)

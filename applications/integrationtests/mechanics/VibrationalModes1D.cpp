@@ -48,8 +48,8 @@ public:
         auto stiffnessF = [&](const auto& cipd) { return mPDE.Hessian0(cipd, 0.0); };
         auto massF = [&](const auto& cipd) { return mPDE.Hessian2(cipd); };
 
-        Eigen::SparseMatrix<double> K = asmbl.BuildMatrix(mCellGroup, {mDof}, stiffnessF).JJ(mDof, mDof);
-        Eigen::SparseMatrix<double> M = asmbl.BuildMatrix(mCellGroup, {mDof}, massF).JJ(mDof, mDof);
+        Eigen::SparseMatrix<double> K = asmbl.BuildMatrix(mCellGroup, {mDof}, stiffnessF)(mDof, mDof);
+        Eigen::SparseMatrix<double> M = asmbl.BuildMatrix(mCellGroup, {mDof}, massF)(mDof, mDof);
 
         return Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd>(Eigen::MatrixXd(K), Eigen::MatrixXd(M))
                 .eigenvalues();

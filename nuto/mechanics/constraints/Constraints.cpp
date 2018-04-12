@@ -33,16 +33,64 @@ Eigen::VectorXd Constraints::GetRhs(DofType dof, double time) const
     return rhs;
 }
 
-Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int numIndependentDofs) const
+
+Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int numDofs, double time) const
 {
     if (not mEquations.Has(dof))
-        return Eigen::SparseMatrix<double>(0, numIndependentDofs); // no equations for this dof type
+        return Eigen::SparseVector<float>(numDofs); // no equations for this dof type
 
     const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
+    Eigen::SparseVector<float> globalVector(numDofs);
+    for (int iEquation = 0; iEquation < numEquations; ++iEquation)
+    {
+        globalVector.coeffRef(equations[iEquation].GetDependentDofNumber()) = equations[iEquation].GetRhs(time);
+    }
+    return globalVector;
+}
 
-    Eigen::SparseMatrix<double> matrix(numEquations, numIndependentDofs);
 
+Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, int numDofs) const
+{
+    if (not mEquations.Has(dof))
+    {
+        Eigen::SparseMatrix<double> unitMatrix(numDofs, numDofs);
+        unitMatrix.setIdentity();
+        return unitMatrix; // no equations for this dof type
+    }
+
+    const Equations& equations = mEquations[dof];
+    int numEquations = equations.size();
+    int numIndependentDofs = numDofs - numEquations;
+
+    Eigen::SparseMatrix<double> matrix(numDofs, numIndependentDofs);
+    matrix.setZero();
+
+    // create a vector with all dofs with false:independent true:dependent dof
+    std::vector<bool> isDofConstraint(numDofs, false);
+    for (int iEquation = 0; iEquation < numEquations; ++iEquation)
+    {
+        int globalDofNumber = equations[iEquation].GetDependentDofNumber();
+        if (globalDofNumber == -1 /* should be NodeSimple::NOT_SET */)
+            throw Exception(__PRETTY_FUNCTION__,
+                            "There is no dof numbering for a node in equation" + std::to_string(iEquation) + ".");
+        if (globalDofNumber >= numDofs)
+            throw Exception(
+                    __PRETTY_FUNCTION__,
+                    "The provided dof number of the dependent term exceeds the total number of dofs in equation" +
+                            std::to_string(iEquation) + ".");
+        isDofConstraint[globalDofNumber] = true;
+    }
+
+    // add unit entry for all independent dofs
+    std::vector<Eigen::Triplet<double>> tripletList;
+    for (auto i = 0; i < numDofs; i++)
+    {
+        if (isDofConstraint[i] == false)
+            tripletList.push_back(Eigen::Triplet<double>(i, i, 1.));
+    }
+
+    // add entries for constraint dofs
     for (int iEquation = 0; iEquation < numEquations; ++iEquation)
     {
         const auto& equation = equations[iEquation];
@@ -50,6 +98,7 @@ Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int 
         {
             double coefficient = term.GetCoefficient();
             int globalDofNumber = term.GetConstrainedDofNumber();
+            assert(isDofConstraint[globalDofNumber] = true);
             if (globalDofNumber == -1 /* should be NodeSimple::NOT_SET */)
                 throw Exception(__PRETTY_FUNCTION__,
                                 "There is no dof numbering for a node in equation" + std::to_string(iEquation) + ".");
@@ -66,9 +115,11 @@ Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int 
             }
 
             if (std::abs(coefficient) > 1.e-18)
-                matrix.coeffRef(iEquation, globalDofNumber) = coefficient;
+                tripletList.push_back(
+                        Eigen::Triplet<double>(numIndependentDofs + iEquation, globalDofNumber, -coefficient));
         }
     }
+    matrix.setFromTriplets(tripletList.begin(), tripletList.end());
     return matrix;
 }
 

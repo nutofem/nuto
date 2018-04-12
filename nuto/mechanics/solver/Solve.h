@@ -1,18 +1,32 @@
 #pragma once
 #include <Eigen/Core>
-#include "nuto/mechanics/dofs/GlobalDofVector.h"
-#include "nuto/mechanics/dofs/GlobalDofMatrixSparse.h"
+#include "nuto/mechanics/dofs/DofVector.h"
+#include "nuto/mechanics/dofs/DofMatrixSparse.h"
 #include "nuto/mechanics/constraints/Constraints.h"
 
 namespace NuTo
 {
 
-Eigen::VectorXd Solve(Eigen::SparseMatrix<double> A, Eigen::VectorXd b);
+DofVector<double> Solve(const DofMatrixSparse<double>& K, const DofVector<double>& f, Constraint::Constraints& bcs,
+                        std::vector<DofType> dofs, std::string solver = "EigenSparseLU");
 
+DofVector<double> SolveTrialState(const DofMatrixSparse<double>& K, const DofVector<double>& f, double oldTime,
+                                  double newTime, Constraint::Constraints& bcs, std::vector<DofType> dofs,
+                                  std::string solver = "EigenSparseLU");
 
-// TODO: DofType, numIndependentDofs and time need to go eventually
-GlobalDofVector Solve(GlobalDofMatrixSparse K, GlobalDofVector f, Constraint::Constraints bcs, DofType dof,
-                      int numIndependentDofs, double time, std::string solver="EigenSparseLU");
+class ConstrainedSystemSolver
+{
+public:
+    ConstrainedSystemSolver(Constraint::Constraints& bcs, std::vector<DofType> dofs, std::string solver);
+    DofVector<double> Solve(const DofMatrixSparse<double>& A, const DofVector<double>& b) const;
+    DofVector<double> SolveTrialState(const DofMatrixSparse<double>& A, const DofVector<double>& b, double oldTime,
+                                      double newTime) const;
+
+private:
+    Constraint::Constraints& mBcs;
+    std::vector<DofType> mDofs;
+    std::string mSolver;
+};
 
 
 } // namespace NuTo

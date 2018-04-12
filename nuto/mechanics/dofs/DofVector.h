@@ -44,6 +44,19 @@ public:
         return *this;
     }
 
+    //! @brief performs _uninitialized addition_ that resizes the data to the length of `rhs`
+    DofVector& operator-=(const DofVector& rhs)
+    {
+        for (auto& entry : rhs.mData)
+        {
+            if (mData.find(entry.first) != mData.end())
+                mData[entry.first] -= entry.second;
+            else
+                mData[entry.first] = -entry.second;
+        }
+        return *this;
+    }
+
     DofVector& operator*=(double scalar)
     {
         for (auto& entry : mData)
@@ -57,10 +70,44 @@ public:
         return lhs;
     }
 
+    friend DofVector operator-(DofVector lhs, const DofVector& rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
     friend DofVector operator*(DofVector lhs, double scalar)
     {
         lhs *= scalar;
         return lhs;
+    }
+
+    friend DofVector operator*(double scalar, DofVector rhs)
+    {
+        rhs *= scalar;
+        return rhs;
+    }
+
+    double operator()(DofType dof, int globalDofNumber) const
+    {
+        return (*this)[dof][globalDofNumber];
+    }
+
+    void SetZero()
+    {
+        for (auto& entry : mData)
+        {
+            entry.second.setZero();
+        }
+    }
+
+    std::vector<double> operator()(DofType dof, std::vector<int> globalDofNumbers) const
+    {
+        std::vector<double> v;
+        v.reserve(globalDofNumbers.size());
+        for (int globalDofNumber : globalDofNumbers)
+            v.push_back((*this)(dof, globalDofNumber));
+        return v;
     }
 
     friend std::ostream& operator<<(std::ostream& out, const DofVector& v)

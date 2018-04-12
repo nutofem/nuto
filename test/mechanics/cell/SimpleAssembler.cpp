@@ -71,11 +71,10 @@ BOOST_AUTO_TEST_CASE(AssemblerGradient)
      *      active       ||  dependent
      */
 
-    NuTo::GlobalDofVector gradient =
+    NuTo::DofVector<double> gradient =
             assembler.BuildVector({mockCell0.get(), mockCell1.get()}, {d}, NuTo::CellInterface::VectorFunction());
 
-    BoostUnitTest::CheckEigenMatrix(gradient.J[d], Eigen::Vector3d(11, 22, 44));
-    BoostUnitTest::CheckEigenMatrix(gradient.K[d], Eigen::Vector2d(22, 33));
+    BoostUnitTest::CheckEigenMatrix(gradient[d], (Eigen::VectorXd(5)<< 11, 22, 44, 22, 33).finished());
 }
 
 BOOST_AUTO_TEST_CASE(AssemblerHessian)
@@ -101,17 +100,17 @@ BOOST_AUTO_TEST_CASE(AssemblerHessian)
      *     active J         dependent K
      */
 
-    NuTo::GlobalDofMatrixSparse hessian =
+    NuTo::DofMatrixSparse<double> hessian =
             assembler.BuildMatrix({mockCell0.get(), mockCell1.get()}, {d}, NuTo::CellInterface::MatrixFunction());
-    Eigen::Matrix3d JJ = (Eigen::Matrix3d() << 11, 12, 13, 21, 22, 23, 31, 32, 44).finished();
-    Eigen::Matrix2d KK = (Eigen::Matrix2d() << 22, 23, 32, 33).finished();
-    Eigen::MatrixXd JK = (Eigen::MatrixXd(3, 2) << 0, 0, 0, 0, 12, 13).finished();
-    Eigen::MatrixXd KJ = (Eigen::MatrixXd(2, 3) << 0, 0, 21, 0, 0, 31).finished();
 
-    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(hessian.JJ(d, d)), JJ);
-    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(hessian.JK(d, d)), JK);
-    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(hessian.KJ(d, d)), KJ);
-    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(hessian.KK(d, d)), KK);
+    Eigen::MatrixXd hessianE = (Eigen::MatrixXd(5,5) << 11, 12, 13,  0,  0,
+                                                       21, 22, 23,  0,  0,
+                                                       31, 32, 44, 12, 13,
+                                                        0,  0, 21, 22, 23,
+                                                        0,  0, 31, 32, 33).finished();
+
+
+    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(hessian(d, d)), hessianE);
 }
 
 BOOST_AUTO_TEST_CASE(AssemblerLumpedMass)
@@ -137,7 +136,7 @@ BOOST_AUTO_TEST_CASE(AssemblerLumpedMass)
      *     active J         dependent K
      */
 
-    NuTo::GlobalDofVector massLumped = assembler.BuildDiagonallyLumpedMatrix({mockCell0.get(), mockCell1.get()}, {d},
+    NuTo::DofVector<double> massLumped = assembler.BuildDiagonallyLumpedMatrix({mockCell0.get(), mockCell1.get()}, {d},
                                                                              NuTo::CellInterface::MatrixFunction());
 
     double totalMass = 11 + 12 + 13 + 21 + 22 + 23 + 31 + 32 + 33;
@@ -146,9 +145,6 @@ BOOST_AUTO_TEST_CASE(AssemblerLumpedMass)
     globalMassDiagonal << localMassDiagonal[0], localMassDiagonal[1], localMassDiagonal[2] + localMassDiagonal[0],
             localMassDiagonal[1], localMassDiagonal[2];
 
-    Eigen::VectorXd J = globalMassDiagonal.head(3);
-    Eigen::VectorXd K = globalMassDiagonal.tail(2);
+    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(massLumped[d]), globalMassDiagonal);
 
-    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(massLumped.J[d]), J);
-    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(massLumped.K[d]), K);
 }
