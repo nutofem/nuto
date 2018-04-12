@@ -52,41 +52,26 @@ using namespace NuTo;
       --
 */
 
-Nurbs<2> QuadPatchTestNurbsCoordinates(MeshIga<2>& mesh)
+void QuadPatchTestNurbs(MeshIga<2>& mesh, const NuTo::DofType& coord, const NuTo::DofType& displ)
 {
-    std::vector<NodeSimple*> controlPoints;
+    std::vector<NodeSimple*> controlPointsCoordinates;
 
     int num = 3;
     for (int i = 0; i < num; i++)
         for (int j = 0; j < num; j++)
         {
             auto& node = mesh.mNodes.Add(Eigen::Vector2d({j, i}));
-            controlPoints.push_back(&node);
+            controlPointsCoordinates.push_back(&node);
         }
 
-    std::vector<double> knots1 = {0, 0, 0, 1, 1, 1};
-    std::vector<double> knots2 = {0, 0, 0, 1, 1, 1};
-    std::array<std::vector<double>, 2> knots = {{knots1, knots2}};
-
-    std::vector<double> weights = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-
-    std::array<int, 2> degree = {{2, 2}};
-
-    NuTo::Nurbs<2> nurbs(knots, controlPoints, weights, degree);
-    return nurbs;
-}
-
-Nurbs<2> QuadPatchTestNurbsDisplacements(MeshIga<2>& mesh)
-{
-    std::vector<NodeSimple*> controlPoints;
-
-    int num = 3;
+    std::vector<NodeSimple*> controlPointsDispl;
     for (int i = 0; i < num; i++)
         for (int j = 0; j < num; j++)
         {
             auto& node = mesh.mNodes.Add(Eigen::Vector2d({0, 0}));
-            controlPoints.push_back(&node);
+            controlPointsDispl.push_back(&node);
         }
+
 
     std::vector<double> knots1 = {0, 0, 0, 1, 1, 1};
     std::vector<double> knots2 = {0, 0, 0, 1, 1, 1};
@@ -96,36 +81,24 @@ Nurbs<2> QuadPatchTestNurbsDisplacements(MeshIga<2>& mesh)
 
     std::array<int, 2> degree = {{2, 2}};
 
-    NuTo::Nurbs<2> nurbs(knots, controlPoints, weights, degree);
-    return nurbs;
+    mesh.mDofInterpolations.Insert(coord, Nurbs<2>(knots, controlPointsCoordinates, weights, degree));
+
+    mesh.mDofInterpolations.Insert(displ, Nurbs<2>(knots, controlPointsDispl, weights, degree));
+
+    std::array<int, 2> knotIDsCell = {{2, 2}};
+    ElementIga<2> igaCoordinates(knotIDsCell, mesh.mDofInterpolations.At(coord));
+    ElementIga<2> igaDispl(knotIDsCell, mesh.mDofInterpolations.At(displ));
+
+    mesh.mElements.Add(igaCoordinates);
+    mesh.mElements[0].AddDofElement(displ, igaDispl);
 }
 
-BOOST_AUTO_TEST_CASE(PatchTestIga)
+BOOST_AUTO_TEST_CASE(PatchTestIgaMesh)
 {
     MeshIga<2> mesh;
-
-    Nurbs<2> nurbsCoordinates = QuadPatchTestNurbsCoordinates(mesh);
-    Nurbs<2> nurbsDisplacements = QuadPatchTestNurbsDisplacements(mesh);
-
-    Eigen::Vector2d parameter;
-    parameter << 0, 0;
-    Eigen::VectorXd coordinate = nurbsCoordinates.Evaluate(parameter);
-    parameter << 1, 1;
-    coordinate = nurbsCoordinates.Evaluate(parameter);
-
-    // %%%%%%%%%%%%%%%%%%% Elements %%%%%%%%%%%%%%%%%%%%% //
-    std::array<int, 2> knotIDsCell = {{2, 2}};
-    NuTo::ElementIga<2> igaCoordinates(knotIDsCell, nurbsCoordinates);
-    NuTo::ElementIga<2> igaDispl(knotIDsCell, nurbsDisplacements);
-
-    // %%%%%%%%%%%%%%%%%%% Dofs %%%%%%%%%%%%%%%%%%%%%%%%% //
-    NuTo::ElementCollectionImpl<NuTo::ElementIga<2>> elementCollectionIga(igaCoordinates);
-
+    NuTo::DofType coord("coordinates", 2);
     NuTo::DofType displ("displacements", 2);
-    elementCollectionIga.AddDofElement(displ, igaDispl);
-
-    NuTo::Group<NuTo::ElementCollection> elements;
-    elements.Add(elementCollectionIga);
+    QuadPatchTestNurbs(mesh, coord, displ);
 
     // %%%%%%%%%%%%%%%%%%%% Constraints %%%%%%%%%%%%%%%%%%%%%% //
     NuTo::Constraint::Constraints constraints;
@@ -133,25 +106,25 @@ BOOST_AUTO_TEST_CASE(PatchTestIga)
     Eigen::Vector2i nodeIds;
     nodeIds << 0, 0;
     NuTo::Group<NuTo::NodeSimple> nodesConstrained;
-    nodesConstrained.Add(*nurbsDisplacements.GetControlPoint(nodeIds));
+    nodesConstrained.Add(*mesh.mDofInterpolations.At(displ).GetControlPoint(nodeIds));
     nodeIds << 0, 1;
-    nodesConstrained.Add(*nurbsDisplacements.GetControlPoint(nodeIds));
+    nodesConstrained.Add(*mesh.mDofInterpolations.At(displ).GetControlPoint(nodeIds));
     nodeIds << 0, 2;
-    nodesConstrained.Add(*nurbsDisplacements.GetControlPoint(nodeIds));
+    nodesConstrained.Add(*mesh.mDofInterpolations.At(displ).GetControlPoint(nodeIds));
     constraints.Add(displ, NuTo::Constraint::Component(nodesConstrained, {NuTo::eDirection::X}));
 
     NuTo::Group<NuTo::NodeSimple> nodesConstrained1;
     nodeIds << 0, 0;
-    nodesConstrained1.Add(*nurbsDisplacements.GetControlPoint(nodeIds));
+    nodesConstrained1.Add(*mesh.mDofInterpolations.At(displ).GetControlPoint(nodeIds));
     constraints.Add(displ, NuTo::Constraint::Component(nodesConstrained1, {NuTo::eDirection::Y}));
 
     NuTo::Group<NuTo::NodeSimple> nodesDisplConstrained;
     nodeIds << 2, 0;
-    nodesDisplConstrained.Add(*nurbsDisplacements.GetControlPoint(nodeIds));
+    nodesDisplConstrained.Add(*mesh.mDofInterpolations.At(displ).GetControlPoint(nodeIds));
     nodeIds << 2, 1;
-    nodesDisplConstrained.Add(*nurbsDisplacements.GetControlPoint(nodeIds));
+    nodesDisplConstrained.Add(*mesh.mDofInterpolations.At(displ).GetControlPoint(nodeIds));
     nodeIds << 2, 2;
-    nodesDisplConstrained.Add(*nurbsDisplacements.GetControlPoint(nodeIds));
+    nodesDisplConstrained.Add(*mesh.mDofInterpolations.At(displ).GetControlPoint(nodeIds));
     constraints.Add(displ, NuTo::Constraint::Component(nodesDisplConstrained, {NuTo::eDirection::X}, 1));
 
     NuTo::Group<NuTo::NodeSimple> nodesDispl;
@@ -159,7 +132,7 @@ BOOST_AUTO_TEST_CASE(PatchTestIga)
         for (int j = 0; j < 3; j++)
         {
             nodeIds << i, j;
-            nodesDispl.Add(*nurbsDisplacements.GetControlPoint(nodeIds));
+            nodesDispl.Add(*mesh.mDofInterpolations.At(displ).GetControlPoint(nodeIds));
         }
 
 
@@ -184,7 +157,7 @@ BOOST_AUTO_TEST_CASE(PatchTestIga)
 
     Group<CellInterface> cellGroup;
     int cellId = 0;
-    cellContainer.push_back(new Cell(elementCollectionIga, integrationType, cellId++));
+    cellContainer.push_back(new Cell(mesh.mElements[0], integrationType, cellId++));
     cellGroup.Add(cellContainer.back());
 
     // %%%%%%%%%%%%%%%%%%%%%%%% assemble and solve %%%%%%%%%%%%%%%%%%%%%%%%%%%% //
@@ -215,159 +188,6 @@ BOOST_AUTO_TEST_CASE(PatchTestIga)
     visualize.CellData([](const CellIpData& cipd) { return EigenCompanion::ToEigen(cipd.Ids().cellId); }, "CellId");
     visualize.WriteVtuFile("outputVoronoi.vtu");
 }
-
-// NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Length)
-//{
-//    /** Knots and control points **/
-//    int numElementsX = 1;
-//    int numElementsY = 1;
-
-//    Eigen::Vector2i degree(2, 2);
-
-//    int numKnotsX = 2 * (degree(0) + 1) + numElementsX - 1;
-//    int numKnotsY = 2 * (degree(1) + 1) + numElementsY - 1;
-
-//    Eigen::VectorXd knotsX(numKnotsX);
-//    Eigen::VectorXd knotsY(numKnotsY);
-
-//    for (int i = 0; i <= degree(0); i++)
-//        knotsX(i) = 0.;
-//    for (int i = degree(0) + 1; i <= degree(0) + numElementsX - 1; i++)
-//        knotsX(i) = knotsX(i - 1) + 1. / numElementsX;
-//    for (int i = degree(0) + numElementsX; i < numKnotsX; i++)
-//        knotsX(i) = 1;
-
-//    for (int i = 0; i <= degree(1); i++)
-//        knotsY(i) = 0.;
-//    for (int i = degree(1) + 1; i <= degree(1) + numElementsY - 1; i++)
-//        knotsY(i) = knotsY(i - 1) + 1. / numElementsY;
-//    for (int i = degree(1) + numElementsY; i < numKnotsY; i++)
-//        knotsY(i) = 1;
-
-//    int numControlPointsX = (numKnotsX - 1) - degree(0);
-//    int numControlPointsY = (numKnotsY - 1) - degree(1);
-
-//    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> controlPoints(numControlPointsY,
-//    numControlPointsX);
-
-//    double incrx = (Length / (numControlPointsX - 1));
-//    double incry = (Height / (numControlPointsY - 1));
-//    for (int i = 0; i < numControlPointsY; i++)
-//    {
-//        for (int j = 0; j < numControlPointsX; j++)
-//        {
-//            controlPoints(i, j) = Eigen::Vector2d(x0 + incrx * j, y0 + incry * i);
-//        }
-//    }
-
-//    Eigen::MatrixXd weights(numControlPointsY, numControlPointsX);
-//    weights.setOnes(numControlPointsY, numControlPointsX);
-
-//    return NuTo::BSplineSurface(degree, knotsX, knotsY, controlPoints, weights);
-//}
-
-// void SolveAndVisualize(NuTo::Structure* s, std::string name)
-//{
-//    s->SolveGlobalSystemStaticElastic();
-
-//    int visualizationGroup = s->GroupGetElementsTotal();
-//    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
-//    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-//    s->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
-
-//    std::string resultDir = "./ResultsIGA";
-//    boost::filesystem::create_directory(resultDir);
-//    s->ExportVtkDataFileElements(resultDir + "/Elements" + name + ".vtu");
-//    s->ExportVtkDataFileNodes(resultDir + "/Nodes" + name + ".vtu");
-//}
-
-// BOOST_AUTO_TEST_CASE(IGA_ConstantStress)
-//{
-//    /** parameters **/
-//    double YoungsModulus = 20000.;
-//    double PoissonRatio = 0.3;
-//    double Height = 5.;
-//    // there should be no dependency, because the pressure at the boundary is predefined
-//    double thickness = 2.123548;
-//    double Length = 10;
-//    double Stress = 10.;
-
-
-//    NuTo::BSplineSurface surface = buildRect2D(0, 0, Height, Length);
-
-//    /** Structure 2D **/
-//    NuTo::Structure* s = new NuTo::Structure(2);
-
-//    /** create section **/
-//    auto mySection = NuTo::SectionPlane::Create(thickness, false);
-
-//    /** create constitutive law **/
-//    int myMatLin = s->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
-//    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,
-//                                         YoungsModulus);
-//    s->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,
-//                                         PoissonRatio);
-
-//    std::set<NuTo::Node::eDof> setOfDOFS;
-//    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
-//    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
-
-//    int groupNodes = s->GroupCreate("Nodes");
-//    int groupElements = s->GroupCreate("Elements");
-
-//    surface.buildIGAStructure(*s, setOfDOFS, groupElements, groupNodes);
-
-//    s->Info();
-
-//    /** assign constitutive law **/
-//    s->ElementTotalSetConstitutiveLaw(myMatLin);
-//    s->ElementTotalSetSection(mySection);
-
-//    /** Boundary condition **/
-//    for (int i = 0; i < surface.GetNumControlPoints(1); i++)
-//    {
-//        const auto& node = *s->NodeGetNodePtr(i * surface.GetNumControlPoints(0));
-//        s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(node,
-//        {NuTo::eDirection::X}));
-//    }
-
-//    for (int i = 0; i < surface.GetNumControlPoints(0); i++)
-//    {
-//        const auto& node = *s->NodeGetNodePtr(i);
-//        s->Constraints().Add(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Constraint::Component(node,
-//        {NuTo::eDirection::Y}));
-//    }
-
-//    // right boundary
-//    int groupNumberNodesLeft = s->GroupCreate("NODES");
-//    for (int i = 1; i <= surface.GetNumControlPoints(1); i++)
-//    {
-//        s->GroupAddNode(groupNumberNodesLeft, i * surface.GetNumControlPoints(0) - 1);
-//    }
-
-//    int groupNumberElementsLeft = s->GroupCreate("ELEMENTS");
-//    for (int i = 1; i <= surface.GetNumIGAElements(1); i++)
-//    {
-//        s->GroupAddElement(groupNumberElementsLeft, i * surface.GetNumIGAElements(0) - 1);
-//    }
-
-//    s->LoadSurfacePressureCreate2D(groupNumberElementsLeft, groupNumberNodesLeft, -Stress);
-
-//    s->CalculateMaximumIndependentSets();
-//    s->NodeBuildGlobalDofs();
-
-//    s->NodeInfo(10);
-
-//    SolveAndVisualize(s, "Rectangle1");
-
-//    double displacementCorrect = (Stress * Length) / YoungsModulus;
-//    for (int id : s->GroupGetMemberIds(groupNumberNodesLeft))
-//    {
-//        auto displ = s->NodeGetNodePtr(id)->Get(NuTo::Node::eDof::DISPLACEMENTS);
-//        BOOST_CHECK_CLOSE(displ[0], displacementCorrect, 1.e-6);
-//    }
-//}
-
 
 // BOOST_AUTO_TEST_CASE(IGA_PlateWithHoleNeumann)
 //{

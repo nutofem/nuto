@@ -12,9 +12,8 @@ namespace NuTo
 {
 //! @author Peter Otto, BAM
 //! @date September, 2017
-//! @brief ... class for NURBS curves, with IGA specific functions
-//! @brief ... NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
-//! @brief ... TDimParameter is the dimension of the parametric space: curve is 1D and surface is 2D
+//! @brief ... Class for NURBS curves, with IGA specific functions. NURBS specific algorithms taken from Piegl, Tiller
+//! 'The NURBS book' 1996. TDimParameter is the dimension of the parametric space: curve is 1D and surface is 2D
 template <int TDimParameter>
 class Nurbs
 {
@@ -28,9 +27,9 @@ public:
     /** Constructors **/
 
     //! @brief ... constructor
-    //! @param rDegree ... degree of the polynomial
-    //! @param rKnots ... knot vector
-    //! @param rControlPoints ... control points
+    //! @param degree ... degree of the polynomial
+    //! @param knots ... knot vector
+    //! @param controlPoints ... control points
     Nurbs(const std::array<std::vector<double>, TDimParameter>& knots, const std::vector<NodeSimple*>& controlPoints,
           const std::vector<double>& weights, const std::array<int, TDimParameter>& degree)
         : mKnots(knots)
@@ -58,28 +57,15 @@ public:
     //! @param weights ... weights to the control points
     //! @param degree ... degrees of the polynomial in each parameter direction
     //! @param refinementLevel ... the number of refinements for each direction (0 = no refinement)
-    //! @param mesh ... after the refinement the control points are stored in the mesh and the pointers in this
-    Nurbs(const std::array<std::vector<double>, TDimParameter>& knots,
-          const std::vector<Eigen::VectorXd>& controlPoints, const std::vector<double>& weights,
-          const std::array<int, TDimParameter>& degree, const std::array<int, TDimParameter>& refinementLevel,
-          std::vector<NodeSimple>& nodes)
+    static void Refinement(const std::array<std::vector<double>, TDimParameter>& knots,
+                           const std::vector<Eigen::VectorXd>& controlPoints, const std::vector<double>& weights,
+                           const std::array<int, TDimParameter>& degree,
+                           const std::array<int, TDimParameter>& refinementLevel,
+                           std::array<std::vector<double>, TDimParameter>& rKnots,
+                           std::vector<Eigen::VectorXd>& rControlPoints, std::vector<double>& rWeights,
+                           std::array<int, TDimParameter>& rDegree)
     {
-        assert(degree.size() == knots.size());
-        assert(controlPoints.size() == weights.size());
-
-        size_t numControlPoints = 1;
-        for (size_t i = 0; i < mKnots.size(); i++)
-        {
-            int numControlPointsDir = knots[i].size() - degree[i] - 1;
-            mNumControlPointsInDirection[i] = numControlPointsDir;
-            numControlPoints *= numControlPointsDir;
-        }
-
-        assert(numControlPoints == controlPoints.size());
-
-        // Refine - call routine ot this class
-
-        // save the control points
+        // ToDo
     }
 
     /** Getter **/
