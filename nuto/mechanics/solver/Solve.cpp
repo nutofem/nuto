@@ -56,7 +56,8 @@ DofVector<double> NuTo::SolveTrialState(const DofMatrixSparse<double>& K, const 
     deltaBrhs.SetZero();
     for (auto dof : dofs)
     {
-        deltaBrhs[dof] += bcs.GetSparseGlobalDeltaRhs(dof, f[dof].rows(), oldTime, newTime);
+        deltaBrhs[dof] += (bcs.GetSparseGlobalRhs(dof, f[dof].rows(), newTime) -
+                           bcs.GetSparseGlobalRhs(dof, f[dof].rows(), oldTime));
     }
 
     Eigen::SparseMatrix<double> Kmod = C.transpose() * K_full * C;

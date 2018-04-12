@@ -33,19 +33,9 @@ public:
     //! @brief builds the rhs of the constraint equations in a sparse global vector
     //! @param dof dof type
     //! @param numDofs total number of dofs for a specfic dof type
-    //! @param time old time
-    //! @param time new time
-    //! @return sparse rhs vector of the constraint equations rhs(newTime) - rhs(oldTime)
-    Eigen::SparseVector<double> GetSparseGlobalDeltaRhs(DofType dof, int numDofs, double oldTime, double newTime) const;
-
-    //! @brief builds the rhs of the constraint equations in a sparse global vector
-    //! @param dof dof type
-    //! @param numDofs total number of dofs for a specfic dof type
     //! @param time
     //! @return sparse rhs vector of the constraint equations rhs(time)
     Eigen::SparseVector<double> GetSparseGlobalRhs(DofType dof, int numDofs, double time) const;
-
-    void AddRhs(DofType dof, double time, Eigen::VectorXd* destination) const;
 
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type and a unit matrix for the
     //! independent dofs

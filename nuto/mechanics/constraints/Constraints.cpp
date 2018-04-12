@@ -34,27 +34,10 @@ Eigen::VectorXd Constraints::GetRhs(DofType dof, double time) const
 }
 
 
-Eigen::SparseVector<double> Constraints::GetSparseGlobalDeltaRhs(DofType dof, int numDofs, double oldTime,
-                                                                 double newTime) const
-{
-    if (not mEquations.Has(dof))
-        return Eigen::SparseVector<float>(numDofs); // no equations for this dof type
-
-    const Equations& equations = mEquations[dof];
-    int numEquations = equations.size();
-    Eigen::SparseVector<float> globalVector(numDofs);
-    for (int iEquation = 0; iEquation < numEquations; ++iEquation)
-    {
-        globalVector.coeffRef(equations[iEquation].GetDependentDofNumber()) =
-                equations[iEquation].GetRhs(newTime) - equations[iEquation].GetRhs(oldTime);
-    }
-    return globalVector;
-}
-
 Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int numDofs, double time) const
 {
     if (not mEquations.Has(dof))
-        return Eigen::SparseVector<float>(0); // no equations for this dof type
+        return Eigen::SparseVector<float>(numDofs); // no equations for this dof type
 
     const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
@@ -66,18 +49,7 @@ Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int num
     return globalVector;
 }
 
-void Constraints::AddRhs(DofType dof, double time, Eigen::VectorXd* destination) const
-{
-    if (not mEquations.Has(dof))
-        return;
 
-    const Equations& equations = mEquations[dof];
-    for (auto& eq : equations)
-    {
-        (*destination)[eq.GetDependentDofNumber()] = eq.GetRhs(time);
-    }
-}
-#include <iostream>
 Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, int numDofs) const
 {
     if (not mEquations.Has(dof))
