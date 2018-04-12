@@ -80,7 +80,7 @@ private:
         };
 
         std::set<Term, TermCompare> mDependentTerms;
-        std::set<Term, TermCompare> mOtherTerms;
+        std::set<Term, TermCompare> mIndependentTerms;
     } mTermChecker;
 };
 

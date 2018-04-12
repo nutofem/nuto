@@ -110,7 +110,7 @@ private:
 
         Constraint::Constraints c;
         Constraint::Equation periodic(nodeRight, 0, Constraint::RhsRamp(1., 0.02));
-        periodic.AddTerm({nodeLeft, 0, -1});
+        periodic.AddIndependentTerm({nodeLeft, 0, -1});
 
         c.Add(disp, Constraint::Component(nodeMiddle, {eDirection::X}));
         c.Add(disp, periodic);

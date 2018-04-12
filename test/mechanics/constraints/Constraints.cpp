@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     Equation noninteractingEquation(node3, 0, rhs);
 
     Equation interactingEquation(node4, 0, rhs);
-    interactingEquation.AddTerm({node0, 0, 42});
+    interactingEquation.AddIndependentTerm({node0, 0, 42});
 
     Constraints c;
     c.Add(dof, noninteractingEquation);
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(ConstraintTwoDependentDofsInOneEquation)
     constraints.Add(dof, {node, 0, rhs}); // node.dof0 * 1.0 = rhs
 
     Constraint::Equation equation(node, 1, rhs);
-    equation.AddTerm({node, 0, 0.4}); // node.dof1 * 1.0 + node.dof0 * 0.4 = rhs
+    equation.AddIndependentTerm({node, 0, 0.4}); // node.dof1 * 1.0 + node.dof0 * 0.4 = rhs
     BOOST_CHECK_THROW(constraints.Add(dof, equation), Exception);
 }
 
