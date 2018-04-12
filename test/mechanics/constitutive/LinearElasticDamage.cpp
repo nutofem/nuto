@@ -9,11 +9,12 @@ constexpr double nu = 0.36;
 // https://en.wikipedia.org/wiki/Hooke%27s_law
 
 template <int TDim>
-void CheckIsotropic()
+void CheckIsotropic(NuTo::ePlaneState planeState = NuTo::ePlaneState::PLANE_STRAIN)
 {
-    NuTo::Laws::LinearElasticDamage<3> linearElasticDamage(E, nu);
-    NuTo::Laws::LinearElastic<3> linearElastic(E, nu);
-    NuTo::EngineeringStrain<3> strain = NuTo::EngineeringStrain<3>::Random();
+    BOOST_TEST_MESSAGE("TDim = " << TDim);
+    NuTo::Laws::LinearElasticDamage<TDim> linearElasticDamage(E, nu, NuTo::Laws::FULL, planeState);
+    NuTo::Laws::LinearElastic<TDim> linearElastic(E, nu, planeState);
+    NuTo::EngineeringStrain<TDim> strain = NuTo::EngineeringStrain<TDim>::Constant(0.1);
     double omega = 0.4;
     BoostUnitTest::CheckEigenMatrix((1. - omega) * linearElastic.Stress(strain),
                                     linearElasticDamage.Stress(strain, omega));
@@ -27,18 +28,19 @@ void CheckIsotropic()
 BOOST_AUTO_TEST_CASE(VsLinearElastic)
 {
     CheckIsotropic<1>();
-    CheckIsotropic<2>();
+    CheckIsotropic<2>(NuTo::ePlaneState::PLANE_STRAIN);
+    CheckIsotropic<2>(NuTo::ePlaneState::PLANE_STRESS);
     CheckIsotropic<3>();
 }
 
-void CheckTangents(std::initializer_list<double> values, double omega)
+void CheckTangents(std::initializer_list<double> values, double omega, NuTo::ePlaneState planeState)
 {
     //
     // check DstressDstrain
     //
     NuTo::EngineeringStrain<2> strain = NuTo::EigenCompanion::ToEigen(values);
     BOOST_TEST_MESSAGE("Checking tangent for e = " << strain.transpose() << " and w = " << omega);
-    NuTo::Laws::LinearElasticDamage<2> law(20000, 0.2);
+    NuTo::Laws::LinearElasticDamage<2> law(20000, 0.2, NuTo::Laws::UNILATERAL, planeState);
 
     NuTo::EngineeringTangent<2> tangent = law.DstressDstrain(strain, omega);
     NuTo::EngineeringTangent<2> tangent_diff = tangent * 0.;
@@ -69,27 +71,28 @@ void CheckTangents(std::initializer_list<double> values, double omega)
 
 BOOST_AUTO_TEST_CASE(Tangent2D)
 {
-    for (double omega : {0., 0.5, 0.8})
-    {
-        CheckTangents({0, 0, 0}, omega);
+    for (auto planeState : {NuTo::ePlaneState::PLANE_STRAIN, NuTo::ePlaneState::PLANE_STRESS})
+        for (double omega : {0., 0.5, 0.8})
+        {
+            CheckTangents({0, 0, 0}, omega, planeState);
 
-        CheckTangents({2, 0, 0}, omega);
-        CheckTangents({-2, 0, 0}, omega);
-        CheckTangents({0, 2, 0}, omega);
-        CheckTangents({0, -2, 0}, omega);
-        CheckTangents({0, 0, 2}, omega);
-        CheckTangents({0, 0, -2}, omega);
+            CheckTangents({2, 0, 0}, omega, planeState);
+            CheckTangents({-2, 0, 0}, omega, planeState);
+            CheckTangents({0, 2, 0}, omega, planeState);
+            CheckTangents({0, -2, 0}, omega, planeState);
+            CheckTangents({0, 0, 2}, omega, planeState);
+            CheckTangents({0, 0, -2}, omega, planeState);
 
-        CheckTangents({1, 1, 0}, omega);
-        CheckTangents({0, 1, 1}, omega);
-        CheckTangents({1, 0, 1}, omega);
+            CheckTangents({1, 1, 0}, omega, planeState);
+            CheckTangents({0, 1, 1}, omega, planeState);
+            CheckTangents({1, 0, 1}, omega, planeState);
 
-        CheckTangents({-1, 1, 0}, omega);
-        CheckTangents({0, -1, 1}, omega);
-        CheckTangents({1, 0, -1}, omega);
+            CheckTangents({-1, 1, 0}, omega, planeState);
+            CheckTangents({0, -1, 1}, omega, planeState);
+            CheckTangents({1, 0, -1}, omega, planeState);
 
-        CheckTangents({1, -1, 0}, omega);
-        CheckTangents({0, 1, -1}, omega);
-        CheckTangents({-1, 0, 1}, omega);
-    }
+            CheckTangents({1, -1, 0}, omega, planeState);
+            CheckTangents({0, 1, -1}, omega, planeState);
+            CheckTangents({-1, 0, 1}, omega, planeState);
+        }
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../ConstitutivePlaneStateEnum.h"
+
 namespace NuTo
 {
 namespace Material
@@ -29,6 +31,9 @@ struct Softening
 
     //! residual strength [pressure]
     double fMin;
+
+    //! PLANE_STRAIN or PLANE_STRESS
+    ePlaneState planeState = ePlaneState::PLANE_STRAIN;
 };
 
 //! Sets the softening material parameters to approximate normal strength concrete

@@ -14,10 +14,12 @@ AdaptiveSolve::AdaptiveSolve(std::function<int(double)> doStepFunction, std::fun
 {
 }
 
-void AdaptiveSolve::Solve(double tEnd)
+void AdaptiveSolve::Solve(double tEnd, double tStart)
 {
     Timer timer(__PRETTY_FUNCTION__, mPrintOutput);
-    double t = 0;
+    double t = tStart;
+    if (mPrintOutput)
+        std::cout << rang::fg::blue << "Starting adaptive solve from t = " << t << rang::style::reset << '\n';
     int iStep = 0;
 
     mPostProcess(t);

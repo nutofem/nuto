@@ -19,13 +19,6 @@
 
 using namespace NuTo;
 
-Material::Softening TestMaterial()
-{
-    Material::Softening m = Material::DefaultConcrete();
-    m.fMin = 1.e-10;
-    return m;
-}
-
 //! Solves a 1D tensile test. The load displacement curve is integrated to obtain the global fracture energy. The
 //! localization is triggered by predamaging two elements in the middle of the structure. The fracture energy
 //! contribution of this imperfection is subtracted.
@@ -39,7 +32,8 @@ Material::Softening TestMaterial()
 //!   - combination of c, gf (local fracture energy parameter) and L causes a snap-back
 //!   - ???
 template <typename TGdm>
-double GlobalFractureEnergy(TGdm& gdm, double L = 50, int nElements = 200, double boundaryDisplacement = 0.2)
+double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 50, int nElements = 200,
+                            double boundaryDisplacement = 0.2)
 {
     DofType d = gdm.mDisp;
     ScalarDofType eeq = gdm.mEeq;
@@ -61,7 +55,7 @@ double GlobalFractureEnergy(TGdm& gdm, double L = 50, int nElements = 200, doubl
     CellStorage cellStorage;
     auto cells = cellStorage.AddCells(mesh.ElementsTotal(), integration);
 
-    double k0 = TestMaterial().ft / TestMaterial().E;
+    double k0 = material.ft / material.E;
     gdm.mKappas.setZero(cells.Size(), nIp);
     gdm.mKappas.row(cells.Size() / 2) = Eigen::VectorXd::Constant(nIp, 3 * k0);
     gdm.mKappas.row(cells.Size() / 2 + 1) = Eigen::VectorXd::Constant(nIp, 3 * k0);
@@ -96,7 +90,7 @@ double GlobalFractureEnergy(TGdm& gdm, double L = 50, int nElements = 200, doubl
 
     Tools::GlobalFractureEnergyIntegrator gfIntegrator(loads, disps);
     double crossSection = 1.;
-    double GfTotal = gfIntegrator.IntegrateSofteningCurve(crossSection, 1.e-3 * TestMaterial().ft * crossSection);
+    double GfTotal = gfIntegrator.IntegrateSofteningCurve(crossSection, 1.e-3 * material.ft * crossSection);
     // an exception is thrown if the forces in the load-displacement-curve do _not_ drop below this 1.e-5 * ft
 
     double lPreDamage = 2. * nElements / L;
@@ -105,12 +99,12 @@ double GlobalFractureEnergy(TGdm& gdm, double L = 50, int nElements = 200, doubl
 
     // integrate from 0 to 3*k0 with increasing damage
     for (double k = 0; k <= 3 * k0; k += deltaK)
-        preDamageIntegral += (1 - gdm.mDamageLaw.Damage(k)) * TestMaterial().E * k * deltaK;
+        preDamageIntegral += (1 - gdm.mDamageLaw.Damage(k)) * material.E * k * deltaK;
 
     // subtract the contribution from 0 to 3*k0 with constant damage of omega(3*k0)
     double omega = gdm.mDamageLaw.Damage(3 * k0);
     for (double k = 0; k <= 3 * k0; k += deltaK)
-        preDamageIntegral -= (1 - omega) * TestMaterial().E * k * deltaK;
+        preDamageIntegral -= (1 - omega) * material.E * k * deltaK;
 
     return GfTotal - lPreDamage * preDamageIntegral;
 }
@@ -126,8 +120,9 @@ double FindRootWithoutDerivative(std::function<double(double)> f, double guess, 
 
 int main()
 {
-    const double GlobalFractureEnergyParameter = 0.1;
-    auto material = TestMaterial();
+    const double GlobalFractureEnergyParameter = 0.11;
+    Material::Softening material = Material::DefaultConcrete();
+    material.fMin = 1.e-6;
 
     auto f = [&](double gf) {
         std::cout << "Calculating for local gf = " << gf << " ... ";
@@ -139,7 +134,7 @@ int main()
         NonlocalInteraction::Decreasing interaction(0.1, 5);
         using Gdm = Integrands::GradientDamage<1, NonlocalInteraction::Decreasing>;
         Gdm gdm(d, eeq, material, Laws::eDamageApplication::FULL, interaction);
-        double Gf = GlobalFractureEnergy(gdm);
+        double Gf = GlobalFractureEnergy(gdm, material, 100, 200, 1);
         std::cout << "gives global Gf = " << Gf << ".\n";
         return Gf - GlobalFractureEnergyParameter;
     };
