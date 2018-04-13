@@ -7,6 +7,34 @@
 namespace NuTo
 {
 
+namespace Assembler
+{
+//! adds an arbitrary contribution `v` to the internal DofVector
+//! @param v contribution, e.g. a local element/cell vector
+//! @param numbering mapping from local (0...numbering.size()) to global (0...sizes)
+//! @param dofTypes specific dof types to assemble - an empty value will assemble all available dof types from the
+//! numbering
+void Add(DofVector<double>& rResult, const DofVector<double>& v, const DofVector<int>& numbering,
+         std::vector<DofType> dofTypes = {});
+
+//! adds an arbitrary contribution `m` to `rSparseMatrix`
+//! @param m contribution, e.g. a local element/cell matrix
+//! @param numbering mapping from local (0...numbering.size()) to global (0...sizes)
+//! @param dofTypes specific dof types to assemble - an empty value will assemble all available dof types from the
+//! numbering
+void Add(DofMatrixSparse<double>& rSparseMatrix, const DofMatrix<double>& m, const DofVector<int>& numbering,
+         std::vector<DofType> dofTypes = {});
+
+
+//! adds an arbitrary contribution `m` to `rSparseMatrix`
+//! @param m contribution, e.g. a local element/cell matrix
+//! @param numbering mapping from local (0...numbering.size()) to global (0...sizes)
+//! @param dofTypes specific dof types to assemble - an empty value will assemble all available dof types from the
+//! numbering
+void Add(DofMatrixContainer<std::vector<Eigen::Triplet<double>>>& rTriplets, const DofMatrix<double>& m,
+         const DofVector<int>& numbering, std::vector<DofType> dofTypes = {});
+}
+
 //! Assembles an internal NuTo::DofVector<double> from arbitrary contributions and provides access to it
 class VectorAssembler
 {
@@ -58,14 +86,6 @@ public:
     //! @param dofTypes specific dof types to assemble - an empty value will assemble all available dof types from the
     //! numbering
     void Add(const DofMatrix<double>& m, const DofVector<int>& numbering, std::vector<DofType> dofTypes = {});
-
-    //! adds an arbitrary contribution `m` to `rSparseMatrix`
-    //! @param m contribution, e.g. a local element/cell matrix
-    //! @param numbering mapping from local (0...numbering.size()) to global (0...sizes)
-    //! @param dofTypes specific dof types to assemble - an empty value will assemble all available dof types from the
-    //! numbering
-    static void Add(DofMatrixSparse<double>& rSparseMatrix, const DofMatrix<double>& m, const DofVector<int>& numbering,
-                    std::vector<DofType> dofTypes = {});
 
     //! sets the entries of the internal DofMatrixSparse to zero but keeps the nonzeros
     void SetZero();
