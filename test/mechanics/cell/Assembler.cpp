@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(MatrixAssembly)
 
 
     auto matrixWithNonzeros = matrixAssembler.Get();
-    MatrixAssembler::Add(matrixWithNonzeros, m, numbering0);
-    MatrixAssembler::Add(matrixWithNonzeros, m, numbering1);
+    Assembler::Add(matrixWithNonzeros, m, numbering0);
+    Assembler::Add(matrixWithNonzeros, m, numbering1);
     BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(matrixWithNonzeros(d, d)), expected);
 }
