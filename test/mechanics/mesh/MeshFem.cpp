@@ -54,11 +54,11 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
     auto& e0 = mesh.Elements[0];
     BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
 
-    mesh.CoordinateNodes[0].SetValue(0, 4);
+    mesh.CoordinateNodes[0].SetCoordinate(0, 4);
     BoostUnitTest::CheckVector(e0.CoordinateElement().ExtractNodeValues(), std::vector<double>({4, 0, 2, 0, 0, 3}), 6);
 
     NuTo::MeshFem meshMoved = std::move(mesh);
-    meshMoved.CoordinateNodes[0].SetValue(0, 42);
+    meshMoved.CoordinateNodes[0].SetCoordinate(0, 42);
     auto& e0FromMove = meshMoved.Elements[0];
     BoostUnitTest::CheckVector(e0FromMove.CoordinateElement().ExtractNodeValues(),
                                std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionCoords)
     // selection of coordinate nodes
     {
         const auto& n = mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3));
-        BoostUnitTest::CheckEigenMatrix(n.GetValues(), Eigen::Vector2d(0, 3));
+        BoostUnitTest::CheckEigenMatrix(n.GetCoordinates(), Eigen::Vector2d(0, 3));
         BOOST_CHECK_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001)), NuTo::Exception);
         BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001), 1e-4));
     }

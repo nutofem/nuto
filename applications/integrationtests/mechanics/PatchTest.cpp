@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     for (CoordinateNode& node : mesh.NodesTotal())
     {
-        Eigen::VectorXd coord = node.GetValues();
+        Eigen::VectorXd coord = node.GetCoordinates();
         DofNode& displNode = mesh.NodeAtCoordinate(coord, displ);
 
         Eigen::VectorXd analyticSolution = analyticDisplacementField(coord);
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
 
     for (auto& node : mesh.NodesTotal())
     {
-        auto coord = node.GetValues();
+        auto coord = node.GetCoordinates();
         auto& displNode = mesh.NodeAtCoordinate(coord, displ);
 
         auto analyticSolution = analyticDisplacementField(coord);

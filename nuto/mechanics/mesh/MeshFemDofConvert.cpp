@@ -107,7 +107,7 @@ struct NodePoint : Eigen::Vector3d // to inherit operator[]
 
 SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int numBoxesPerDirection, double eps)
 {
-    Eigen::VectorXd start = mesh.Elements[0].CoordinateElement().GetNode(0).GetValues();
+    Eigen::VectorXd start = mesh.Elements[0].CoordinateElement().GetNode(0).GetCoordinates();
     Eigen::VectorXd end = start;
 
     unsigned long numNodesTotal = 0;
@@ -118,7 +118,7 @@ SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int num
 
         for (int iNode = 0; iNode < numNodes; ++iNode)
         {
-            Eigen::VectorXd coords = elementCollection.CoordinateElement().GetNode(iNode).GetValues();
+            Eigen::VectorXd coords = elementCollection.CoordinateElement().GetNode(iNode).GetCoordinates();
             start = start.array().min(coords.array()); // array view (.array()) allows coeffwise operations
             end = end.array().max(coords.array());
         }
