@@ -123,6 +123,7 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, 
             int globalDofNumber = term.GetConstrainedDofNumber();
             int independentDofNumber = reverseJKNumbering[globalDofNumber];
             assert(independentDofNumber < numIndependentDofs);
+
             if (globalDofNumber == -1 /* should be NodeSimple::NOT_SET */)
                 throw Exception(__PRETTY_FUNCTION__,
                                 "There is no dof numbering for a node in equation" + std::to_string(iEquation) + ".");

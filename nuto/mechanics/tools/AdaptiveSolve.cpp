@@ -20,6 +20,7 @@ void AdaptiveSolve::Solve(double tEnd, double tStart)
     Timer timer(__PRETTY_FUNCTION__, true, Log::Info);
     double t = tStart;
     Log::Info << rang::fg::blue << "Starting adaptive solve from t = " << t << rang::style::reset << '\n';
+
     int iStep = 0;
 
     mPostProcess(t);

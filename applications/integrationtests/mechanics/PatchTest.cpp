@@ -163,7 +163,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     DofVector<double> solution = Solve(hessian, -1.0 * gradient, constraints, {displ});
 
     // Merge dof values %%%%%%%%%%%%%%%%%
-    for (NodeSimple& node : mesh.NodesTotal(displ))
+
+    for (DofNode& node : mesh.NodesTotal(displ))
     {
         int dofNumber = node.GetDofNumber(0);
         node.SetValue(0, solution[displ][dofNumber]);
