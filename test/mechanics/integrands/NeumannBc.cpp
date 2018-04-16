@@ -2,7 +2,7 @@
 
 #include "nuto/mechanics/integrands/NeumannBc.h"
 
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
@@ -17,15 +17,15 @@ constexpr int ipNum = 0;
 BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
 {
     // coordinate element
-    NodeCoordinates nc0(Eigen::Vector2d(0, 0));
-    NodeCoordinates nc1(Eigen::Vector2d(2, 2));
+    CoordinateNode nc0(Eigen::Vector2d(0, 0));
+    CoordinateNode nc1(Eigen::Vector2d(2, 2));
     InterpolationTrussLinear coordinateInterpolation;
     ElementCollectionFem element({{nc0, nc1}, coordinateInterpolation});
 
     // displacement nodes
     DofType dof("displacements", 2);
-    NodeSimple nd0(Eigen::Vector2d(0, 0));
-    NodeSimple nd1(Eigen::Vector2d(0, 0));
+    DofNode nd0(Eigen::Vector2d(0, 0));
+    DofNode nd1(Eigen::Vector2d(0, 0));
     InterpolationTrussLinear displacementInterpolation;
     element.AddDofElement(dof, {{nd0, nd1}, displacementInterpolation});
 
@@ -78,17 +78,17 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
 
 BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
 {
-    std::vector<NodeSimple> nodesDisp;
+    std::vector<DofNode> nodesDisp;
     for (int i = 0; i < 3; i++)
-        nodesDisp.push_back(NodeSimple(Eigen::Vector3d(0, 0, 0)));
+        nodesDisp.push_back(DofNode(Eigen::Vector3d(0, 0, 0)));
 
-    std::vector<NodeCoordinates> nodes;
-    nodes.push_back(NodeCoordinates(Eigen::Vector3d(1, 0, 0)));
-    nodes.push_back(NodeCoordinates(Eigen::Vector3d(0, 1, 0)));
-    nodes.push_back(NodeCoordinates(Eigen::Vector3d(0, 0, 1)));
+    std::vector<CoordinateNode> nodes;
+    nodes.push_back(CoordinateNode(Eigen::Vector3d(1, 0, 0)));
+    nodes.push_back(CoordinateNode(Eigen::Vector3d(0, 1, 0)));
+    nodes.push_back(CoordinateNode(Eigen::Vector3d(0, 0, 1)));
 
-    std::vector<NodeCoordinates*> nodePtrs;
-    std::vector<NodeSimple*> nodesDispPtrs;
+    std::vector<CoordinateNode*> nodePtrs;
+    std::vector<DofNode*> nodesDispPtrs;
 
     nodePtrs.push_back(&nodes[0]);
     nodePtrs.push_back(&nodes[1]);

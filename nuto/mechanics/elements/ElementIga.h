@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/mechanics/elements/ElementInterface.h"
 #include "nuto/mechanics/iga/Nurbs.h"
 #include "nuto/mechanics/cell/Matrix.h"

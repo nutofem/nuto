@@ -2,7 +2,7 @@
 
 #include "nuto/mechanics/integrands/GradientDamage.h"
 
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 
@@ -79,23 +79,23 @@ void CheckHessian0(ElementCollectionFem& element, Integrands::GradientDamage<1>&
 BOOST_AUTO_TEST_CASE(GradientDamage1D)
 {
     // coordinate element
-    NodeCoordinates n0(0);
-    NodeCoordinates n1(1);
-    NodeCoordinates n2(2);
+    CoordinateNode n0(0);
+    CoordinateNode n1(1);
+    CoordinateNode n2(2);
 
     InterpolationTrussLobatto interpolation(2);
     ElementCollectionFem element({{n0, n1, n2}, interpolation});
 
     // displacement element nodes
-    NodeSimple nd0(0);
-    NodeSimple nd1(0);
-    NodeSimple nd2(0);
+    DofNode nd0(0);
+    DofNode nd1(0);
+    DofNode nd2(0);
     DofType disp("displacements", 1);
     element.AddDofElement(disp, {{nd0, nd1, nd2}, interpolation});
 
-    NodeSimple ne0(0);
-    NodeSimple ne1(0);
-    NodeSimple ne2(0);
+    DofNode ne0(0);
+    DofNode ne1(0);
+    DofNode ne2(0);
     ScalarDofType eeq("eeq");
     element.AddDofElement(eeq, {{ne0, ne1, ne2}, interpolation});
 

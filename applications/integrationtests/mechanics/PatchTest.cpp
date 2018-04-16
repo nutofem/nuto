@@ -56,15 +56,15 @@ MeshFem QuadPatchTestMesh()
      *              (c) ttitsche :)
      */
     MeshFem mesh;
-    NodeCoordinates& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
-    NodeCoordinates& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
-    NodeCoordinates& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 10));
-    NodeCoordinates& n3 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 10));
+    CoordinateNode& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
+    CoordinateNode& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
+    CoordinateNode& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 10));
+    CoordinateNode& n3 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 10));
 
-    NodeCoordinates& n4 = mesh.CoordinateNodes.Add(Eigen::Vector2d(2, 2));
-    NodeCoordinates& n5 = mesh.CoordinateNodes.Add(Eigen::Vector2d(8, 3));
-    NodeCoordinates& n6 = mesh.CoordinateNodes.Add(Eigen::Vector2d(8, 7));
-    NodeCoordinates& n7 = mesh.CoordinateNodes.Add(Eigen::Vector2d(4, 7));
+    CoordinateNode& n4 = mesh.CoordinateNodes.Add(Eigen::Vector2d(2, 2));
+    CoordinateNode& n5 = mesh.CoordinateNodes.Add(Eigen::Vector2d(8, 3));
+    CoordinateNode& n6 = mesh.CoordinateNodes.Add(Eigen::Vector2d(8, 7));
+    CoordinateNode& n7 = mesh.CoordinateNodes.Add(Eigen::Vector2d(4, 7));
 
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
@@ -81,8 +81,8 @@ Constraint::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
 {
     Constraint::Constraints constraints;
 
-    Group<NodeSimple> nodesConstrainedInX = rMesh->NodesAtAxis(eDirection::X, dof);
-    Group<NodeSimple> nodesConstrainedInY = Group<NodeSimple>(rMesh->NodeAtCoordinate(Eigen::Vector2d(0, 0), dof));
+    Group<DofNode> nodesConstrainedInX = rMesh->NodesAtAxis(eDirection::X, dof);
+    Group<DofNode> nodesConstrainedInY = Group<DofNode>(rMesh->NodeAtCoordinate(Eigen::Vector2d(0, 0), dof));
 
     constraints.Add(dof, Constraint::Component(nodesConstrainedInX, {eDirection::X}));
     constraints.Add(dof, Constraint::Component(nodesConstrainedInY, {eDirection::Y}));
@@ -130,13 +130,13 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     const InterpolationSimple& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear());
 
     // extract existing nodes
-    Group<NodeCoordinates> boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
-    NodeCoordinates& nc1 = *boundaryCoordNodes.begin();
-    NodeCoordinates& nc2 = *(boundaryCoordNodes.begin() + 1);
+    Group<CoordinateNode> boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
+    CoordinateNode& nc1 = *boundaryCoordNodes.begin();
+    CoordinateNode& nc2 = *(boundaryCoordNodes.begin() + 1);
 
-    Group<NodeSimple> boundaryDisplNodes = mesh.NodesAtAxis(eDirection::X, displ, 10);
-    NodeSimple& nd1 = *boundaryDisplNodes.begin();
-    NodeSimple& nd2 = *(boundaryDisplNodes.begin() + 1);
+    Group<DofNode> boundaryDisplNodes = mesh.NodesAtAxis(eDirection::X, displ, 10);
+    DofNode& nd1 = *boundaryDisplNodes.begin();
+    DofNode& nd2 = *(boundaryDisplNodes.begin() + 1);
 
     // add the boundary element
     ElementCollectionFem& boundaryElement = mesh.Elements.Add({{{nc1, nc2}, interpolationBc}});
@@ -191,10 +191,10 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
         return Eigen::Vector2d(pressureBC[0] / E * coord[0], -nu * pressureBC[0] / E * coord[1]);
     };
 
-    for (NodeCoordinates& node : mesh.NodesTotal())
+    for (CoordinateNode& node : mesh.NodesTotal())
     {
         Eigen::VectorXd coord = node.GetValues();
-        NodeSimple& displNode = mesh.NodeAtCoordinate(coord, displ);
+        DofNode& displNode = mesh.NodeAtCoordinate(coord, displ);
 
         Eigen::VectorXd analyticSolution = analyticDisplacementField(coord);
 
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     AddDofInterpolation(&mesh, displ, interpolation);
 
     auto constraints = DefineConstraints(&mesh, displ); // fixed boundary conditions
-    Group<NodeSimple> rightBoundary = mesh.NodesAtAxis(eDirection::X, displ, 10);
+    Group<DofNode> rightBoundary = mesh.NodesAtAxis(eDirection::X, displ, 10);
     const double boundaryDisplacement = 1.;
     constraints.Add(displ, Constraint::Component(rightBoundary, {eDirection::X}, boundaryDisplacement));
 

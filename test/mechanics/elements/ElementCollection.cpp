@@ -5,9 +5,9 @@
 
 BOOST_AUTO_TEST_CASE(ElementCollectionAccess)
 {
-    NuTo::NodeCoordinates n0(Eigen::Vector2d(0, 0));
-    NuTo::NodeCoordinates n1(Eigen::Vector2d(0, 0));
-    NuTo::NodeCoordinates n2(Eigen::Vector2d(0, 0));
+    NuTo::CoordinateNode n0(Eigen::Vector2d(0, 0));
+    NuTo::CoordinateNode n1(Eigen::Vector2d(0, 0));
+    NuTo::CoordinateNode n2(Eigen::Vector2d(0, 0));
     NuTo::InterpolationTriangleLinear interpolation;
 
 

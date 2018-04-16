@@ -3,7 +3,7 @@
 #include "nuto/mechanics/cell/Cell.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
 
 #include <set>
@@ -50,8 +50,8 @@ public:
 BOOST_AUTO_TEST_CASE(Pass_Data_To_Integrand)
 {
     InterpolationTrussLinear interpolation;
-    NodeCoordinates n0(0);
-    NodeCoordinates n1(42);
+    CoordinateNode n0(0);
+    CoordinateNode n1(42);
     CoordinateElementFem coordinateElement({n0, n1}, interpolation);
     ElementCollectionFem element(coordinateElement);
 

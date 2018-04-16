@@ -11,7 +11,7 @@ InterpolationSimple& MeshFem::CreateInterpolation(const InterpolationSimple& int
     return *mInterpolations.rbegin()->get();
 }
 
-NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol /* = 1.e-10 */)
+DofNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol /* = 1.e-10 */)
 {
     for (auto& element : this->Elements)
     {
@@ -34,7 +34,7 @@ NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, d
                           "There is no node for dof type " + dofType.GetName() + " at " + coordsString.str());
 }
 
-NodeCoordinates& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
+CoordinateNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
 {
     for (auto& element : this->Elements)
     {
@@ -51,10 +51,9 @@ NodeCoordinates& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /*
     throw NuTo::Exception(__PRETTY_FUNCTION__, "There is no coordinate node at " + coordsString.str());
 }
 
-Group<NodeCoordinates> MeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/,
-                                            double tol /* = 1.e-10 */)
+Group<CoordinateNode> MeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/, double tol /* = 1.e-10 */)
 {
-    Group<NodeCoordinates> group;
+    Group<CoordinateNode> group;
     const int directionComponent = ToComponentIndex(direction);
     for (auto& element : this->Elements)
     {
@@ -69,10 +68,10 @@ Group<NodeCoordinates> MeshFem::NodesAtAxis(eDirection direction, double axisOff
     return group;
 }
 
-Group<NodeSimple> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, double axisOffset /* = 0.*/,
-                                       double tol /* = 1.e-10 */)
+Group<DofNode> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, double axisOffset /* = 0.*/,
+                                    double tol /* = 1.e-10 */)
 {
-    Group<NodeSimple> group;
+    Group<DofNode> group;
     const int directionComponent = ToComponentIndex(direction);
     for (auto& element : this->Elements)
     {
@@ -93,18 +92,18 @@ Group<NodeSimple> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, do
     return group;
 }
 
-Group<NodeCoordinates> MeshFem::NodesTotal()
+Group<CoordinateNode> MeshFem::NodesTotal()
 {
-    Group<NodeCoordinates> group;
+    Group<CoordinateNode> group;
     for (auto& element : this->Elements)
         for (int iNode = 0; iNode < element.CoordinateElement().Interpolation().GetNumNodes(); ++iNode)
             group.Add(element.CoordinateElement().GetNode(iNode));
     return group;
 }
 
-Group<NodeSimple> MeshFem::NodesTotal(DofType d)
+Group<DofNode> MeshFem::NodesTotal(DofType d)
 {
-    Group<NodeSimple> group;
+    Group<DofNode> group;
     for (auto& element : this->Elements)
     {
         if (!element.Has(d))

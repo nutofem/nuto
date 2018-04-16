@@ -17,7 +17,7 @@
 #include "nuto/mechanics/mesh/MeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 
 #include <cassert>
 #include <functional>
@@ -280,9 +280,10 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
     // Build external Force %%%%%%%%%%%%%%%%%%%%%
     constexpr double rhsForce = 2000.;
+
     DofVector<double> extF;
     extF[displ].setZero(dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]);
-    NodeSimple& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
+    DofNode& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
     extF[displ][nodeRight.GetDofNumber(0)] = rhsForce;
 
     // Post processing stuff %%%%%%%%%%%%%%%%%%%%
@@ -325,7 +326,12 @@ BOOST_AUTO_TEST_CASE(History_Data)
             solution[displ] += deltaDisplacements;
 
             // Merge dof values %%%%%%%%%%%%%%%%%
+<<<<<<< HEAD
             for (NodeSimple& node : mesh.NodesTotal(displ))
+=======
+            int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
+            for (DofNode& node : mesh.NodesTotal(displ))
+>>>>>>> Rename Nodes to DofNode and CoordinateNode
             {
                 int dofNumber = node.GetDofNumber(0);
                 node.SetValue(0, solution[displ][dofNumber]);

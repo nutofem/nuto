@@ -10,12 +10,12 @@ namespace NuTo
 {
 //! @brief Store node values and its dof
 //! @todo fix sized nodes?
-class NodeCoordinates
+class CoordinateNode
 {
 public:
     //! @brief initizalizes the nodes coordintes with `values` and initializes the coordinate numbers to NOT_SET
     //! @param values inititial coordinates
-    NodeCoordinates(Eigen::VectorXd values)
+    CoordinateNode(Eigen::VectorXd values)
         : mCoordinates({values})
         , mCoordinateNumbers(Eigen::VectorXi::Constant(values.rows(), NOT_SET))
     {
@@ -23,7 +23,7 @@ public:
 
     //! @brief initializes a 1D coordinate node with `value` and a coordinate number NOT_SET
     //! @param value initial coordinate value
-    NodeCoordinates(double value)
+    CoordinateNode(double value)
         : mCoordinates(Eigen::VectorXd::Constant(1, value))
         , mCoordinateNumbers(Eigen::VectorXi::Constant(1, NOT_SET))
     {

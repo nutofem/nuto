@@ -16,7 +16,7 @@ public:
     //! @param dependentNode node reference
     //! @param dependentComponent component in the dof vector of the node
     //! @param rhs value for the constant rhs
-    Equation(const NodeSimple& dependentNode, int dependentComponent, RhsFunction rhs)
+    Equation(const DofNode& dependentNode, int dependentComponent, RhsFunction rhs)
         : mRhs(rhs)
         , mDependentTerm(dependentNode, dependentComponent, 1)
     {
