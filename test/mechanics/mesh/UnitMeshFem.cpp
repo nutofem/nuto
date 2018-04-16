@@ -4,7 +4,7 @@
 
 void CheckJacobians(NuTo::MeshFem& mesh)
 {
-    int dim = mesh.Elements[0].CoordinateElement().GetNode(0).GetValues().rows();
+    int dim = mesh.Elements[0].CoordinateElement().GetNode(0).GetCoordinates().rows();
     Eigen::VectorXd ip = Eigen::VectorXd::Zero(dim);
     for (auto& element : mesh.Elements)
     {
@@ -62,8 +62,8 @@ BOOST_AUTO_TEST_CASE(MeshTrusses)
 
     for (const auto& element : mesh.Elements)
     {
-        BOOST_CHECK_LT(element.CoordinateElement().GetNode(0).GetValues()[0],
-                       element.CoordinateElement().GetNode(1).GetValues()[0]);
+        BOOST_CHECK_LT(element.CoordinateElement().GetNode(0).GetCoordinates()[0],
+                       element.CoordinateElement().GetNode(1).GetCoordinates()[0]);
     }
 }
 
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(MeshValidAfterTransform)
     expected << 0, 0, 4, 0, 4, 42, 0, 42;
     BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
 
-    transformedMesh.CoordinateNodes[0].SetValue(0, 6174);
+    transformedMesh.CoordinateNodes[0].SetCoordinate(0, 6174);
     expected << 6174, 0, 4, 0, 4, 42, 0, 42;
     BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
 }

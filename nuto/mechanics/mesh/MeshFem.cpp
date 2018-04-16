@@ -41,7 +41,7 @@ CoordinateNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* 
         auto& coordinateElement = element.CoordinateElement();
         for (int iNode = 0; iNode < coordinateElement.Interpolation().GetNumNodes(); ++iNode)
         {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetValues();
+            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetCoordinates();
             if ((globalNodeCoords - coords).isMuchSmallerThan(tol, 1))
                 return coordinateElement.GetNode(iNode);
         }
@@ -60,7 +60,7 @@ Group<CoordinateNode> MeshFem::NodesAtAxis(eDirection direction, double axisOffs
         auto& coordinateElement = element.CoordinateElement();
         for (int iNode = 0; iNode < coordinateElement.GetNumNodes(); ++iNode)
         {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetValues();
+            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetCoordinates();
             if (std::abs(globalNodeCoords[directionComponent] - axisOffset) < tol)
                 group.Add(coordinateElement.GetNode(iNode));
         }

@@ -66,20 +66,7 @@ public:
         return GetNode(0).GetNumValues();
     }
 
-    Eigen::VectorXi GetDofNumbering() const override
-    {
-        Eigen::VectorXi dofNumbering(GetNumNodes() * GetDofDimension());
-        int i = 0;
-        for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
-        {
-            const auto& node = GetNode(iNode);
-            for (int iDof = 0; iDof < GetDofDimension(); ++iDof)
-            {
-                dofNumbering[i++] = node.GetDofNumber(iDof);
-            }
-        }
-        return dofNumbering;
-    }
+    Eigen::VectorXi GetDofNumbering() const override;
 
     int GetNumNodes() const override
     {
@@ -114,4 +101,50 @@ private:
     std::reference_wrapper<const InterpolationSimple> mInterpolation;
     const Shape& mShape;
 };
+
+template <>
+inline NodeValues ElementFem<DofNode>::ExtractNodeValues(int instance) const
+{
+    const int dim = GetDofDimension();
+    Eigen::VectorXd nodeValues(GetNumNodes() * dim);
+    for (int i = 0; i < GetNumNodes(); ++i)
+        nodeValues.segment(dim * i, dim) = GetNode(i).GetValues(instance);
+    return nodeValues;
+}
+
+template <>
+inline NodeValues ElementFem<CoordinateNode>::ExtractNodeValues(int instance) const
+{
+    // Solve this later, by using type traits
+    assert(instance == 0 && "Coordinate nodes can have only 1 instance");
+
+
+    const int dim = GetDofDimension();
+    Eigen::VectorXd nodeValues(GetNumNodes() * dim);
+    for (int i = 0; i < GetNumNodes(); ++i)
+        nodeValues.segment(dim * i, dim) = GetNode(i).GetCoordinates();
+    return nodeValues;
+}
+
+template <>
+inline Eigen::VectorXi ElementFem<CoordinateNode>::GetDofNumbering() const
+{
+    assert(false && "Coordinate nodes have no dof numbering");
+}
+
+template <>
+inline Eigen::VectorXi ElementFem<DofNode>::GetDofNumbering() const
+{
+    Eigen::VectorXi dofNumbering(GetNumNodes() * GetDofDimension());
+    int i = 0;
+    for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
+    {
+        const auto& node = GetNode(iNode);
+        for (int iDof = 0; iDof < GetDofDimension(); ++iDof)
+        {
+            dofNumbering[i++] = node.GetDofNumber(iDof);
+        }
+    }
+    return dofNumbering;
+}
 } /* NuTo */

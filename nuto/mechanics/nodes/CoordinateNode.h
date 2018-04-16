@@ -4,7 +4,6 @@
 #include <vector>
 #include <cassert>
 
-#define NOT_SET -1
 
 namespace NuTo
 {
@@ -13,51 +12,36 @@ namespace NuTo
 class CoordinateNode
 {
 public:
-    //! @brief initizalizes the nodes coordintes with `values` and initializes the coordinate numbers to NOT_SET
-    //! @param values inititial coordinates
-    CoordinateNode(Eigen::VectorXd values)
-        : mCoordinates({values})
-        , mCoordinateNumbers(Eigen::VectorXi::Constant(values.rows(), NOT_SET))
+    //! @brief initizalizes the nodes coordintes with the passed values
+    //! @param coordinates : inititial coordinates
+    CoordinateNode(Eigen::VectorXd coordinates)
+        : mCoordinates({coordinates})
     {
     }
 
-    //! @brief initializes a 1D coordinate node with `value` and a coordinate number NOT_SET
-    //! @param value initial coordinate value
-    CoordinateNode(double value)
-        : mCoordinates(Eigen::VectorXd::Constant(1, value))
-        , mCoordinateNumbers(Eigen::VectorXi::Constant(1, NOT_SET))
+    //! @brief initializes a 1D coordinate node with the passed value
+    //! @param coordinate : initial coordinate value
+    CoordinateNode(double coordinate)
+        : mCoordinates(Eigen::VectorXd::Constant(1, coordinate))
     {
     }
 
 
-    const Eigen::VectorXd& GetValues(int instance = 0) const
+    const Eigen::VectorXd& GetCoordinates() const
     {
-        (void)instance; // silence unused parameter warning
         return mCoordinates;
     }
 
-    int GetDofNumber(int component) const
+    void SetCoordinates(Eigen::VectorXd coordinates)
     {
-        assert(component < mCoordinateNumbers.rows());
-        return mCoordinateNumbers[component];
-    }
-
-    void SetValues(Eigen::VectorXd coordinates)
-    {
-        assert(coordinates.size() == mCoordinates.size());
+        assert(coordinates.rows() == mCoordinates.rows());
         mCoordinates = coordinates;
     }
 
-    void SetValue(int component, double value)
+    void SetCoordinate(int component, double value)
     {
-        assert(component < mCoordinateNumbers.rows());
+        assert(component < mCoordinates.rows());
         mCoordinates[component] = value;
-    }
-
-    void SetValueNumber(int component, int coordinateNumber)
-    {
-        assert(component < mCoordinateNumbers.rows());
-        mCoordinateNumbers[component] = coordinateNumber;
     }
 
     int GetNumValues() const
@@ -67,8 +51,6 @@ public:
 
 private:
     Eigen::VectorXd mCoordinates;
-    Eigen::VectorXi mCoordinateNumbers;
 };
 } /* NuTo */
 
-#undef NOT_SET
