@@ -25,10 +25,10 @@ public:
     //! node group memoizer
     //! @param dof dof type
     //! @return a memoized node group
-    Group<NodeSimple>& Nodes(DofType dof);
+    Group<DofNode>& Nodes(DofType dof);
 
 private:
     MeshFem& mMesh;
-    DofContainer<Group<NodeSimple>> mNodes;
+    DofContainer<Group<DofNode>> mNodes;
 };
 } /* NuTo */

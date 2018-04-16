@@ -1,6 +1,6 @@
 #pragma once
 #include "nuto/base/Exception.h"
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 
 namespace NuTo
 {
@@ -15,20 +15,20 @@ public:
     //! @param node node reference
     //! @param component component in the dof vector of the node, has to be smaller than node.GetNumValues()
     //! @param coefficient coefficient of the equation term
-    Term(const NodeSimple& node, int component, double coefficient)
+    Term(const DofNode& node, int component, double coefficient)
         : mNode(node)
         , mComponent(component)
         , mCoefficient(coefficient)
     {
         if (component >= node.GetNumValues())
-            throw Exception(__PRETTY_FUNCTION__, "Term construction failed. Node has " +
-                                                         std::to_string(node.GetNumValues()) +
-                                                         " components and you tried to constrain component " +
-                                                         std::to_string(component) + ".");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Term construction failed. Node has " + std::to_string(node.GetNumValues()) +
+                                    " components and you tried to constrain component " + std::to_string(component) +
+                                    ".");
     }
 
     //! @brief getter for mNode
-    const NodeSimple& GetNode() const
+    const DofNode& GetNode() const
     {
         return mNode;
     }
@@ -54,7 +54,7 @@ private:
     //! @brief node reference
     //! @remark `std::reference_wrapper` is used instead of a reference to
     //! make `Term` default CopyAssignable
-    std::reference_wrapper<const NodeSimple> mNode;
+    std::reference_wrapper<const DofNode> mNode;
 
     //! @brief component component in the dof vector of the node
     int mComponent;

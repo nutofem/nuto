@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "nuto/mechanics/nodes/NodeCoordinates.h"
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/CoordinateNode.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/mechanics/elements/ElementInterface.h"
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "nuto/mechanics/cell/Matrix.h"
@@ -12,8 +12,8 @@ namespace NuTo
 template <typename TNode>
 class ElementFem;
 
-typedef ElementFem<NodeCoordinates> CoordinateElementFem;
-typedef ElementFem<NodeSimple> DofElementFem;
+typedef ElementFem<CoordinateNode> CoordinateElementFem;
+typedef ElementFem<DofNode> DofElementFem;
 
 
 template <typename TNode>

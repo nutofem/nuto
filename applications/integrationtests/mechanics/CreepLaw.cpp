@@ -15,7 +15,7 @@
 #include "nuto/mechanics/mesh/MeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 
 #include <cassert>
 #include <functional>
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
     GlobalDofVector extF;
     extF.J[displ].setZero(dofInfo.numIndependentDofs[displ]);
     extF.K[displ].setZero(dofInfo.numDependentDofs[displ]);
-    NodeSimple& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
+    DofNode& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
     extF.J[displ][nodeRight.GetDofNumber(0)] = rhsForce;
 
     // Post processing stuff %%%%%%%%%%%%%%%%%%%%
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
             // Merge dof values %%%%%%%%%%%%%%%%%
             int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
-            for (NodeSimple& node : mesh.NodesTotal(displ))
+            for (DofNode& node : mesh.NodesTotal(displ))
             {
                 int dofNumber = node.GetDofNumber(0);
                 if (dofNumber < numUnconstrainedDofs)

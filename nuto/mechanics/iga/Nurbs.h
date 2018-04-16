@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/base/Exception.h"
 #include <array>
 #include <eigen3/Eigen/Dense>
@@ -31,7 +31,7 @@ public:
     //! @param knots knot vector
     //! @param controlPoints control points
     Nurbs(const std::array<std::vector<double>, TDimParameter>& knots,
-          const std::vector<std::vector<NodeSimple*>>& controlPoints, const std::vector<std::vector<double>>& weights,
+          const std::vector<std::vector<DofNode*>>& controlPoints, const std::vector<std::vector<double>>& weights,
           const std::array<int, TDimParameter>& degree)
         : mKnots(knots)
         , mControlPoints(controlPoints)
@@ -327,7 +327,7 @@ private:
     std::array<std::vector<double>, TDimParameter> mKnots;
 
     //! @brief Control points of the BSpline curve (# rows = num control points)
-    std::vector<std::vector<NodeSimple*>> mControlPoints;
+    std::vector<std::vector<DofNode*>> mControlPoints;
 
     //! @brief Weights to NURBS
     std::vector<std::vector<double>> mWeights;

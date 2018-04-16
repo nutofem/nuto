@@ -7,7 +7,7 @@ NodalValueMerger::NodalValueMerger(MeshFem* rMesh)
 {
 }
 
-Group<NodeSimple>& NodalValueMerger::Nodes(DofType dof)
+Group<DofNode>& NodalValueMerger::Nodes(DofType dof)
 {
     if (!mNodes.Has(dof))
         mNodes[dof] = mMesh.NodesTotal(dof);

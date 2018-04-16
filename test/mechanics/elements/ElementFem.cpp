@@ -12,9 +12,9 @@ BOOST_AUTO_TEST_CASE(ElementCopyMove)
 }
 
 
-NuTo::NodeSimple n0 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
-NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({5, 1}));
-NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({1, 7}));
+NuTo::DofNode n0 = NuTo::DofNode(Eigen::Vector2d({1, 1}));
+NuTo::DofNode n1 = NuTo::DofNode(Eigen::Vector2d({5, 1}));
+NuTo::DofNode n2 = NuTo::DofNode(Eigen::Vector2d({1, 7}));
 NuTo::InterpolationTriangleLinear interpolation;
 
 NuTo::DofElementFem TestElement()
@@ -38,9 +38,9 @@ BOOST_AUTO_TEST_CASE(Interpolation)
 
 BOOST_AUTO_TEST_CASE(ExtractNodeValueInstances)
 {
-    NuTo::NodeSimple node0(1, 2);
-    NuTo::NodeSimple node1(1, 2);
-    NuTo::NodeSimple node2(1, 2);
+    NuTo::DofNode node0(1, 2);
+    NuTo::DofNode node1(1, 2);
+    NuTo::DofNode node2(1, 2);
 
     node0.SetValue(0, 42., 1);
     node1.SetValue(0, 43., 1);

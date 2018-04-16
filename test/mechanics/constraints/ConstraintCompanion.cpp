@@ -67,9 +67,9 @@ public:
     }
 
     std::function<double(double)> sinFunction = [](double time) { return std::sin(time); };
-    Group<NodeSimple> nodes;
-    NodeSimple node1 = NodeSimple(Eigen::VectorXd::Ones(3));
-    NodeSimple node2 = NodeSimple(Eigen::VectorXd::Ones(3));
+    Group<DofNode> nodes;
+    DofNode node1 = DofNode(Eigen::VectorXd::Ones(3));
+    DofNode node2 = DofNode(Eigen::VectorXd::Ones(3));
     double reciprocalNorm = 1.0 / std::sqrt(3.0);
 };
 
@@ -188,8 +188,8 @@ BOOST_FIXTURE_TEST_CASE(Value_test, Helpers)
     BOOST_CHECK_THROW(Constraint::Value(node1, 42.), Exception);
     BOOST_CHECK_THROW(Constraint::Value(node1, sinFunction), Exception);
 
-    node1 = NodeSimple(Eigen::VectorXd::Ones(1));
-    node2 = NodeSimple(Eigen::VectorXd::Ones(1));
+    node1 = DofNode(Eigen::VectorXd::Ones(1));
+    node2 = DofNode(Eigen::VectorXd::Ones(1));
 
 
     // with constant RHS

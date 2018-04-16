@@ -4,7 +4,7 @@ using namespace NuTo;
 
 //! @brief build dof numbering, starting at 0, for all `nodes` regardless of constraints
 //! @return total number of dofs in `nodes`
-int InitialUnconstrainedNumbering(const Group<NodeSimple>& nodes)
+int InitialUnconstrainedNumbering(const Group<DofNode>& nodes)
 {
     int dofNumber = 0;
     for (auto& node : nodes)
@@ -29,15 +29,16 @@ std::vector<int> GetStatusOfDofNumber(const Constraint::Constraints& constraints
     return dofStatus;
 }
 
-DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof, const Constraint::Constraints& constraints)
+DofInfo DofNumbering::Build(const Group<DofNode>& dofNodes, DofType dof, const Constraint::Constraints& constraints)
 {
     for (int iEquation = 0; iEquation < constraints.GetNumEquations(dof); ++iEquation)
         for (const auto& term : constraints.GetEquation(dof, iEquation).GetTerms())
             if (not dofNodes.Contains(term.GetNode()))
-                throw Exception(__PRETTY_FUNCTION__, "The constraints for dof " + dof.GetName() +
-                                                             " contain nodes that are not included in _dofNodes_. You "
-                                                             "may have selected the wrong nodes (coordinate nodes?) "
-                                                             "from the mesh.");
+                throw Exception(__PRETTY_FUNCTION__,
+                                "The constraints for dof " + dof.GetName() +
+                                        " contain nodes that are not included in _dofNodes_. You "
+                                        "may have selected the wrong nodes (coordinate nodes?) "
+                                        "from the mesh.");
 
     int numDependentDofs = constraints.GetNumEquations(dof);
     const int numDofs = InitialUnconstrainedNumbering(dofNodes);
@@ -73,7 +74,7 @@ DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof, cons
     return dofInfo;
 }
 
-std::vector<int> DofNumbering::Get(const Group<NodeSimple>& dofNodes, int component)
+std::vector<int> DofNumbering::Get(const Group<DofNode>& dofNodes, int component)
 {
     std::vector<int> dofNumbers;
     dofNumbers.reserve(dofNodes.Size());

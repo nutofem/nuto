@@ -20,17 +20,17 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     const double E = 6174;
 
     NuTo::InterpolationQuadLinear interpolationCoordinates;
-    NuTo::NodeCoordinates nCoord0(Eigen::Vector2d({0, 0}));
-    NuTo::NodeCoordinates nCoord1(Eigen::Vector2d({lx, 0}));
-    NuTo::NodeCoordinates nCoord2(Eigen::Vector2d({lx, ly}));
-    NuTo::NodeCoordinates nCoord3(Eigen::Vector2d({0, ly}));
+    NuTo::CoordinateNode nCoord0(Eigen::Vector2d({0, 0}));
+    NuTo::CoordinateNode nCoord1(Eigen::Vector2d({lx, 0}));
+    NuTo::CoordinateNode nCoord2(Eigen::Vector2d({lx, ly}));
+    NuTo::CoordinateNode nCoord3(Eigen::Vector2d({0, ly}));
     NuTo::CoordinateElementFem coordinateElement({nCoord0, nCoord1, nCoord2, nCoord3}, interpolationCoordinates);
 
     NuTo::InterpolationQuadLinear interpolationDisplacements;
-    NuTo::NodeSimple nDispl0(Eigen::Vector2d({0, 0}));
-    NuTo::NodeSimple nDispl1(Eigen::Vector2d({0, 0}));
-    NuTo::NodeSimple nDispl2(Eigen::Vector2d({0, 0}));
-    NuTo::NodeSimple nDispl3(Eigen::Vector2d({0, 0}));
+    NuTo::DofNode nDispl0(Eigen::Vector2d({0, 0}));
+    NuTo::DofNode nDispl1(Eigen::Vector2d({0, 0}));
+    NuTo::DofNode nDispl2(Eigen::Vector2d({0, 0}));
+    NuTo::DofNode nDispl3(Eigen::Vector2d({0, 0}));
     NuTo::DofElementFem displacementElement({nDispl0, nDispl1, nDispl2, nDispl3}, interpolationDisplacements);
 
     NuTo::ElementCollectionFem elements(coordinateElement);

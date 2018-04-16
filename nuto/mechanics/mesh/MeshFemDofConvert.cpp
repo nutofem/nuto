@@ -97,12 +97,12 @@ private:
 
 struct NodePoint : Eigen::Vector3d // to inherit operator[]
 {
-    NodePoint(Eigen::VectorXd v, NuTo::NodeSimple& node)
+    NodePoint(Eigen::VectorXd v, NuTo::DofNode& node)
         : Eigen::Vector3d(To3D(v))
         , mNode(node)
     {
     }
-    NuTo::NodeSimple& mNode;
+    NuTo::DofNode& mNode;
 };
 
 SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int numBoxesPerDirection, double eps)
@@ -145,7 +145,7 @@ std::vector<NodePoint> NodePointsTotal(NuTo::MeshFem* rMesh, NuTo::DofType dofTy
 
     for (auto& elementCollection : rMesh->Elements)
     {
-        const NuTo::ElementFem<NuTo::NodeCoordinates>& coordinateElement = elementCollection.CoordinateElement();
+        const NuTo::ElementFem<NuTo::CoordinateNode>& coordinateElement = elementCollection.CoordinateElement();
 
         if (!elementCollection.Has(dofType))
             continue;
@@ -154,7 +154,7 @@ std::vector<NodePoint> NodePointsTotal(NuTo::MeshFem* rMesh, NuTo::DofType dofTy
         {
             Eigen::Vector3d coord = To3D(Interpolate(
                     coordinateElement, elementCollection.DofElement(dofType).Interpolation().GetLocalCoords(iNode)));
-            NuTo::NodeSimple& node = elementCollection.DofElement(dofType).GetNode(iNode);
+            NuTo::DofNode& node = elementCollection.DofElement(dofType).GetNode(iNode);
             nodePoints.push_back(NodePoint(coord, node));
         }
     }
@@ -176,7 +176,7 @@ void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<Elem
 
     for (auto& elementCollection : elements)
     {
-        std::vector<NodeSimple*> nodesForTheNewlyCreatedElement;
+        std::vector<DofNode*> nodesForTheNewlyCreatedElement;
 
         const auto& coordinateElement = elementCollection.CoordinateElement();
         const auto& interpolation = optionalInterpolation.value_or(coordinateElement.Interpolation());
@@ -196,7 +196,7 @@ void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<Elem
                 nodesForTheNewlyCreatedElement.push_back(&node);
             }
         }
-        elementCollection.AddDofElement(dofType, ElementFem<NodeSimple>(nodesForTheNewlyCreatedElement, interpolation));
+        elementCollection.AddDofElement(dofType, ElementFem<DofNode>(nodesForTheNewlyCreatedElement, interpolation));
     }
 }
 

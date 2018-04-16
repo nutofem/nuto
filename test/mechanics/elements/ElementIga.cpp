@@ -17,17 +17,17 @@ BOOST_AUTO_TEST_CASE(ElementCopyMove)
 BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
 {
     // IGA geometry of a circle (Nurbs curve should exactly fit the circle)
-    std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
+    std::vector<std::vector<NuTo::DofNode*>> controlPoints;
 
-    NuTo::NodeSimple n1 = NuTo::NodeSimple(Eigen::Vector2d({0, -1}));
-    NuTo::NodeSimple n2 = NuTo::NodeSimple(Eigen::Vector2d({-1, -1}));
-    NuTo::NodeSimple n3 = NuTo::NodeSimple(Eigen::Vector2d({-1, 0}));
-    NuTo::NodeSimple n4 = NuTo::NodeSimple(Eigen::Vector2d({-1, 1}));
-    NuTo::NodeSimple n5 = NuTo::NodeSimple(Eigen::Vector2d({0, 1}));
-    NuTo::NodeSimple n6 = NuTo::NodeSimple(Eigen::Vector2d({1, 1}));
-    NuTo::NodeSimple n7 = NuTo::NodeSimple(Eigen::Vector2d({1, 0}));
-    NuTo::NodeSimple n8 = NuTo::NodeSimple(Eigen::Vector2d({1, -1}));
-    NuTo::NodeSimple n9 = NuTo::NodeSimple(Eigen::Vector2d({0, -1}));
+    NuTo::DofNode n1 = NuTo::DofNode(Eigen::Vector2d({0, -1}));
+    NuTo::DofNode n2 = NuTo::DofNode(Eigen::Vector2d({-1, -1}));
+    NuTo::DofNode n3 = NuTo::DofNode(Eigen::Vector2d({-1, 0}));
+    NuTo::DofNode n4 = NuTo::DofNode(Eigen::Vector2d({-1, 1}));
+    NuTo::DofNode n5 = NuTo::DofNode(Eigen::Vector2d({0, 1}));
+    NuTo::DofNode n6 = NuTo::DofNode(Eigen::Vector2d({1, 1}));
+    NuTo::DofNode n7 = NuTo::DofNode(Eigen::Vector2d({1, 0}));
+    NuTo::DofNode n8 = NuTo::DofNode(Eigen::Vector2d({1, -1}));
+    NuTo::DofNode n9 = NuTo::DofNode(Eigen::Vector2d({0, -1}));
     controlPoints.push_back({&n1, &n2, &n3, &n4, &n5, &n6, &n7, &n8, &n9});
 
     std::vector<double> knots1D = {0, 0, 0, 1 / 4., 1 / 4., 1 / 2., 1 / 2., 3 / 4., 3 / 4., 1, 1, 1};
@@ -61,9 +61,9 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
 
 BOOST_AUTO_TEST_CASE(ExtractNodeValuesInstance)
 {
-    std::vector<std::vector<NuTo::NodeSimple*>> controlPoints;
-    NuTo::NodeSimple n1 = NuTo::NodeSimple(2, 2);
-    NuTo::NodeSimple n2 = NuTo::NodeSimple(2, 2);
+    std::vector<std::vector<NuTo::DofNode*>> controlPoints;
+    NuTo::DofNode n1 = NuTo::DofNode(2, 2);
+    NuTo::DofNode n2 = NuTo::DofNode(2, 2);
 
     n1.SetValues(Eigen::Vector2d(11, 12), 1);
     n2.SetValues(Eigen::Vector2d(13, 14), 1);

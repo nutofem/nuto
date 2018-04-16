@@ -1,6 +1,6 @@
 #include "nuto/base/Exception.h"
 #include "nuto/mechanics/constraints/ConstraintCompanion.h"
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/mechanics/constraints/Equation.h"
 
 
@@ -18,13 +18,13 @@ RhsFunction RhsRamp(double timeEnd, double valueEnd)
 }
 
 
-std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> directions, double value)
+std::vector<Equation> Component(const DofNode& node, std::vector<eDirection> directions, double value)
 {
     return Component(node, directions, RhsConstant(value));
 }
 
 
-std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> directions, RhsFunction rhs)
+std::vector<Equation> Component(const DofNode& node, std::vector<eDirection> directions, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
     for (auto direction : directions)
@@ -36,13 +36,13 @@ std::vector<Equation> Component(const NodeSimple& node, std::vector<eDirection> 
 }
 
 
-std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDirection> directions, double value)
+std::vector<Equation> Component(const Group<DofNode>& nodes, std::vector<eDirection> directions, double value)
 {
     return Component(nodes, directions, RhsConstant(value));
 }
 
 
-std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDirection> directions, RhsFunction rhs)
+std::vector<Equation> Component(const Group<DofNode>& nodes, std::vector<eDirection> directions, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
     for (const auto& node : nodes)
@@ -54,7 +54,7 @@ std::vector<Equation> Component(const Group<NodeSimple>& nodes, std::vector<eDir
 }
 
 
-Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunction rhs)
+Equation Direction(const DofNode& node, Eigen::VectorXd direction, RhsFunction rhs)
 {
 
     int maxComponentIndex = -1;
@@ -79,12 +79,12 @@ Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunctio
     return e;
 }
 
-Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, double value)
+Equation Direction(const DofNode& node, Eigen::VectorXd direction, double value)
 {
     return Direction(node, direction, RhsConstant(value));
 }
 
-std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
+std::vector<Equation> Direction(const Group<DofNode>& nodes, Eigen::VectorXd direction, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
     for (auto& node : nodes)
@@ -92,24 +92,24 @@ std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd 
     return eqs;
 }
 
-std::vector<Equation> Direction(const Group<NodeSimple>& nodes, Eigen::VectorXd direction, double value)
+std::vector<Equation> Direction(const Group<DofNode>& nodes, Eigen::VectorXd direction, double value)
 {
     return Direction(nodes, direction, RhsConstant(value));
 }
 
-Equation Value(const NodeSimple& node, double value)
+Equation Value(const DofNode& node, double value)
 {
     return Value(node, RhsConstant(value));
 }
 
-Equation Value(const NodeSimple& node, RhsFunction rhs)
+Equation Value(const DofNode& node, RhsFunction rhs)
 {
     if (node.GetNumValues() != 1)
         throw Exception(__PRETTY_FUNCTION__, "This function is meant to be used with single value nodes only");
     return Component(node, {eDirection::X}, rhs)[0];
 }
 
-std::vector<Equation> Value(const Group<NodeSimple>& nodes, double value)
+std::vector<Equation> Value(const Group<DofNode>& nodes, double value)
 {
     std::vector<Equation> eqs;
     for (auto& node : nodes)
@@ -117,7 +117,7 @@ std::vector<Equation> Value(const Group<NodeSimple>& nodes, double value)
     return eqs;
 }
 
-std::vector<Equation> Value(const Group<NodeSimple>& nodes, RhsFunction rhs)
+std::vector<Equation> Value(const Group<DofNode>& nodes, RhsFunction rhs)
 {
     std::vector<Equation> eqs;
     for (auto& node : nodes)
