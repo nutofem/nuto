@@ -31,6 +31,13 @@ BOOST_FIXTURE_TEST_CASE(DofVectorAddition, TestVectors)
     BoostUnitTest::CheckEigenMatrix(v1[dof1], Eigen::Vector2d(80, 90));
 }
 
+BOOST_FIXTURE_TEST_CASE(DofVectorUnarySubtraction, TestVectors)
+{
+    v1 -= v0;
+    BoostUnitTest::CheckEigenMatrix(v1[dof0], Eigen::Vector3d(9, 18, 27));
+    BoostUnitTest::CheckEigenMatrix(v1[dof1], Eigen::Vector2d(72, 81));
+}
+
 BOOST_FIXTURE_TEST_CASE(DofVectorScalarMultiplication, TestVectors)
 {
     v0 *= 2.;
@@ -40,6 +47,33 @@ BOOST_FIXTURE_TEST_CASE(DofVectorScalarMultiplication, TestVectors)
     DofVector<double> v = v0 * 0.5;
     BoostUnitTest::CheckEigenMatrix(v[dof0], Eigen::Vector3d(1, 2, 3));
     BoostUnitTest::CheckEigenMatrix(v[dof1], Eigen::Vector2d(8, 9));
+}
+
+BOOST_FIXTURE_TEST_CASE(DofVectorSubtraction, TestVectors)
+{
+    DofVector<double> v = v1 - v0;
+    BoostUnitTest::CheckEigenMatrix(v[dof0], Eigen::Vector3d(9, 18, 27));
+    BoostUnitTest::CheckEigenMatrix(v[dof1], Eigen::Vector2d(72, 81));
+}
+
+BOOST_FIXTURE_TEST_CASE(DofVectorIndexOperator, TestVectors)
+{
+    BOOST_CHECK_EQUAL(v0[dof0][1], 2);
+}
+
+BOOST_FIXTURE_TEST_CASE(DofVectorSetZero, TestVectors)
+{
+    v1.SetZero();
+    BoostUnitTest::CheckEigenMatrix(v1[dof0], Eigen::Vector3d(0, 0, 0));
+    BoostUnitTest::CheckEigenMatrix(v1[dof1], Eigen::Vector2d(0, 0));
+}
+
+BOOST_FIXTURE_TEST_CASE(DofVectorAssignFromVector, TestVectors)
+{
+    std::vector<int> vec({0, 2});
+    std::vector<int> vecCorrect({1, 3});
+    std::vector<double> vecResult = v0(dof0, vec);
+    BOOST_CHECK_EQUAL_COLLECTIONS(vecCorrect.begin(), vecCorrect.end(), vecResult.begin(), vecResult.end());
 }
 
 BOOST_FIXTURE_TEST_CASE(DofVectorUninitializedAddition, TestVectors)

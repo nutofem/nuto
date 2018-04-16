@@ -1,14 +1,18 @@
 #include "nuto/mechanics/tools/QuasistaticSolver.h"
 
 #include <ostream>
+#include <iomanip>
 #include <boost/range/numeric.hpp>
 
-#include "nuto/math/EigenSparseSolve.h"
+#include "nuto/base/Timer.h"
 #include "nuto/math/NewtonRaphson.h"
+#include "nuto/mechanics/dofs/DofMatrix.h"
+#include "nuto/mechanics/dofs/DofVector.h"
 #include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
 #include "nuto/mechanics/dofs/DofMatrixSparseConvertEigen.h"
 
 using namespace NuTo;
+
 
 QuasistaticSolver::QuasistaticSolver(TimeDependentProblem& s, DofType dof)
     : mProblem(s)
@@ -26,16 +30,16 @@ void QuasistaticSolver::SetConstraints(Constraint::Constraints constraints)
 {
     mConstraints = constraints;
     if (mX[mDofs.front()].rows() == 0)
-        mX = mProblem.RenumberDofs(constraints, mDofs, GlobalDofVector()).J;
+        mX = mProblem.RenumberDofs(constraints, mDofs, DofVector<double>());
     else
-        mX = mProblem.RenumberDofs(constraints, mDofs, ToGlobalDofVector(ToEigen(mX, mDofs))).J;
+        mX = mProblem.RenumberDofs(constraints, mDofs, mX);
 
     for (auto dofI : mDofs)
         for (auto dofJ : mDofs)
             if (dofI.Id() == dofJ.Id())
-                mCmat(dofI, dofI) = constraints.BuildConstraintMatrix(dofI, mX[dofI].rows());
+                mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix(dofI, mX[dofI].rows());
             else
-                mCmat(dofI, dofJ).setZero();
+                mCmatUnit(dofI, dofJ).setZero();
 }
 
 void QuasistaticSolver::SetGlobalTime(double globalTime)
@@ -44,134 +48,104 @@ void QuasistaticSolver::SetGlobalTime(double globalTime)
     mGlobalTime = globalTime;
 }
 
-std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd>
-QuasistaticSolver::TrialSystem(const Eigen::VectorXd& x, double globalTime, double timeStep)
+DofVector<double> QuasistaticSolver::TrialState(double newGlobalTime, const ConstrainedSystemSolver& solver)
 {
-    DofVector<double> xDof = mX; // for correct size
-    FromEigen(x, mDofs, &xDof);
+    // compute hessian for last converged time step
+    auto hessian0 = mProblem.Hessian0(mX, mDofs, mGlobalTime, mTimeStep);
+    Eigen::MatrixXd hessian0Eigen(ToEigen(hessian0, mDofs));
 
-    GlobalDofVector v;
-    for (auto dof : mDofs)
-    {
-        v.J[dof] = xDof[dof];
-        v.K[dof] = -mCmat(dof, dof) * xDof[dof] + mConstraints.GetRhs(dof, mGlobalTime);
-    }
+    // update time step
+    double newTimeStep = newGlobalTime - mGlobalTime;
 
-    auto hessian0 = mProblem.Hessian0(v, mDofs, globalTime, timeStep);
-    auto hJJ = ToEigen(hessian0.JJ, mDofs);
-    auto hJK = ToEigen(hessian0.JK, mDofs);
-    auto hKJ = ToEigen(hessian0.KJ, mDofs);
-    auto hKK = ToEigen(hessian0.KK, mDofs);
-    auto cMat = ToEigen(mCmat, mDofs);
-    Eigen::SparseMatrix<double> hessianMod = hJJ - cMat.transpose() * hKJ - hJK * cMat + cMat.transpose() * hKK * cMat;
+    // compute residual for new time step (in particular, these are changing external forces)
+    auto gradient = mProblem.Gradient(mX, mDofs, newGlobalTime, newTimeStep);
 
-    DofVector<double> deltaBrhs;
-    for (auto dof : mDofs)
-        deltaBrhs[dof] = mConstraints.GetRhs(dof, globalTime + timeStep) - mConstraints.GetRhs(dof, globalTime);
+    DofVector<double> trialU = mX - solver.SolveTrialState(hessian0, gradient, mGlobalTime, newGlobalTime);
 
-    Eigen::VectorXd residualConstrained = -(hJK - cMat.transpose() * hKK) * ToEigen(deltaBrhs, mDofs);
-
-    return std::make_pair(hessianMod, residualConstrained);
+    return trialU;
 }
 
-Eigen::VectorXd QuasistaticSolver::Residual(const Eigen::VectorXd& x)
+DofVector<double> QuasistaticSolver::Residual(const DofVector<double>& u)
 {
-    auto gradient = mProblem.Gradient(ToGlobalDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
-    return ToEigen(gradient.J, mDofs) - ToEigen(mCmat, mDofs).transpose() * ToEigen(gradient.K, mDofs);
+    return mProblem.Gradient(u, mDofs, mGlobalTime + mTimeStep, mTimeStep);
 }
 
 
-Eigen::SparseMatrix<double> QuasistaticSolver::Derivative(const Eigen::VectorXd& x)
+DofMatrixSparse<double> QuasistaticSolver::Derivative(const DofVector<double>& u)
 {
-    auto hessian0 = mProblem.Hessian0(ToGlobalDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
-    auto hJJ = ToEigen(hessian0.JJ, mDofs);
-    auto hJK = ToEigen(hessian0.JK, mDofs);
-    auto hKJ = ToEigen(hessian0.KJ, mDofs);
-    auto hKK = ToEigen(hessian0.KK, mDofs);
-    auto cMat = ToEigen(mCmat, mDofs);
-    return hJJ - cMat.transpose() * hKJ - hJK * cMat + cMat.transpose() * hKK * cMat;
+    return mProblem.Hessian0(u, mDofs, mGlobalTime + mTimeStep, mTimeStep);
 }
 
-void QuasistaticSolver::UpdateHistory(const Eigen::VectorXd& x)
+void QuasistaticSolver::UpdateHistory(const DofVector<double>& x)
 {
-    mProblem.UpdateHistory(ToGlobalDofVector(x), mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    mProblem.UpdateHistory(x, mDofs, mGlobalTime + mTimeStep, mTimeStep);
 }
 
-double QuasistaticSolver::Norm(const Eigen::VectorXd& residual) const
+double QuasistaticSolver::Norm(const DofVector<double>& residual) const
 {
-    return residual.cwiseAbs().maxCoeff();
+    // all these conversions should be removed at some point, workaround to remove JK
+    Eigen::VectorXd tmp = ToEigen(residual, mDofs);
+    auto C = ToEigen(mCmatUnit, mDofs);
+    return (C.transpose() * tmp).norm();
 }
 
-void QuasistaticSolver::Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const
+void QuasistaticSolver::Info(int i, const DofVector<double>& x, const DofVector<double>& r) const
 {
     if (mQuiet)
         return;
-    std::cout << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << x.norm() << '\n';
-}
-
-GlobalDofVector QuasistaticSolver::ToGlobalDofVector(const Eigen::VectorXd& x) const
-{
-    DofVector<double> xDof = mX; // for correct size
-    FromEigen(x, mDofs, &xDof);
-
-    GlobalDofVector v;
-    for (auto dof : mDofs)
-    {
-        v.J[dof] = xDof[dof];
-        v.K[dof] = -mCmat(dof, dof) * xDof[dof] + mConstraints.GetRhs(dof, mGlobalTime + mTimeStep);
-    }
-    return v;
+    std::cout << std::right << std::setfill(' ');
+    std::cout << "Iteration " << i << ": |R| = " << std::setw(11) << Norm(r) << " |x| = " << std::setw(11) << Norm(x)
+              << '\n';
 }
 
 void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers)
 {
-    /* Disclaimer: The whole class is messy because of the time step handling via member variables. This itself is due
-     * to the fact that NewtonRaphson does not care about time or time steps, but the Residual function, it tries to
-     * minimize, does. So we slip that around the interface. */
-    mGlobalTime -= mTimeStep;
-    auto x = ToGlobalDofVector(ToEigen(mX, mDofs));
-    mGlobalTime += mTimeStep;
-    /* So each call to ToGlobalDofVector assumes that we solve for the step t + dt. But we are in postprocess right now.
-     * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToGlobalDofVector to apply
-     * constraints for t + dt + dt. */
+    /* Each call to ToDofVector<double> assumes that we solve for the step t + dt. But we are in postprocess right
+     * now.
+     * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToDofVector<double> to
+     * apply
+     * constraints for t + dt + dt.
+     * keep in mind that the gradient is not the residual, since constraint dofs do not have a non-vanishing gradient
+*/
+    auto residual = mProblem.Gradient(mX, {dofType}, mGlobalTime - mTimeStep, mTimeStep);
 
-    auto residual = mProblem.Gradient(x, {dofType}, mGlobalTime, mTimeStep);
-
-    double dofMean = boost::accumulate(x(dofType, dofNumbers), 0.) / dofNumbers.size();
+    double dofMean = boost::accumulate(mX(dofType, dofNumbers), 0.) / dofNumbers.size();
     double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
 
     out << mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';
-    out << std::flush; // We really want to flush the output in case the program is interupted by CTRL-C or something.
+    out << std::flush; // We really want to flush the output in case the program is interupted by CTRL-C or
+    // something.
 }
-
 
 int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 {
-    EigenSparseSolver solver(solverType);
+    // allocate constraint system solver
+    ConstrainedSystemSolver solver(mConstraints, mDofs, solverType);
 
-    mTimeStep = newGlobalTime - mGlobalTime;
-    auto trialSystem = TrialSystem(ToEigen(mX, mDofs), mGlobalTime, mTimeStep);
-
-    Eigen::VectorXd trialX = ToEigen(mX, mDofs) + solver.Solve(trialSystem.first, trialSystem.second);
+    // compute trial solution (includes update of the constraint dofs, no line search)
+    DofVector<double> trialU = TrialState(newGlobalTime, solver);
 
     int numIterations = 0;
 
-    Eigen::VectorXd tmpX;
+    // update time step
+    mTimeStep = newGlobalTime - mGlobalTime;
+
+    DofVector<double> tmpX;
     try
     {
-        tmpX = NewtonRaphson::Solve(*this, trialX, solver, 6, NewtonRaphson::LineSearch(), &numIterations);
+        tmpX = NewtonRaphson::Solve(*this, trialU, solver, 6, NewtonRaphson::LineSearch(), &numIterations);
     }
     catch (std::exception& e)
     {
         throw NewtonRaphson::NoConvergence(e.what());
     }
 
-    if (tmpX.norm() > 1.e10)
+    if (Norm(tmpX) > 1.e10)
         throw NewtonRaphson::NoConvergence("", "floating point exception");
 
     UpdateHistory(tmpX);
     mGlobalTime = newGlobalTime;
-    FromEigen(tmpX, mDofs, &mX);
+    mX = tmpX;
 
     return numIterations;
 }

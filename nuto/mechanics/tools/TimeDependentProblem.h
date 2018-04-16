@@ -2,8 +2,8 @@
 #include "nuto/mechanics/cell/CellInterface.h"
 #include "nuto/mechanics/cell/SimpleAssembler.h"
 #include "nuto/base/Group.h"
-#include "nuto/mechanics/dofs/GlobalDofVector.h"
-#include "nuto/mechanics/dofs/GlobalDofMatrixSparse.h"
+#include "nuto/mechanics/dofs/DofVector.h"
+#include "nuto/mechanics/dofs/DofMatrixSparse.h"
 
 #include "nuto/mechanics/tools/NodalValueMerger.h"
 
@@ -25,17 +25,17 @@ public:
 
     TimeDependentProblem(MeshFem* rMesh);
 
-    GlobalDofVector RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
-                                 GlobalDofVector oldDofValues);
+    DofVector<double> RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
+                                 DofVector<double> oldDofValues);
 
     void AddGradientFunction(Group<CellInterface> group, GradientFunction f);
     void AddHessian0Function(Group<CellInterface> group, HessianFunction f);
     void AddUpdateFunction(Group<CellInterface> group, UpdateFunction f);
 
-    GlobalDofVector Gradient(const GlobalDofVector& dofValues, std::vector<DofType> dofs, double t, double dt);
-    GlobalDofMatrixSparse Hessian0(const GlobalDofVector& dofValues, std::vector<DofType> dofs, double t, double dt);
+    DofVector<double> Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
+    DofMatrixSparse<double> Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
 
-    void UpdateHistory(const GlobalDofVector& dofValues, std::vector<DofType> dofs, double t, double dt);
+    void UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
 
 private:
     SimpleAssembler mAssembler;

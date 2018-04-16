@@ -8,23 +8,22 @@ TimeDependentProblem::TimeDependentProblem(MeshFem* rMesh)
 {
 }
 
-GlobalDofVector TimeDependentProblem::RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
-                                                   GlobalDofVector oldDofValues)
+DofVector<double> TimeDependentProblem::RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
+                                                   DofVector<double> oldDofValues)
 {
     DofInfo dofInfos;
 
-    GlobalDofVector renumberedValues;
+    DofVector<double> renumberedValues;
 
     for (auto dofType : dofTypes)
     {
-        if (oldDofValues.J[dofType].rows() != 0) // initial case: No merge of an uninitialized vector
+        if (oldDofValues[dofType].rows() != 0) // initial case: No merge of an uninitialized vector
             mMerger.Merge(oldDofValues, {dofType});
 
         auto dofInfo = DofNumbering::Build(mMerger.Nodes(dofType), dofType, constraints);
         dofInfos.Merge(dofType, dofInfo);
 
-        renumberedValues.J[dofType].resize(dofInfo.numIndependentDofs[dofType]);
-        renumberedValues.K[dofType].resize(dofInfo.numDependentDofs[dofType]);
+        renumberedValues[dofType].resize(dofInfo.numIndependentDofs[dofType] + dofInfo.numDependentDofs[dofType]);
 
         mMerger.Extract(&renumberedValues, {dofType});
     }
@@ -54,29 +53,29 @@ TCellInterfaceFunction Apply(TTimeDepFunction& f, double t, double dt)
     return std::bind(f, _1, t, dt);
 }
 
-GlobalDofVector TimeDependentProblem::Gradient(const GlobalDofVector& dofValues, std::vector<DofType> dofs, double t,
+DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
                                                double dt)
 {
     mMerger.Merge(dofValues, dofs);
-    GlobalDofVector gradient;
+    DofVector<double> gradient;
     for (auto& gradientFunction : mGradientFunctions)
         gradient += mAssembler.BuildVector(gradientFunction.first, dofs,
                                            Apply<CellInterface::VectorFunction>(gradientFunction.second, t, dt));
     return gradient;
 }
 
-GlobalDofMatrixSparse TimeDependentProblem::Hessian0(const GlobalDofVector& dofValues, std::vector<DofType> dofs,
+DofMatrixSparse<double> TimeDependentProblem::Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs,
                                                      double t, double dt)
 {
     mMerger.Merge(dofValues, dofs);
-    GlobalDofMatrixSparse hessian0;
+    DofMatrixSparse<double> hessian0;
     for (auto& hessian0Function : mHessian0Functions)
         hessian0 += mAssembler.BuildMatrix(hessian0Function.first, dofs,
                                            Apply<CellInterface::MatrixFunction>(hessian0Function.second, t, dt));
     return hessian0;
 }
 
-void TimeDependentProblem::UpdateHistory(const GlobalDofVector& dofValues, std::vector<DofType> dofs, double t,
+void TimeDependentProblem::UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
                                          double dt)
 {
     mMerger.Merge(dofValues, dofs);

@@ -1,3 +1,4 @@
+#include <iostream>
 #include "BoostUnitTest.h"
 #include "nuto/base/Exception.h"
 #include "nuto/mechanics/nodes/DofNode.h"
@@ -15,7 +16,7 @@ BOOST_AUTO_TEST_CASE(ConstraintUnnumbered)
     Constraints c;
     c.Add(dof, Equation(node, 0, rhs));
     // the dofs are not numbered.
-    BOOST_CHECK_THROW(c.BuildConstraintMatrix(dof, 1), Exception);
+    BOOST_CHECK_THROW(c.BuildUnitConstraintMatrix(dof, 2), Exception);
 }
 
 BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
@@ -43,17 +44,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
     node0.SetDofNumber(0, 2);
     node3.SetDofNumber(0, 3);
 
-    BOOST_CHECK_NO_THROW(c.BuildConstraintMatrix(dof, 2));
-
-    // provide invalid numbering of dependent dofs
-    node0.SetDofNumber(0, 3);
-    node3.SetDofNumber(0, 2);
-
-    // this will not build an identity matrix at the end of CMat but
-    // 0  1
-    // 1  0
-    // which is wrong.
-    BOOST_CHECK_THROW(c.BuildConstraintMatrix(dof, 2), Exception);
+    BOOST_CHECK_NO_THROW(c.BuildUnitConstraintMatrix(dof, 4));
 }
 
 BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
@@ -74,8 +65,11 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
      *  [42  0  0 ] (n2) + [ 0  1 ] (n4) = rhs;
      *
      */
-    Eigen::MatrixXd cmatExpected = Eigen::MatrixXd::Zero(2, 3);
-    cmatExpected(1, 0) = 42;
+    Eigen::MatrixXd cmatUnitExpected = Eigen::MatrixXd::Zero(5, 3);
+    cmatUnitExpected(0, 0) = 1;
+    cmatUnitExpected(1, 1) = 1;
+    cmatUnitExpected(2, 2) = 1;
+    cmatUnitExpected(4, 0) = -42;
 
     node0.SetDofNumber(0, 0);
     node1.SetDofNumber(0, 1);
@@ -92,9 +86,11 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     c.Add(dof, noninteractingEquation);
     c.Add(dof, interactingEquation);
 
-    Eigen::MatrixXd cmat = c.BuildConstraintMatrix(dof, 3);
+    Eigen::MatrixXd cmatUnit = c.BuildUnitConstraintMatrix(dof, 5);
 
-    BoostUnitTest::CheckEigenMatrix(cmat, cmatExpected);
+    std::cout << "cmatUnitExpected\n" << cmatUnitExpected << std::endl;
+    std::cout << "cmatUnit\n" << cmatUnit << std::endl;
+    BoostUnitTest::CheckEigenMatrix(cmatUnit, cmatUnitExpected);
 }
 
 BOOST_AUTO_TEST_CASE(ConstraintRhs)

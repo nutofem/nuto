@@ -15,19 +15,19 @@ Group<DofNode>& NodalValueMerger::Nodes(DofType dof)
     return mNodes[dof];
 }
 
-void NodalValueMerger::Merge(const GlobalDofVector& newValues, std::vector<DofType> dofs, int instance)
+void NodalValueMerger::Merge(const DofVector<double>& newValues, std::vector<DofType> dofs, int instance)
 {
     for (auto dof : dofs)
         for (auto& node : Nodes(dof))
             for (int iDim = 0; iDim < node.GetNumValues(); ++iDim)
             {
                 const int dofNumber = node.GetDofNumber(iDim);
-                const double dofValue = newValues(dof, dofNumber);
+                const double dofValue = newValues[dof](dofNumber);
                 node.SetValue(iDim, dofValue, instance);
             }
 }
 
-void NodalValueMerger::Extract(GlobalDofVector* rNewValues, std::vector<DofType> dofs, int instance)
+void NodalValueMerger::Extract(DofVector<double>* rNewValues, std::vector<DofType> dofs, int instance)
 {
     for (auto dof : dofs)
         for (auto& node : Nodes(dof))
@@ -35,6 +35,6 @@ void NodalValueMerger::Extract(GlobalDofVector* rNewValues, std::vector<DofType>
             {
                 const int dofNumber = node.GetDofNumber(iDim);
                 const double dofValue = node.GetValues(instance)[iDim];
-                (*rNewValues)(dof, dofNumber) = dofValue;
+                (*rNewValues)[dof](dofNumber) = dofValue;
             }
 }

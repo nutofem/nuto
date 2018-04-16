@@ -1,6 +1,8 @@
 #include "BoostUnitTest.h"
 
 #include "nuto/base/Group.h"
+#include "nuto/math/EigenSparseSolve.h"
+
 #include "nuto/mechanics/cell/Cell.h"
 #include "nuto/mechanics/cell/CellInterface.h"
 #include "nuto/mechanics/cell/SimpleAssembler.h"
@@ -233,6 +235,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
     // DOF numbering %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
+    const int numDofs = dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ];
 
 
     // Create law %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,15 +275,15 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
     // Get gradient %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     SimpleAssembler assembler(dofInfo);
-    VectorXd displacements = VectorXd::Zero(dofInfo.numIndependentDofs[displ]);
+    DofVector<double> solution;
+    solution[displ].setZero(dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]);
 
     // Build external Force %%%%%%%%%%%%%%%%%%%%%
     constexpr double rhsForce = 2000.;
-    GlobalDofVector extF;
-    extF.J[displ].setZero(dofInfo.numIndependentDofs[displ]);
-    extF.K[displ].setZero(dofInfo.numDependentDofs[displ]);
+    DofVector<double> extF;
+    extF[displ].setZero(dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]);
     DofNode& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
-    extF.J[displ][nodeRight.GetDofNumber(0)] = rhsForce;
+    extF[displ][nodeRight.GetDofNumber(0)] = rhsForce;
 
     // Post processing stuff %%%%%%%%%%%%%%%%%%%%
     std::vector<double> rhsDispNumerical;
@@ -291,41 +294,50 @@ BOOST_AUTO_TEST_CASE(History_Data)
     double time = 0.;
     delta_t = 0.01;
 
+    auto cMatUnit(constraints.BuildUnitConstraintMatrix(
+            {displ}, dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]));
+
     while (time < timeFinal)
     {
         unsigned int numIter = 0;
         time += delta_t;
 
         // Calculate residual %%%%%%%%%%%%%%%%%%%
-        GlobalDofVector gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-        Eigen::VectorXd residual = gradient.J[displ] - extF.J[displ];
+        DofVector<double> gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
+        Eigen::VectorXd residualMod = cMatUnit.transpose() * ((gradient - extF)[displ]);
 
         // Iterate for equilibrium %%%%%%%%%%%%%%
-        while (numIter < maxIter && residual.lpNorm<Infinity>() > 1e-9)
+        while (numIter < maxIter && residualMod.lpNorm<Infinity>() > 1e-9)
         {
             numIter++;
             // Build and solve system %%%%%%%%%%%
-            GlobalDofMatrixSparse hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
-            Eigen::MatrixXd hessianDense(hessian.JJ(displ, displ));
-            Eigen::VectorXd deltaDisplacements = hessianDense.ldlt().solve(residual);
-            displacements -= deltaDisplacements;
+            DofMatrixSparse<double> hessian = assembler.BuildMatrix(momentumBalanceCells, {displ}, MomentumHessian0F);
+
+            // the following line should all go to the solve routine, no need to deal with modified vectors and matrices
+            auto hessianMod = cMatUnit.transpose() * hessian(displ, displ) * cMatUnit;
+            Eigen::VectorXd deltaDisplacementsMod = EigenSparseSolve(hessianMod, residualMod, std::string("MumpsLDLT"));
+
+            // compute full solution vector (dependent and independent dofs)
+            Eigen::VectorXd deltaDisplacements =
+                    cMatUnit * -deltaDisplacementsMod + constraints.GetSparseGlobalRhs(displ, numDofs, time);
+
+            // for correct size, copy the inactive dofs
+            solution[displ] += deltaDisplacements;
 
             // Merge dof values %%%%%%%%%%%%%%%%%
-            int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
             for (DofNode& node : mesh.NodesTotal(displ))
             {
                 int dofNumber = node.GetDofNumber(0);
-                if (dofNumber < numUnconstrainedDofs)
-                    node.SetValue(0, displacements[dofNumber]);
+                node.SetValue(0, solution[displ][dofNumber]);
             }
 
             // Calculate new residual %%%%%%%%%%%
             gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
-            residual = gradient.J[displ] - extF.J[displ];
+            residualMod = cMatUnit.transpose() * ((gradient - extF)[displ]);
         }
         if (numIter >= maxIter)
         {
-            std::cout << residual.lpNorm<Infinity>() << std::endl;
+            std::cout << residualMod.lpNorm<Infinity>() << std::endl;
             std::cout << time << std::endl;
             throw Exception(__PRETTY_FUNCTION__, "No convergence");
         }
@@ -335,7 +347,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
         // Store rhs displacement %%%%%%%%%%%%%%%
         if (std::abs(time - std::round(time)) < delta_t / 2.) // <--- store only if time is an integer
-            rhsDispNumerical.push_back(displacements[displacements.rows() - 1]);
+            rhsDispNumerical.push_back(solution[displ][nodeRight.GetDofNumber(0)]);
     }
 
     // Theoretical solution %%%%%%%%%%%%%%%%%%%%%

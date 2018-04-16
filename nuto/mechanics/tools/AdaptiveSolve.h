@@ -14,12 +14,14 @@ public:
     AdaptiveSolve(std::function<int(double)> doStepFunction,
                   std::function<void(double)> postProcessFunction = [](double) {});
 
-    //! Perform an adaptive time integration from `t = 0` to `t = tEnd`.
+    //! Perform an adaptive time integration from `t = tStart` to `t = tEnd`.
     //! One time step starts at time t and tries to apply the increment dt. If the step finishes without an exception,
     //! it is finalized by updating the time to t+dt calling the postprocess function. Only NoConvergence exception will
     //! be caught. They cause a decrease in the time step.
     //! @param tEnd end time
-    void Solve(double tEnd);
+    //! @param tStart start time
+    //! @remark tStart comes second (may be unintuitive) to default it to zero.
+    void Solve(double tEnd, double tStart = 0);
 
     void SetQuiet();
 
