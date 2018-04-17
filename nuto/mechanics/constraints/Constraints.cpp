@@ -111,7 +111,7 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, 
 
             if (std::abs(coefficient) > 1.e-18)
                 tripletList.push_back(
-                        Eigen::Triplet<double>(numIndependentDofs + iEquation, globalDofNumber, -coefficient));
+                        Eigen::Triplet<double>(equation.GetDependentDofNumber(), globalDofNumber, -coefficient));
         }
     }
     matrix.setFromTriplets(tripletList.begin(), tripletList.end());
