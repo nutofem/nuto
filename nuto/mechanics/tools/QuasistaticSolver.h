@@ -28,7 +28,7 @@ public:
     void SetGlobalTime(double globalTime);
 
     //! computes the trial state of the system
-    //! @param newGlobalTime
+    //! @param newGlobalTime new time, for which the trial state is to be computed
     //! @param solver that allows to extract the constraint displacements from previous steps
     DofVector<double> TrialState(double newGlobalTime, const NuTo::ConstrainedSystemSolver& solver);
 

@@ -84,17 +84,23 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, 
 
     // add unit entry for all independent dofs
     std::vector<Eigen::Triplet<double>> tripletList;
+    int curIndependent(0);
     for (auto i = 0; i < numDofs; i++)
     {
         if (isDofConstraint[i] == false)
-            tripletList.push_back(Eigen::Triplet<double>(i, i, 1.));
+        {
+            tripletList.push_back(Eigen::Triplet<double>(i, curIndependent, 1.));
+            curIndependent++;
+        }
     }
+    if (curIndependent != numIndependentDofs)
+        throw Exception(__PRETTY_FUNCTION__, "There is something wrong with the number of independent dofs.");
 
     // add entries for constraint dofs
     for (int iEquation = 0; iEquation < numEquations; ++iEquation)
     {
         const auto& equation = equations[iEquation];
-        for (Term term : equation.GetTerms())
+        for (Term term : equation.GetIndependentTerms())
         {
             double coefficient = term.GetCoefficient();
             int globalDofNumber = term.GetConstrainedDofNumber();
@@ -103,20 +109,9 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, 
                 throw Exception(__PRETTY_FUNCTION__,
                                 "There is no dof numbering for a node in equation" + std::to_string(iEquation) + ".");
 
-            if (globalDofNumber >= numIndependentDofs)
-            {
-                // This corresponds to the last block of size numDependentDofs x numDependentDofs that should be an
-                // identity matrix
-                int transformedDof = globalDofNumber - numIndependentDofs;
-                if (transformedDof != iEquation)
-                    throw Exception(__PRETTY_FUNCTION__, "The numbering of the dependent dofs "
-                                                         "is not in accordance with the equation numbering.");
-                continue; // Do not put the value into the matrix.
-            }
-
             if (std::abs(coefficient) > 1.e-18)
                 tripletList.push_back(
-                        Eigen::Triplet<double>(numIndependentDofs + iEquation, globalDofNumber, -coefficient));
+                        Eigen::Triplet<double>(equation.GetDependentDofNumber(), globalDofNumber, -coefficient));
         }
     }
     matrix.setFromTriplets(tripletList.begin(), tripletList.end());
@@ -151,28 +146,26 @@ bool Constraints::TermChecker::TermCompare::operator()(const Term& lhs, const Te
 void Constraints::TermChecker::CheckEquation(Equation e)
 {
     // The new dependent term must not constrain the same dof as any existing terms
-    Term newDependentTerm = e.GetTerms()[0];
+    Term newDependentTerm = e.GetDependentTerm();
 
     if (Contains(mDependentTerms, newDependentTerm))
         throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
                                              "is already constrained as a dependent dof in another equation.");
 
-    if (Contains(mOtherTerms, newDependentTerm))
+    if (Contains(mIndependentTerms, newDependentTerm))
         throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
                                              "is already constrained in another equation.");
 
 
     // Any term in the new equation must not constrain the same dof as any existing _dependent_ terms
-    // since the dependent term of the new equation is already checked above, we omit it here and start loop at 1.
-    for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
+    for (auto& newTerm : e.GetIndependentTerms())
     {
-        Term newTerm = e.GetTerms()[iNewTerm];
         if (Contains(mDependentTerms, newTerm))
-            throw Exception(__PRETTY_FUNCTION__, "One of the new terms is already constrained "
+            throw Exception(__PRETTY_FUNCTION__, "One of the independent terms is already constrained "
                                                  "as a dependent dof in another equation");
     }
 
-    mDependentTerms.insert(e.GetTerms()[0]);
-    for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
-        mOtherTerms.insert(e.GetTerms()[iNewTerm]);
+    mDependentTerms.insert(e.GetDependentTerm());
+    for (auto& newTerm : e.GetIndependentTerms())
+        mIndependentTerms.insert(newTerm);
 }

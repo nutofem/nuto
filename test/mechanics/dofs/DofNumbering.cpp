@@ -33,12 +33,9 @@ BOOST_AUTO_TEST_CASE(DofNumberingTest)
 
     // Check if unconstrained nodes have dof number [0..3], ordering does not matter
     std::vector<int> dofNumbersUnconstrained{nodeUnconstrained0.GetDofNumber(0), nodeUnconstrained0.GetDofNumber(1),
-                                             nodeUnconstrained1.GetDofNumber(0), nodeUnconstrained1.GetDofNumber(1)};
-    BOOST_CHECK(IsPermutation(dofNumbersUnconstrained, {0, 1, 2, 3}));
-
-    // Check if constrained nodes have dof number [5, 4], ordering has to be in the order of the equation definition
-    BOOST_CHECK_EQUAL(nodeConstrained.GetDofNumber(0), 5);
-    BOOST_CHECK_EQUAL(nodeConstrained.GetDofNumber(1), 4);
+                                             nodeUnconstrained1.GetDofNumber(0), nodeUnconstrained1.GetDofNumber(1),
+                                             nodeConstrained.GetDofNumber(0),    nodeConstrained.GetDofNumber(1)};
+    BOOST_CHECK(IsPermutation(dofNumbersUnconstrained, {0, 1, 2, 3, 4, 5}));
 }
 
 BOOST_AUTO_TEST_CASE(InvalidDofTypes)

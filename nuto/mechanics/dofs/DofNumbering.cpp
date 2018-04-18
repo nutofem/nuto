@@ -32,40 +32,24 @@ std::vector<int> GetStatusOfDofNumber(const Constraint::Constraints& constraints
 DofInfo DofNumbering::Build(const Group<NodeSimple>& dofNodes, DofType dof, const Constraint::Constraints& constraints)
 {
     for (int iEquation = 0; iEquation < constraints.GetNumEquations(dof); ++iEquation)
-        for (const auto& term : constraints.GetEquation(dof, iEquation).GetTerms())
+    {
+        if (not dofNodes.Contains(constraints.GetEquation(dof, iEquation).GetDependentTerm().GetNode()))
+            throw Exception(__PRETTY_FUNCTION__,
+                            "The constraints for dof " + dof.GetName() +
+                                    " contain nodes that are not included in _dofNodes_. You "
+                                    "may have selected the wrong nodes (coordinate nodes?) "
+                                    "from the mesh.");
+        for (const auto& term : constraints.GetEquation(dof, iEquation).GetIndependentTerms())
             if (not dofNodes.Contains(term.GetNode()))
-                throw Exception(__PRETTY_FUNCTION__, "The constraints for dof " + dof.GetName() +
-                                                             " contain nodes that are not included in _dofNodes_. You "
-                                                             "may have selected the wrong nodes (coordinate nodes?) "
-                                                             "from the mesh.");
+                throw Exception(__PRETTY_FUNCTION__,
+                                "The constraints for dof " + dof.GetName() +
+                                        " contain nodes that are not included in _dofNodes_. You "
+                                        "may have selected the wrong nodes (coordinate nodes?) "
+                                        "from the mesh.");
+    }
 
     int numDependentDofs = constraints.GetNumEquations(dof);
     const int numDofs = InitialUnconstrainedNumbering(dofNodes);
-    std::vector<int> dofStatus = GetStatusOfDofNumber(constraints, dof, numDofs);
-    // It is _very_ important that the dependent dofs are ordered _exactly_ like the equations. Only this feature will
-    // produce an identity matrix for T2.
-    // Equation0 --> dependentDofOfEquation0 = numIndependentDofs + 0
-    // Equation1 --> dependentDofOfEquation1 = numIndependentDofs + 1
-    // Equation2 --> dependentDofOfEquation2 = numIndependentDofs + 2
-    //
-    // That is why the equation number is stored in the dofStatus vector.
-
-    int countIndependentDofs = 0;
-    const int numIndependentDofs = numDofs - numDependentDofs;
-    for (auto& node : dofNodes)
-        for (int iComponent = 0; iComponent < node.GetNumValues(); ++iComponent)
-        {
-            int dofNumber = node.GetDofNumber(iComponent);
-            if (dofStatus.at(dofNumber) == INDEPENDENT)
-            {
-                node.SetDofNumber(iComponent, countIndependentDofs++);
-            }
-            else
-            {
-                int equationIndex = dofStatus[dofNumber];
-                node.SetDofNumber(iComponent, numIndependentDofs + equationIndex);
-            }
-        }
 
     DofInfo dofInfo;
     dofInfo.numDependentDofs[dof] = numDependentDofs;

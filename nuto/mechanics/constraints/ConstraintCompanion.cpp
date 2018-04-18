@@ -73,7 +73,7 @@ Equation Direction(const NodeSimple& node, Eigen::VectorXd direction, RhsFunctio
     // add terms for all non zero direction components
     for (int iComponent = 0; iComponent < direction.rows(); ++iComponent)
         if (std::abs(direction[iComponent]) > 0 && iComponent != maxComponentIndex)
-            e.AddTerm(Term(node, iComponent, -direction[iComponent] / direction[maxComponentIndex]));
+            e.AddIndependentTerm(Term(node, iComponent, -direction[iComponent] / direction[maxComponentIndex]));
 
 
     return e;

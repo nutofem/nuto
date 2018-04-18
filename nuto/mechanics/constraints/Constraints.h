@@ -33,7 +33,7 @@ public:
     //! @brief builds the rhs of the constraint equations in a sparse global vector
     //! @param dof dof type
     //! @param numDofs total number of dofs for a specfic dof type
-    //! @param time
+    //! @param time time at which the rhs vector should be evaluated
     //! @return sparse rhs vector of the constraint equations rhs(time)
     Eigen::SparseVector<double> GetSparseGlobalRhs(DofType dof, int numDofs, double time) const;
 
@@ -80,7 +80,7 @@ private:
         };
 
         std::set<Term, TermCompare> mDependentTerms;
-        std::set<Term, TermCompare> mOtherTerms;
+        std::set<Term, TermCompare> mIndependentTerms;
     } mTermChecker;
 };
 

@@ -54,6 +54,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     NodeSimple node2(0);
     NodeSimple node3(0);
     NodeSimple node4(0);
+    NodeSimple node5(0);
 
     /*
      *     n0 ---- n1 ---- n2 ---- n3 --- n4
@@ -65,28 +66,30 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
      *  [42  0  0 ] (n2) + [ 0  1 ] (n4) = rhs;
      *
      */
-    Eigen::MatrixXd cmatUnitExpected = Eigen::MatrixXd::Zero(5, 3);
+    Eigen::MatrixXd cmatUnitExpected = Eigen::MatrixXd::Zero(6, 4);
     cmatUnitExpected(0, 0) = 1;
     cmatUnitExpected(1, 1) = 1;
     cmatUnitExpected(2, 2) = 1;
     cmatUnitExpected(4, 0) = -42;
+    cmatUnitExpected(5, 3) = 1;
 
     node0.SetDofNumber(0, 0);
     node1.SetDofNumber(0, 1);
     node2.SetDofNumber(0, 2);
     node3.SetDofNumber(0, 3);
     node4.SetDofNumber(0, 4);
+    node5.SetDofNumber(0, 5);
 
     Equation noninteractingEquation(node3, 0, rhs);
 
     Equation interactingEquation(node4, 0, rhs);
-    interactingEquation.AddTerm({node0, 0, 42});
+    interactingEquation.AddIndependentTerm({node0, 0, 42});
 
     Constraints c;
     c.Add(dof, noninteractingEquation);
     c.Add(dof, interactingEquation);
 
-    Eigen::MatrixXd cmatUnit = c.BuildUnitConstraintMatrix(dof, 5);
+    Eigen::MatrixXd cmatUnit = c.BuildUnitConstraintMatrix(dof, 6);
 
     std::cout << "cmatUnitExpected\n" << cmatUnitExpected << std::endl;
     std::cout << "cmatUnit\n" << cmatUnit << std::endl;
@@ -130,7 +133,7 @@ BOOST_AUTO_TEST_CASE(ConstraintTwoDependentDofsInOneEquation)
     constraints.Add(dof, {node, 0, rhs}); // node.dof0 * 1.0 = rhs
 
     Constraint::Equation equation(node, 1, rhs);
-    equation.AddTerm({node, 0, 0.4}); // node.dof1 * 1.0 + node.dof0 * 0.4 = rhs
+    equation.AddIndependentTerm({node, 0, 0.4}); // node.dof1 * 1.0 + node.dof0 * 0.4 = rhs
     BOOST_CHECK_THROW(constraints.Add(dof, equation), Exception);
 }
 

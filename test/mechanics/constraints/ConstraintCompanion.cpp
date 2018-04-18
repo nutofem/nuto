@@ -20,13 +20,20 @@ bool operator==(const Term& a, const Term& b)
     return true;
 }
 
+bool operator!=(const Term& a, const Term& b)
+{
+    return !(a == b);
+}
+
 bool operator==(const Equation& a, const Equation& b)
 {
     if (std::abs(a.GetRhs(0.0) - b.GetRhs(0.0)) > 1.e-6)
         return false;
     if (std::abs(a.GetRhs(42.0) - b.GetRhs(42.0)) > 1.e-6)
         return false;
-    if (a.GetTerms() != b.GetTerms())
+    if (a.GetDependentTerm() != b.GetDependentTerm())
+        return false;
+    if (a.GetIndependentTerms() != b.GetIndependentTerms())
         return false;
     return true;
 }
@@ -80,14 +87,14 @@ BOOST_FIXTURE_TEST_CASE(Component_test, Helpers)
     auto eqs = Constraint::Component(node1, {eDirection::X}, 1.0);
     auto expectedEquation = Constraint::Equation(node1, 0, rhsValueFunc(1.));
     // The first check is also done by the second, but it gives you an extra hint, why the terms aren't equal
-    BOOST_CHECK_EQUAL(eqs[0].GetTerms().size(), 1);
+    BOOST_CHECK_EQUAL(eqs[0].GetIndependentTerms().size(), 0);
     BOOST_CHECK(eqs[0] == expectedEquation);
 
 
     // with lambda RHS
     eqs = Constraint::Component(node1, {eDirection::X}, sinFunction);
     expectedEquation = Constraint::Equation(node1, 0, sinFunction);
-    BOOST_CHECK_EQUAL(eqs[0].GetTerms().size(), 1);
+    BOOST_CHECK_EQUAL(eqs[0].GetIndependentTerms().size(), 0);
     BOOST_CHECK(eqs[0] == expectedEquation);
 
     // with Group
@@ -119,16 +126,16 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     // single equation with constant RHS
     auto eq = Constraint::Direction(node1, someDirection);
     auto expectedEquation = Constraint::Equation(node1, 2, rhsValueFunc(0.0));
-    expectedEquation.AddTerm(Constraint::Term(node1, 0, -0.5));
-    expectedEquation.AddTerm(Constraint::Term(node1, 1, 0.75));
+    expectedEquation.AddIndependentTerm(Constraint::Term(node1, 0, -0.5));
+    expectedEquation.AddIndependentTerm(Constraint::Term(node1, 1, 0.75));
 
     BOOST_CHECK(eq == expectedEquation);
 
     // single equation with lambda RHS
     eq = Constraint::Direction(node1, someDirection, sinFunction);
     expectedEquation = Constraint::Equation(node1, 2, rhsValueAdjustedFunc(sinFunction, std::sqrt(29.) / 4.));
-    expectedEquation.AddTerm(Constraint::Term(node1, 0, -0.5));
-    expectedEquation.AddTerm(Constraint::Term(node1, 1, 0.75));
+    expectedEquation.AddIndependentTerm(Constraint::Term(node1, 0, -0.5));
+    expectedEquation.AddIndependentTerm(Constraint::Term(node1, 1, 0.75));
 
     BOOST_CHECK(eq == expectedEquation);
 
@@ -138,8 +145,8 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     for (auto& node : nodes)
     {
         expectedEquation = Constraint::Equation(node, 2, rhsValueFunc(0.0));
-        expectedEquation.AddTerm(Constraint::Term(node, 0, -0.5));
-        expectedEquation.AddTerm(Constraint::Term(node, 1, 0.75));
+        expectedEquation.AddIndependentTerm(Constraint::Term(node, 0, -0.5));
+        expectedEquation.AddIndependentTerm(Constraint::Term(node, 1, 0.75));
         expectedEquations.push_back(expectedEquation);
     }
     BOOST_CHECK(eqs == expectedEquations);
@@ -150,8 +157,8 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     for (auto& node : nodes)
     {
         expectedEquation = Constraint::Equation(node, 2, rhsValueAdjustedFunc(sinFunction, std::sqrt(29.) / 4.));
-        expectedEquation.AddTerm(Constraint::Term(node, 0, -0.5));
-        expectedEquation.AddTerm(Constraint::Term(node, 1, 0.75));
+        expectedEquation.AddIndependentTerm(Constraint::Term(node, 0, -0.5));
+        expectedEquation.AddIndependentTerm(Constraint::Term(node, 1, 0.75));
         expectedEquations.push_back(expectedEquation);
     }
     BOOST_CHECK(eqs == expectedEquations);
@@ -162,18 +169,18 @@ BOOST_FIXTURE_TEST_CASE(Direction_test, Helpers)
     someDirection << 0., 3., -4.;
     eq = Constraint::Direction(node1, someDirection, sinFunction);
     expectedEquation = Constraint::Equation(node1, 2, rhsValueAdjustedFunc(sinFunction, -5. / 4.));
-    expectedEquation.AddTerm(Constraint::Term(node1, 1, 0.75));
+    expectedEquation.AddIndependentTerm(Constraint::Term(node1, 1, 0.75));
 
-    BOOST_CHECK_EQUAL(eq.GetTerms().size(), 2);
+    BOOST_CHECK_EQUAL(eq.GetIndependentTerms().size(), 1);
     BOOST_CHECK(eq == expectedEquation);
 
 
     someDirection << 3., 0., -4.;
     eq = Constraint::Direction(node1, someDirection, sinFunction);
     expectedEquation = Constraint::Equation(node1, 2, rhsValueAdjustedFunc(sinFunction, -5. / 4.));
-    expectedEquation.AddTerm(Constraint::Term(node1, 0, 0.75));
+    expectedEquation.AddIndependentTerm(Constraint::Term(node1, 0, 0.75));
 
-    BOOST_CHECK_EQUAL(eq.GetTerms().size(), 2);
+    BOOST_CHECK_EQUAL(eq.GetIndependentTerms().size(), 1);
     BOOST_CHECK(eq == expectedEquation);
 
 
@@ -195,13 +202,13 @@ BOOST_FIXTURE_TEST_CASE(Value_test, Helpers)
     // with constant RHS
     auto eq = Constraint::Value(node1, 42.);
     auto expectedEquation = Constraint::Equation(node1, 0, rhsValueFunc(42.0));
-    BOOST_CHECK_EQUAL(eq.GetTerms().size(), 1);
+    BOOST_CHECK_EQUAL(eq.GetIndependentTerms().size(), 0);
     BOOST_CHECK(eq == expectedEquation);
 
     // with lamdba RHS
     eq = Constraint::Value(node1, sinFunction);
     expectedEquation = Constraint::Equation(node1, 0, sinFunction);
-    BOOST_CHECK_EQUAL(eq.GetTerms().size(), 1);
+    BOOST_CHECK_EQUAL(eq.GetIndependentTerms().size(), 0);
     BOOST_CHECK(eq == expectedEquation);
 
     // with Group
