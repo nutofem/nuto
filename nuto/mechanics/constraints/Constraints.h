@@ -37,6 +37,16 @@ public:
     //! @return sparse rhs vector of the constraint equations rhs(time)
     Eigen::SparseVector<double> GetSparseGlobalRhs(DofType dof, int numDofs, double time) const;
 
+    //! @brief builds a numbering where first the independent dofs are consecutively numbered
+    //! leaving out the dependent ones and then the dependent dof numbers are appended. The
+    //! order of the dependent dofs is given by the order of the constraint equations
+    //!
+    //! This numbering is used in BuildUnitConstraintMatrix
+    //! @param dof dof type
+    //! @param numDofs number dofs for the dof type
+    //! @return index vector with first independent dof numbers and then dependent
+    Eigen::VectorXi GetJKNumbering(DofType dof, int numDofs) const;
+
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type and a unit matrix for the
     //! independent dofs
     //! @param dof dof type
