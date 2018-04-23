@@ -57,20 +57,21 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     NodeSimple node5(0);
 
     /*
-     *     n0 ---- n1 ---- n2 ---- n3 --- n4
-     *         n3(dep)           = rhs;
-     *    with n4(dep) + 42 * n0 = rhs;
+     *     n0 ---- n1 ---- n2 ---- n3 --- n4 --- n5
+     *         n1(dep)           = rhs;
+     *    with n4(dep) + 42 * n2 = rhs;
      *
-     *              (n0)
-     *  [ 0  0  0 ] (n1) + [ 1  0 ] (n3) = rhs;
-     *  [42  0  0 ] (n2) + [ 0  1 ] (n4) = rhs;
+     *                (n0)
+     *                (n2)
+     *  [ 0  0  0  0] (n3) + [ 1  0 ] (n1) = rhs;
+     *  [ 0 42  0  0] (n5) + [ 0  1 ] (n4) = rhs;
      *
      */
     Eigen::MatrixXd cmatUnitExpected = Eigen::MatrixXd::Zero(6, 4);
     cmatUnitExpected(0, 0) = 1;
-    cmatUnitExpected(1, 1) = 1;
-    cmatUnitExpected(2, 2) = 1;
-    cmatUnitExpected(4, 0) = -42;
+    cmatUnitExpected(2, 1) = 1;
+    cmatUnitExpected(3, 2) = 1;
+    cmatUnitExpected(4, 1) = -42;
     cmatUnitExpected(5, 3) = 1;
 
     node0.SetDofNumber(0, 0);
@@ -80,10 +81,10 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     node4.SetDofNumber(0, 4);
     node5.SetDofNumber(0, 5);
 
-    Equation noninteractingEquation(node3, 0, rhs);
+    Equation noninteractingEquation(node1, 0, rhs);
 
     Equation interactingEquation(node4, 0, rhs);
-    interactingEquation.AddIndependentTerm({node0, 0, 42});
+    interactingEquation.AddIndependentTerm({node2, 0, 42});
 
     Constraints c;
     c.Add(dof, noninteractingEquation);
@@ -95,6 +96,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     std::cout << "cmatUnit\n" << cmatUnit << std::endl;
     BoostUnitTest::CheckEigenMatrix(cmatUnit, cmatUnitExpected);
 }
+
 
 BOOST_AUTO_TEST_CASE(ConstraintRhs)
 {
