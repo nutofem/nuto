@@ -8,6 +8,21 @@ namespace NuTo
 {
 namespace Constraint
 {
+
+struct JKNumbering
+{
+    JKNumbering(Eigen::VectorXi indices, int numK)
+        : mIndices(indices)
+        , mNumJ(indices.size() - numK)
+        , mNumK(numK)
+    {
+    }
+
+    Eigen::VectorXi mIndices;
+    Eigen::VectorXi mNumJ;
+    Eigen::VectorXi mNumK;
+};
+
 //! @brief stores constraint equations, separated by their dof type
 class Constraints
 {
@@ -45,7 +60,7 @@ public:
     //! @param dof dof type
     //! @param numDofs number dofs for the dof type
     //! @return index vector with first independent dof numbers and then dependent
-    Eigen::VectorXi GetJKNumbering(DofType dof, int numDofs) const;
+    JKNumbering GetJKNumbering(DofType dof, int numDofs) const;
 
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type and a unit matrix for the
     //! independent dofs

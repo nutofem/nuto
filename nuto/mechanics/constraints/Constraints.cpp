@@ -49,7 +49,7 @@ Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int num
     return globalVector;
 }
 
-Eigen::VectorXi Constraints::GetJKNumbering(DofType dof, int numDofs) const
+JKNumbering Constraints::GetJKNumbering(DofType dof, int numDofs) const
 {
     int numJ = numDofs - GetNumEquations(dof);
     int numK = GetNumEquations(dof);
@@ -80,10 +80,10 @@ Eigen::VectorXi Constraints::GetJKNumbering(DofType dof, int numDofs) const
         independentGlobalNumbering(independentCount) = i;
         independentCount++;
     }
-    Eigen::VectorXi jkNumbering(numDofs);
-    jkNumbering << independentGlobalNumbering, dependentGlobalNumbering;
+    Eigen::VectorXi joinedNumbering(numDofs);
+    joinedNumbering << independentGlobalNumbering, dependentGlobalNumbering;
 
-    return jkNumbering;
+    return JKNumbering(joinedNumbering, numK);
 }
 
 Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, int numDofs) const
@@ -95,7 +95,7 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, 
         return unitMatrix; // no equations for this dof type
     }
 
-    Eigen::VectorXi jkNumbering = GetJKNumbering(dof, numDofs);
+    Eigen::VectorXi jkNumbering = GetJKNumbering(dof, numDofs).mIndices;
     Eigen::VectorXi reverseJKNumbering =
             ((Eigen::PermutationMatrix<Eigen::Dynamic>(jkNumbering)).transpose()).eval().indices();
 
