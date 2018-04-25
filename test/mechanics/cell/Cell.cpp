@@ -1,9 +1,11 @@
 #include "BoostUnitTest.h"
 #include <fakeit.hpp>
+
+#include "nuto/math/shapes/Triangle.h"
+
 #include "nuto/mechanics/cell/Cell.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
 #include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/integrands/MomentumBalance.h"
 #include "nuto/mechanics/constitutive/LinearElastic.h"
 
@@ -45,6 +47,8 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(1)).AlwaysReturn(Eigen::Vector2d({a, -a}));
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(2)).AlwaysReturn(Eigen::Vector2d({a, a}));
     fakeit::When(Method(intType, GetLocalIntegrationPointCoordinates).Using(3)).AlwaysReturn(Eigen::Vector2d({-a, a}));
+    auto quad = NuTo::Quadrilateral();
+    fakeit::When(Method(intType, GetShape)).AlwaysReturn(quad);
 
     NuTo::Laws::LinearElastic<2> law(E, 0.0, NuTo::ePlaneState::PLANE_STRAIN);
     using namespace NuTo::Integrands;
@@ -94,4 +98,17 @@ BOOST_AUTO_TEST_CASE(CellLetsSee)
     }
 
     BOOST_CHECK_CLOSE(cell.Integrate(VolumeF), lx * ly, 1.e-10);
+}
+
+BOOST_AUTO_TEST_CASE(CellShapeMismatch)
+{
+    fakeit::Mock<NuTo::ElementCollection> elemCollection;
+    NuTo::Triangle triangle = NuTo::Triangle();
+    Method(elemCollection, GetShape) = triangle;
+
+    fakeit::Mock<NuTo::IntegrationTypeBase> intType;
+    const NuTo::Shape& quad = NuTo::Quadrilateral();
+    fakeit::When(Method(intType, GetShape)).AlwaysReturn(quad);
+
+    BOOST_CHECK_THROW(NuTo::Cell(elemCollection.get(), intType.get(), 42), NuTo::Exception);
 }

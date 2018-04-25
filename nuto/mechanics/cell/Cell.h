@@ -18,6 +18,8 @@ public:
         , mId(id)
         , mShape(elements.GetShape())
     {
+        if (elements.GetShape() != integrationType.GetShape())
+            throw Exception(__PRETTY_FUNCTION__, "The shape of the element and integrationtype don't match.");
     }
 
     DofVector<double> Integrate(VectorFunction f) override

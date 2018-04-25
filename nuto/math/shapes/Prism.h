@@ -20,6 +20,12 @@ public:
         double z = xi[2];
         return (0.-e < x) && (x < 1.+e) && (0.-e < y) && (y < 1.+e) && (-1.-e < z) && (z < 1.+e) && (x + y < 1.+e);
     }
+
+protected:
+    void Info(std::ostream& out) const override
+    {
+        out << "Prism";
+    }
 };
 
 } // namespace NuTo
