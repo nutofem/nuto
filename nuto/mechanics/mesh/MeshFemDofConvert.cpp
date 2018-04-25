@@ -182,7 +182,12 @@ void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<Elem
         const auto& interpolation = optionalInterpolation.value_or(coordinateElement.Interpolation());
 
         if (coordinateElement.GetShape() != interpolation.GetShape())
-            throw Exception(__PRETTY_FUNCTION__, "Shape of interpolation and coordinate element don't match.");
+        {
+            std::stringstream message;
+            message << "Shape of interpolation (" << interpolation.GetShape() << ") and coordinate element ("
+                    << coordinateElement.GetShape() << ") don't match.";
+            throw Exception(__PRETTY_FUNCTION__, message.str());
+        }
 
         for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
         {

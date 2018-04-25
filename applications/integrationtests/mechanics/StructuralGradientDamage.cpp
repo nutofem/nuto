@@ -180,11 +180,12 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     AddDofInterpolation(&mesh, eeq, matrixElements);
     AddDofInterpolation(&mesh, eeq, leftElements);
 
-    IntegrationTypeTriangle integration(4);
+    IntegrationTypeTriangle triangleIntegration(4);
+    IntegrationTypeTensorProduct<1> lineIntegration(2, eIntegrationMethod::GAUSS);
     CellStorage cellStorage;
-    auto cells = cellStorage.AddCells(matrixElements, integration);
-    auto cellsLeft = cellStorage.AddCells(leftElements, integration);
-    gdm.mKappas.setZero(cells.Size(), integration.GetNumIntegrationPoints());
+    auto cells = cellStorage.AddCells(matrixElements, triangleIntegration);
+    auto cellsLeft = cellStorage.AddCells(leftElements, lineIntegration);
+    gdm.mKappas.setZero(cells.Size(), triangleIntegration.GetNumIntegrationPoints());
 
     TimeDependentProblem equations(&mesh);
 
@@ -208,7 +209,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     using namespace NuTo::Visualize;
     PostProcess visu("./GradientDamageOut2D");
-    visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(integration)));
+    visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(triangleIntegration)));
     visu.Add("GDM", d);
     visu.Add("GDM", eeq);
     visu.Add("GDM", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");

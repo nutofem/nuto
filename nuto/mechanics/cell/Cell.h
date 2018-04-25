@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sstream>
+
 #include "nuto/mechanics/cell/CellInterface.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
 #include "nuto/mechanics/dofs/DofContainer.h"
@@ -19,7 +21,12 @@ public:
         , mShape(elements.GetShape())
     {
         if (elements.GetShape() != integrationType.GetShape())
-            throw Exception(__PRETTY_FUNCTION__, "The shape of the element and integrationtype don't match.");
+        {
+            std::stringstream message;
+            message << "The shape of the element (" << elements.GetShape() << ") and integrationtype ("
+                    << integrationType.GetShape() << ") don't match.";
+            throw Exception(__PRETTY_FUNCTION__, message.str());
+        }
     }
 
     DofVector<double> Integrate(VectorFunction f) override
