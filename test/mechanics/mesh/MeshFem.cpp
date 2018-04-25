@@ -271,4 +271,7 @@ BOOST_AUTO_TEST_CASE(PartialAddDofConvert)
 
     NuTo::AddDofInterpolation(&mesh, dof1, {tri}, interpolationTriangle);
     BOOST_CHECK_EQUAL(mesh.NodesTotal(dof1).Size(), 3);
+
+    // throw if the interpolation doesn't match the shape of the underlying elements
+    BOOST_CHECK_THROW(NuTo::AddDofInterpolation(&mesh, dof1, {tri}, interpolationTruss), NuTo::Exception);
 }
