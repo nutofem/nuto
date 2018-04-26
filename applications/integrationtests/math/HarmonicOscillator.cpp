@@ -59,7 +59,7 @@ int main()
     std::vector<Eigen::VectorXd> x_vec;
     std::vector<double> times;
 
-    runge_kutta_cash_karp54<Eigen::VectorXd, double, Eigen::VectorXd, double, vector_space_algebra> stepper;
+    runge_kutta_cash_karp54<Eigen::VectorXd> stepper;
 
     double t0 = 0.;
     double tF = 5.;

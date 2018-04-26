@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
+#include <boost/numeric/odeint/external/eigen/eigen_algebra_dispatcher.hpp>
 #include <boost/numeric/odeint/external/eigen/eigen_resize.hpp>
 
 namespace Eigen
