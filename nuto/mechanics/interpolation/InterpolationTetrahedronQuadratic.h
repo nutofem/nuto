@@ -1,6 +1,5 @@
 #pragma once
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/math/shapes/Tetrahedron.h"
 
 namespace NuTo
@@ -13,19 +12,29 @@ public:
         return std::make_unique<InterpolationTetrahedronQuadratic>(*this);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    static Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder2(int rNodeIndex);
+
+    static Eigen::Matrix<double, 10, 1> ShapeFunctionsTetrahedronOrder2(const Eigen::VectorXd& rCoordinates);
+
+    static Eigen::Matrix<double, 10, 3> DerivativeShapeFunctionsTetrahedronOrder2(const Eigen::VectorXd& rCoordinates);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions3D::ShapeFunctionsTetrahedronOrder2(naturalIpCoords);
+        return ShapeFunctionsTetrahedronOrder2(naturalIpCoords);
     }
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& coords) const override
     {
-        return ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder2(coords);
+        return DerivativeShapeFunctionsTetrahedronOrder2(coords);
     }
 
     NaturalCoords GetLocalCoords(int nodeId) const override
     {
-        return ShapeFunctions3D::NodeCoordinatesTetrahedronOrder2(nodeId);
+        return NodeCoordinatesTetrahedronOrder2(nodeId);
     }
 
     int GetNumNodes() const override

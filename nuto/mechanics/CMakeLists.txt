@@ -2,7 +2,6 @@ add_sources(cell/SimpleAssembler.cpp
     constraints/ConstraintCompanion.cpp
     constraints/Constraints.cpp
     dofs/DofNumbering.cpp
-    elements/ElementShapeFunctions.cpp
     elements/SpectralShapeFunctions.cpp
 
     mesh/MeshFem.cpp
@@ -19,8 +18,23 @@ add_sources(cell/SimpleAssembler.cpp
     tools/QuasistaticSolver.cpp
     tools/TimeDependentProblem.cpp
 
+    interpolation/InterpolationTrussLinear.cpp
+    interpolation/InterpolationTrussQuadratic.cpp
+    interpolation/InterpolationTruss3rdOrder.cpp
+    interpolation/InterpolationTruss4thOrder.cpp
     interpolation/InterpolationTriangleLinear.cpp
     interpolation/InterpolationTriangleQuadratic.cpp
+    interpolation/InterpolationTriangle3rdOrder.cpp
+    interpolation/InterpolationTriangle4thOrder.cpp
+    interpolation/InterpolationTetrahedronLinear.cpp
+    interpolation/InterpolationTetrahedronQuadratic.cpp
+    interpolation/InterpolationQuadLinear.cpp
+    interpolation/InterpolationQuadSerendipity.cpp
+    interpolation/InterpolationBrickLinear.cpp
+    interpolation/InterpolationBrickQuadratic.cpp
+    interpolation/InterpolationPrismLinear.cpp
+    interpolation/InterpolationPrismQuadratic.cpp
+    interpolation/InterpolationPyramidLinear.cpp
 
     integrationtypes/IntegrationCompanion.cpp    
     integrationtypes/IntegrationType0DBoundary.cpp

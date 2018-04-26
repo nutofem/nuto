@@ -20,5 +20,8 @@ add_unit_test(NewtonRaphson
 
 add_unit_test(Gmres)
 add_unit_test(Shapes
-    mechanics/elements/ElementShapeFunctions.cpp
+    mechanics/interpolation/InterpolationTrussLinear.cpp
+    mechanics/interpolation/InterpolationTriangleLinear.cpp
+    mechanics/interpolation/InterpolationTetrahedronLinear.cpp
+    mechanics/interpolation/InterpolationPrismLinear.cpp
     )

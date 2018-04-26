@@ -8,7 +8,6 @@
 #include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTriangleQuadratic.h"
 #include "nuto/mechanics/cell/Matrix.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 
 using namespace NuTo;
 

@@ -1,10 +1,8 @@
 add_unit_test(MeshFem
-    mechanics/mesh/MeshFemDofConvert
-    mechanics/elements/ElementShapeFunctions)
+    mechanics/mesh/MeshFemDofConvert)
 
 add_unit_test(UnitMeshFem
-    mechanics/mesh/MeshFem
-    mechanics/elements/ElementShapeFunctions)
+    mechanics/mesh/MeshFem)
 
 foreach(inputFile
     binary.msh
@@ -29,5 +27,4 @@ endforeach()
 add_unit_test(MeshGmsh
     mechanics/mesh/MeshFem
     math/Legendre
-    mechanics/elements/SpectralShapeFunctions.cpp
-    mechanics/elements/ElementShapeFunctions)
+    mechanics/elements/SpectralShapeFunctions.cpp)

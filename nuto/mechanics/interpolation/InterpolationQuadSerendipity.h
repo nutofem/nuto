@@ -1,6 +1,5 @@
 #pragma once
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/math/shapes/Quadrilateral.h"
 
 namespace NuTo
@@ -13,19 +12,29 @@ public:
         return std::make_unique<InterpolationQuadQuadratic>(*this);
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    static Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder2(int rNodeIndex);
+
+    static Eigen::Matrix<double, 8, 1> ShapeFunctionsQuadOrder2(const Eigen::VectorXd& rCoordinates);
+
+    static Eigen::Matrix<double, 8, 2> DerivativeShapeFunctionsQuadOrder2(const Eigen::VectorXd& rCoordinates);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions2D::ShapeFunctionsQuadOrder2(naturalIpCoords);
+        return ShapeFunctionsQuadOrder2(naturalIpCoords);
     }
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder2(naturalIpCoords);
+        return DerivativeShapeFunctionsQuadOrder2(naturalIpCoords);
     }
 
     NaturalCoords GetLocalCoords(int nodeId) const override
     {
-        return ShapeFunctions2D::NodeCoordinatesQuadOrder2(nodeId);
+        return NodeCoordinatesQuadOrder2(nodeId);
     }
 
     int GetNumNodes() const override

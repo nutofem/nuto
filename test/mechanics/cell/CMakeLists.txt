@@ -1,9 +1,7 @@
 add_unit_test(Cell
-    mechanics/integrationtypes/IntegrationTypeEnum.cpp
-    mechanics/elements/ElementShapeFunctions.cpp)
+    mechanics/integrationtypes/IntegrationTypeEnum.cpp)
 
-add_unit_test(Jacobian
-    mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(Jacobian)
 
 add_unit_test(CellData)
 

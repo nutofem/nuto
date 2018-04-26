@@ -1,25 +1,24 @@
-add_unit_test(InterpolationTetrahedronLinear
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationTetrahedronQuadratic
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationTrussLinear
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationTriangleLinear
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationTriangleQuadratic
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationQuadLinear
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationBrickLinear
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationPrismLinear
-    mechanics/elements/ElementShapeFunctions.cpp)
+add_unit_test(InterpolationTrussLinear)
+
+add_unit_test(InterpolationTetrahedronLinear)
+add_unit_test(InterpolationTetrahedronQuadratic)
+
+add_unit_test(InterpolationTriangleLinear)
+add_unit_test(InterpolationTriangleQuadratic)
+
+add_unit_test(InterpolationQuadLinear)
+add_unit_test(InterpolationQuadSerendipity)
+
+add_unit_test(InterpolationBrickLinear)
+
+add_unit_test(InterpolationPrismLinear)
 add_unit_test(InterpolationPrismQuadratic
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationPyramidLinear
-    mechanics/elements/ElementShapeFunctions.cpp)
-add_unit_test(InterpolationQuadSerendipity
-    mechanics/elements/ElementShapeFunctions.cpp)
+    mechanics/interpolation/InterpolationTriangleQuadratic.cpp
+    mechanics/interpolation/InterpolationTrussQuadratic.cpp)
+
+add_unit_test(InterpolationPyramidLinear)
+
+
 add_unit_test(InterpolationTrussLobatto
     mechanics/elements/SpectralShapeFunctions.cpp
     math/Legendre.cpp)
@@ -31,7 +30,6 @@ add_unit_test(InterpolationBrickLobatto
     math/Legendre.cpp)
 
 add_unit_test(InterpolationCompanion
-    mechanics/elements/ElementShapeFunctions.cpp
     mechanics/elements/SpectralShapeFunctions.cpp
     math/Legendre.cpp
     )

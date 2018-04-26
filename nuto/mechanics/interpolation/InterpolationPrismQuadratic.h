@@ -1,6 +1,5 @@
 #pragma once
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/math/shapes/Prism.h"
 
 namespace NuTo
@@ -13,19 +12,29 @@ public:
         return std::make_unique<InterpolationPrismQuadratic>(*this);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    static Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder2(int rNodeIndex);
+
+    static Eigen::Matrix<double, 18, 1> ShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
+
+    static Eigen::Matrix<double, 18, 3> DerivativeShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions3D::ShapeFunctionsPrismOrder2(naturalIpCoords);
+        return ShapeFunctionsPrismOrder2(naturalIpCoords);
     }
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions3D::DerivativeShapeFunctionsPrismOrder2(naturalIpCoords);
+        return DerivativeShapeFunctionsPrismOrder2(naturalIpCoords);
     }
 
     NaturalCoords GetLocalCoords(int nodeId) const override
     {
-        return ShapeFunctions3D::NodeCoordinatesPrismOrder2(nodeId);
+        return NodeCoordinatesPrismOrder2(nodeId);
     }
 
     int GetNumNodes() const override

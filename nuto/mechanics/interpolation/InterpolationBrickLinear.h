@@ -1,6 +1,5 @@
 #pragma once
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/math/shapes/Hexahedron.h"
 
 namespace NuTo
@@ -13,19 +12,29 @@ public:
         return std::make_unique<InterpolationBrickLinear>(*this);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    static Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder1(int rNodeIndex);
+
+    static Eigen::Matrix<double, 8, 1> ShapeFunctionsBrickOrder1(const Eigen::VectorXd& rCoordinates);
+
+    static Eigen::Matrix<double, 8, 3> DerivativeShapeFunctionsBrickOrder1(const Eigen::VectorXd& rCoordinates);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions3D::ShapeFunctionsBrickOrder1(naturalIpCoords);
+        return ShapeFunctionsBrickOrder1(naturalIpCoords);
     }
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
-        return ShapeFunctions3D::DerivativeShapeFunctionsBrickOrder1(naturalIpCoords);
+        return DerivativeShapeFunctionsBrickOrder1(naturalIpCoords);
     }
 
     NaturalCoords GetLocalCoords(int nodeId) const override
     {
-        return ShapeFunctions3D::NodeCoordinatesBrickOrder1(nodeId);
+        return NodeCoordinatesBrickOrder1(nodeId);
     }
 
     int GetNumNodes() const override
