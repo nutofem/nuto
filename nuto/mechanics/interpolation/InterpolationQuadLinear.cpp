@@ -3,6 +3,37 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationQuadLinear::Clone() const
+{
+    return std::make_unique<InterpolationQuadLinear>(*this);
+}
+
+ShapeFunctions InterpolationQuadLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsQuadOrder1(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationQuadLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsQuadOrder1(naturalIpCoords);
+}
+
+NaturalCoords InterpolationQuadLinear::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesQuadOrder1(nodeId);
+}
+
+int InterpolationQuadLinear::GetNumNodes() const
+{
+    return 4;
+}
+
+const Shape& InterpolationQuadLinear::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 2, 1> InterpolationQuadLinear::NodeCoordinatesQuadOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
@@ -30,7 +61,8 @@ Eigen::Matrix<double, 4, 1> InterpolationQuadLinear::ShapeFunctionsQuadOrder1(co
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 4, 2> InterpolationQuadLinear::DerivativeShapeFunctionsQuadOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 4, 2>
+InterpolationQuadLinear::DerivativeShapeFunctionsQuadOrder1(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 4, 2> derivativeShapeFunctions;
     derivativeShapeFunctions(0, 0) = -0.25 * (1. - rCoordinates(1));

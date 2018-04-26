@@ -3,7 +3,36 @@
 
 using namespace NuTo;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::unique_ptr<InterpolationSimple> InterpolationTriangleLinear::Clone() const
+{
+    return std::make_unique<InterpolationTriangleLinear>(*this);
+}
+
+ShapeFunctions InterpolationTriangleLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsTriangleOrder1(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationTriangleLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsTriangleOrder1(naturalIpCoords);
+}
+
+NaturalCoords InterpolationTriangleLinear::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesTriangleOrder1(nodeId);
+}
+
+int InterpolationTriangleLinear::GetNumNodes() const
+{
+    return 3;
+}
+
+const Shape& InterpolationTriangleLinear::GetShape() const
+{
+    return mShape;
+}
 
 Eigen::Matrix<double, 2, 1> InterpolationTriangleLinear::NodeCoordinatesTriangleOrder1(int rNodeIndex)
 {
@@ -20,7 +49,8 @@ Eigen::Matrix<double, 2, 1> InterpolationTriangleLinear::NodeCoordinatesTriangle
     }
 }
 
-Eigen::Matrix<double, 3, 1> InterpolationTriangleLinear::ShapeFunctionsTriangleOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 3, 1>
+InterpolationTriangleLinear::ShapeFunctionsTriangleOrder1(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 3, 1> shapeFunctions;
     shapeFunctions[0] = 1. - rCoordinates(0) - rCoordinates(1);

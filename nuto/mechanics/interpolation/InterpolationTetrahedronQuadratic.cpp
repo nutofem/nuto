@@ -3,6 +3,37 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationTetrahedronQuadratic::Clone() const
+{
+    return std::make_unique<InterpolationTetrahedronQuadratic>(*this);
+}
+
+ShapeFunctions InterpolationTetrahedronQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsTetrahedronOrder2(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationTetrahedronQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& coords) const
+{
+    return DerivativeShapeFunctionsTetrahedronOrder2(coords);
+}
+
+NaturalCoords InterpolationTetrahedronQuadratic::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesTetrahedronOrder2(nodeId);
+}
+
+int InterpolationTetrahedronQuadratic::GetNumNodes() const
+{
+    return 10;
+}
+
+const Shape& InterpolationTetrahedronQuadratic::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 3, 1> InterpolationTetrahedronQuadratic::NodeCoordinatesTetrahedronOrder2(int rNodeIndex)
 {
     switch (rNodeIndex)
@@ -33,7 +64,8 @@ Eigen::Matrix<double, 3, 1> InterpolationTetrahedronQuadratic::NodeCoordinatesTe
     }
 }
 
-Eigen::Matrix<double, 10, 1> InterpolationTetrahedronQuadratic::ShapeFunctionsTetrahedronOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 10, 1>
+InterpolationTetrahedronQuadratic::ShapeFunctionsTetrahedronOrder2(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 10, 1> shapeFunctions;
     double r = rCoordinates[0];
@@ -73,7 +105,8 @@ Eigen::Matrix<double, 10, 1> InterpolationTetrahedronQuadratic::ShapeFunctionsTe
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 10, 3> InterpolationTetrahedronQuadratic::DerivativeShapeFunctionsTetrahedronOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 10, 3>
+InterpolationTetrahedronQuadratic::DerivativeShapeFunctionsTetrahedronOrder2(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 10, 3> derivativeShapeFunctions;
     double r = rCoordinates[0];

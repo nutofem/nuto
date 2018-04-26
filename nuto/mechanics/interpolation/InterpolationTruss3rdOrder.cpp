@@ -3,6 +3,37 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationTruss3rdOrder::Clone() const
+{
+    return std::make_unique<InterpolationTruss3rdOrder>(*this);
+}
+
+ShapeFunctions InterpolationTruss3rdOrder::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsTrussOrder3(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationTruss3rdOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsTrussOrder3(naturalIpCoords);
+}
+
+NaturalCoords InterpolationTruss3rdOrder::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesTrussOrder3(nodeId);
+}
+
+int InterpolationTruss3rdOrder::GetNumNodes() const
+{
+    return 4;
+}
+
+const Shape& InterpolationTruss3rdOrder::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 1, 1> InterpolationTruss3rdOrder::NodeCoordinatesTrussOrder3(int rNodeIndex)
 {
     switch (rNodeIndex)

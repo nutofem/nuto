@@ -8,10 +8,7 @@ namespace NuTo
 class InterpolationTruss4thOrder : public InterpolationSimple
 {
 public:
-    std::unique_ptr<InterpolationSimple> Clone() const override
-    {
-        return std::make_unique<InterpolationTruss4thOrder>(*this);
-    }
+    std::unique_ptr<InterpolationSimple> Clone() const override;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,30 +20,15 @@ public:
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctionsTrussOrder4(naturalIpCoords);
-    }
+    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return DerivativeShapeFunctionsTrussOrder4(naturalIpCoords);
-    }
+    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
-    NaturalCoords GetLocalCoords(int nodeId) const override
-    {
-        return NodeCoordinatesTrussOrder4(nodeId);
-    }
+    NaturalCoords GetLocalCoords(int nodeId) const override;
 
-    int GetNumNodes() const override
-    {
-        return 5;
-    }
+    int GetNumNodes() const override;
 
-    const Shape& GetShape() const override
-    {
-        return mShape;
-    }
+    const Shape& GetShape() const override;
 
 private:
     Line mShape;

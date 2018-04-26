@@ -3,6 +3,37 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationBrickQuadratic::Clone() const
+{
+    return std::make_unique<InterpolationBrickQuadratic>(*this);
+}
+
+ShapeFunctions InterpolationBrickQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsBrickOrder2(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationBrickQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsBrickOrder2(naturalIpCoords);
+}
+
+NaturalCoords InterpolationBrickQuadratic::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesBrickOrder2(nodeId);
+}
+
+int InterpolationBrickQuadratic::GetNumNodes() const
+{
+    return 20;
+}
+
+const Shape& InterpolationBrickQuadratic::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 3, 1> InterpolationBrickQuadratic::NodeCoordinatesBrickOrder2(int rNodeIndex)
 {
     switch (rNodeIndex)
@@ -107,7 +138,8 @@ Eigen::Matrix<double, 20, 1> InterpolationBrickQuadratic::ShapeFunctionsBrickOrd
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 20, 3> InterpolationBrickQuadratic::DerivativeShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 20, 3>
+InterpolationBrickQuadratic::DerivativeShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates)
 {
 
     double r = rCoordinates[0];

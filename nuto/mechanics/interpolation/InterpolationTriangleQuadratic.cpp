@@ -3,7 +3,36 @@
 
 using namespace NuTo;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::unique_ptr<InterpolationSimple> InterpolationTriangleQuadratic::Clone() const
+{
+    return std::make_unique<InterpolationTriangleQuadratic>(*this);
+}
+
+ShapeFunctions InterpolationTriangleQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsTriangleOrder2(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationTriangleQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsTriangleOrder2(naturalIpCoords);
+}
+
+NaturalCoords InterpolationTriangleQuadratic::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesTriangleOrder2(nodeId);
+}
+
+int InterpolationTriangleQuadratic::GetNumNodes() const
+{
+    return 6;
+}
+
+const Shape& InterpolationTriangleQuadratic::GetShape() const
+{
+    return mShape;
+}
 
 Eigen::Matrix<double, 2, 1> InterpolationTriangleQuadratic::NodeCoordinatesTriangleOrder2(int rNodeIndex)
 {

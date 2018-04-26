@@ -7,10 +7,7 @@ namespace NuTo
 class InterpolationQuadLinear : public InterpolationSimple
 {
 public:
-    std::unique_ptr<InterpolationSimple> Clone() const override
-    {
-        return std::make_unique<InterpolationQuadLinear>(*this);
-    }
+    std::unique_ptr<InterpolationSimple> Clone() const override;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,30 +19,15 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctionsQuadOrder1(naturalIpCoords);
-    }
+    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return DerivativeShapeFunctionsQuadOrder1(naturalIpCoords);
-    }
+    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
-    NaturalCoords GetLocalCoords(int nodeId) const override
-    {
-        return NodeCoordinatesQuadOrder1(nodeId);
-    }
+    NaturalCoords GetLocalCoords(int nodeId) const override;
 
-    int GetNumNodes() const override
-    {
-        return 4;
-    }
+    int GetNumNodes() const override;
 
-    const Shape& GetShape() const override
-    {
-        return mShape;
-    }
+    const Shape& GetShape() const override;
 
 private:
     Quadrilateral mShape;

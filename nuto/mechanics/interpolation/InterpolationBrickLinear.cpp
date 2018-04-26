@@ -3,6 +3,37 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationBrickLinear::Clone() const
+{
+    return std::make_unique<InterpolationBrickLinear>(*this);
+}
+
+ShapeFunctions InterpolationBrickLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsBrickOrder1(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationBrickLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsBrickOrder1(naturalIpCoords);
+}
+
+NaturalCoords InterpolationBrickLinear::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesBrickOrder1(nodeId);
+}
+
+int InterpolationBrickLinear::GetNumNodes() const
+{
+    return 8;
+}
+
+const Shape& InterpolationBrickLinear::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 3, 1> InterpolationBrickLinear::NodeCoordinatesBrickOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)

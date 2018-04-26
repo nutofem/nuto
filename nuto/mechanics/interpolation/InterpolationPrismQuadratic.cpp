@@ -5,6 +5,37 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationPrismQuadratic::Clone() const
+{
+    return std::make_unique<InterpolationPrismQuadratic>(*this);
+}
+
+ShapeFunctions InterpolationPrismQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsPrismOrder2(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationPrismQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsPrismOrder2(naturalIpCoords);
+}
+
+NaturalCoords InterpolationPrismQuadratic::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesPrismOrder2(nodeId);
+}
+
+int InterpolationPrismQuadratic::GetNumNodes() const
+{
+    return 18;
+}
+
+const Shape& InterpolationPrismQuadratic::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 3, 1> InterpolationPrismQuadratic::NodeCoordinatesPrismOrder2(int rNodeIndex)
 {
     switch (rNodeIndex)

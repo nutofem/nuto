@@ -4,6 +4,38 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::Clone() const
+{
+    return std::make_unique<InterpolationPyramidLinear>(*this);
+}
+
+ShapeFunctions InterpolationPyramidLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsPyramidOrder1(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationPyramidLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsPyramidOrder1(naturalIpCoords);
+}
+
+NaturalCoords InterpolationPyramidLinear::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesPyramidOrder1(nodeId);
+}
+
+int InterpolationPyramidLinear::GetNumNodes() const
+{
+    return 5;
+}
+
+const Shape& InterpolationPyramidLinear::GetShape() const
+{
+    return mShape;
+}
+
+
 Eigen::Matrix<double, 3, 1> InterpolationPyramidLinear::NodeCoordinatesPyramidOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)

@@ -3,6 +3,37 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationPrismLinear::Clone() const
+{
+    return std::make_unique<InterpolationPrismLinear>(*this);
+}
+
+ShapeFunctions InterpolationPrismLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsPrismOrder1(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationPrismLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsPrismOrder1(naturalIpCoords);
+}
+
+NaturalCoords InterpolationPrismLinear::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesPrismOrder1(nodeId);
+}
+
+int InterpolationPrismLinear::GetNumNodes() const
+{
+    return 6;
+}
+
+const Shape& InterpolationPrismLinear::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 3, 1> InterpolationPrismLinear::NodeCoordinatesPrismOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
@@ -42,7 +73,8 @@ Eigen::Matrix<double, 6, 1> InterpolationPrismLinear::ShapeFunctionsPrismOrder1(
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 6, 3> InterpolationPrismLinear::DerivativeShapeFunctionsPrismOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 6, 3>
+InterpolationPrismLinear::DerivativeShapeFunctionsPrismOrder1(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 6, 3> derivativeShapeFunctions;
 

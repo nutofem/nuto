@@ -7,10 +7,7 @@ namespace NuTo
 class InterpolationTetrahedronQuadratic : public InterpolationSimple
 {
 public:
-    std::unique_ptr<InterpolationSimple> Clone() const override
-    {
-        return std::make_unique<InterpolationTetrahedronQuadratic>(*this);
-    }
+    std::unique_ptr<InterpolationSimple> Clone() const override;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,30 +19,15 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctionsTetrahedronOrder2(naturalIpCoords);
-    }
+    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& coords) const override
-    {
-        return DerivativeShapeFunctionsTetrahedronOrder2(coords);
-    }
+    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& coords) const override;
 
-    NaturalCoords GetLocalCoords(int nodeId) const override
-    {
-        return NodeCoordinatesTetrahedronOrder2(nodeId);
-    }
+    NaturalCoords GetLocalCoords(int nodeId) const override;
 
-    int GetNumNodes() const override
-    {
-        return 10;
-    }
+    int GetNumNodes() const override;
 
-    const Shape& GetShape() const override
-    {
-        return mShape;
-    }
+    const Shape& GetShape() const override;
 
 private:
     Tetrahedron mShape;

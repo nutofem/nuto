@@ -3,6 +3,36 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationTrussLinear::Clone() const
+{
+    return std::make_unique<InterpolationTrussLinear>(*this);
+}
+
+ShapeFunctions InterpolationTrussLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsTrussOrder1(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural InterpolationTrussLinear::GetDerivativeShapeFunctions(const NaturalCoords&) const
+{
+    return DerivativeShapeFunctionsTrussOrder1();
+}
+
+NaturalCoords InterpolationTrussLinear::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesTrussOrder1(nodeId);
+}
+
+int InterpolationTrussLinear::GetNumNodes() const
+{
+    return 2;
+}
+
+const Shape& InterpolationTrussLinear::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 1, 1> InterpolationTrussLinear::NodeCoordinatesTrussOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)

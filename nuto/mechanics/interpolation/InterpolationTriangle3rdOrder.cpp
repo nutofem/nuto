@@ -3,7 +3,36 @@
 
 using namespace NuTo;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::unique_ptr<InterpolationSimple> InterpolationTriangle3rdOrder::Clone() const
+{
+    return std::make_unique<InterpolationTriangle3rdOrder>(*this);
+}
+
+ShapeFunctions InterpolationTriangle3rdOrder::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsTriangleOrder3(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural
+InterpolationTriangle3rdOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return DerivativeShapeFunctionsTriangleOrder3(naturalIpCoords);
+}
+
+NaturalCoords InterpolationTriangle3rdOrder::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesTriangleOrder3(nodeId);
+}
+
+int InterpolationTriangle3rdOrder::GetNumNodes() const
+{
+    return 10;
+}
+
+const Shape& InterpolationTriangle3rdOrder::GetShape() const
+{
+    return mShape;
+}
 
 Eigen::Matrix<double, 2, 1> InterpolationTriangle3rdOrder::NodeCoordinatesTriangleOrder3(int rNodeIndex)
 {
@@ -34,7 +63,8 @@ Eigen::Matrix<double, 2, 1> InterpolationTriangle3rdOrder::NodeCoordinatesTriang
     }
 }
 
-Eigen::Matrix<double, 10, 1> InterpolationTriangle3rdOrder::ShapeFunctionsTriangleOrder3(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 10, 1>
+InterpolationTriangle3rdOrder::ShapeFunctionsTriangleOrder3(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 10, 1> shapeFunctions;
     double r = rCoordinates[0];
@@ -55,7 +85,8 @@ Eigen::Matrix<double, 10, 1> InterpolationTriangle3rdOrder::ShapeFunctionsTriang
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 10, 2> InterpolationTriangle3rdOrder::DerivativeShapeFunctionsTriangleOrder3(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 10, 2>
+InterpolationTriangle3rdOrder::DerivativeShapeFunctionsTriangleOrder3(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 10, 2> derivativeShapeFunctions;
     double r = rCoordinates[0];

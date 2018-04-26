@@ -3,6 +3,36 @@
 
 using namespace NuTo;
 
+std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::Clone() const
+{
+    return std::make_unique<InterpolationTetrahedronLinear>(*this);
+}
+
+ShapeFunctions InterpolationTetrahedronLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return ShapeFunctionsTetrahedronOrder1(naturalIpCoords);
+}
+
+DerivativeShapeFunctionsNatural InterpolationTetrahedronLinear::GetDerivativeShapeFunctions(const NaturalCoords&) const
+{
+    return DerivativeShapeFunctionsTetrahedronOrder1();
+}
+
+NaturalCoords InterpolationTetrahedronLinear::GetLocalCoords(int nodeId) const
+{
+    return NodeCoordinatesTetrahedronOrder1(nodeId);
+}
+
+int InterpolationTetrahedronLinear::GetNumNodes() const
+{
+    return 4;
+}
+
+const Shape& InterpolationTetrahedronLinear::GetShape() const
+{
+    return mShape;
+}
+
 Eigen::Matrix<double, 3, 1> InterpolationTetrahedronLinear::NodeCoordinatesTetrahedronOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
@@ -20,7 +50,8 @@ Eigen::Matrix<double, 3, 1> InterpolationTetrahedronLinear::NodeCoordinatesTetra
     }
 }
 
-Eigen::Matrix<double, 4, 1> InterpolationTetrahedronLinear::ShapeFunctionsTetrahedronOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 4, 1>
+InterpolationTetrahedronLinear::ShapeFunctionsTetrahedronOrder1(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 4, 1> shapeFunctions;
     shapeFunctions[0] = 1. - rCoordinates.sum();
