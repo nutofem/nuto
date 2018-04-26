@@ -31,5 +31,17 @@ add_unit_test(InterpolationBrickLobatto
 
 add_unit_test(InterpolationCompanion
     mechanics/elements/SpectralShapeFunctions.cpp
+    mechanics/interpolation/InterpolationTrussLinear.cpp
+    mechanics/interpolation/InterpolationTrussQuadratic.cpp
+    mechanics/interpolation/InterpolationTriangleLinear.cpp
+    mechanics/interpolation/InterpolationTriangleQuadratic.cpp
+    mechanics/interpolation/InterpolationQuadLinear.cpp
+    mechanics/interpolation/InterpolationQuadSerendipity.cpp
+    mechanics/interpolation/InterpolationTetrahedronLinear.cpp
+    mechanics/interpolation/InterpolationTetrahedronQuadratic.cpp
+    mechanics/interpolation/InterpolationBrickLinear.cpp
+    mechanics/interpolation/InterpolationPrismLinear.cpp
+    mechanics/interpolation/InterpolationPrismQuadratic.cpp
+    mechanics/interpolation/InterpolationPyramidLinear.cpp
     math/Legendre.cpp
     )
