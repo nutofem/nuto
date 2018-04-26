@@ -7,14 +7,25 @@
 
 #include "nuto/mechanics/tools/NodalValueMerger.h"
 
+#include <array>
+
 namespace NuTo
 {
+
+template <typename TCellInterfaceFunction, typename TTimeDepFunction>
+TCellInterfaceFunction Apply(TTimeDepFunction& f, double t, double dt)
+{
+    using namespace std::placeholders;
+    return std::bind(f, _1, t, dt);
+}
 
 //! Equation system that contains R(u, u') + M u'' = 0 with
 //! R = Gradient
 //! dR/du = Hessian0
 //! dR/du' = Hessian1
 //! M = Hessian2
+
+template <unsigned int TNumTimeDer = 0>
 class TimeDependentProblem
 {
 public:
@@ -26,14 +37,18 @@ public:
     TimeDependentProblem(MeshFem* rMesh);
 
     DofVector<double> RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
-                                 DofVector<double> oldDofValues);
+                                   DofVector<double> oldDofValues);
 
     void AddGradientFunction(Group<CellInterface> group, GradientFunction f);
-    void AddHessian0Function(Group<CellInterface> group, HessianFunction f);
+    template <int TTimeDer>
+    void AddHessianFunction(Group<CellInterface> group, HessianFunction f);
     void AddUpdateFunction(Group<CellInterface> group, UpdateFunction f);
 
     DofVector<double> Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
-    DofMatrixSparse<double> Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
+
+    template <int TTimeDer>
+    DofMatrixSparse<double> Hessian(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
+
 
     void UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
 
@@ -42,11 +57,11 @@ private:
     NodalValueMerger mMerger;
 
     using GradientPair = std::pair<Group<CellInterface>, GradientFunction>;
-    using Hessian0Pair = std::pair<Group<CellInterface>, HessianFunction>;
+    using HessianPair = std::pair<Group<CellInterface>, HessianFunction>;
     using UpdatePair = std::pair<Group<CellInterface>, UpdateFunction>;
 
     std::vector<GradientPair> mGradientFunctions;
-    std::vector<Hessian0Pair> mHessian0Functions;
+    std::array<std::vector<HessianPair>, TNumTimeDer + 1> mHessianFunctions;
     std::vector<UpdatePair> mUpdateFunctions;
 
 
@@ -89,4 +104,29 @@ public:
         return [&object, f](const CellIpData& cellIpData, double, double) { return (object.*f)(cellIpData); };
     }
 };
+
+template <unsigned int TNumTimeDer>
+template <int TTimeDer>
+void TimeDependentProblem<TNumTimeDer>::AddHessianFunction(Group<CellInterface> group,
+                                                           TimeDependentProblem::HessianFunction f)
+{
+    static_assert(TTimeDer <= TNumTimeDer, "Hessian time derivative bigger than the problems time derivative.");
+    mHessianFunctions[TTimeDer].push_back({group, f});
+}
+
+template <unsigned int TNumTimeDer>
+template <int TTimeDer>
+DofMatrixSparse<double> TimeDependentProblem<TNumTimeDer>::Hessian(const DofVector<double>& dofValues,
+                                                                   std::vector<DofType> dofs, double t, double dt)
+{
+    static_assert(TTimeDer <= TNumTimeDer, "Hessian time derivative bigger than the problems time derivative.");
+    mMerger.Merge(dofValues, dofs);
+    DofMatrixSparse<double> hessian0;
+    for (auto& hessianFunction : mHessianFunctions[TTimeDer])
+        hessian0 += mAssembler.BuildMatrix(hessianFunction.first, dofs,
+                                           Apply<CellInterface::MatrixFunction>(hessianFunction.second, t, dt));
+    return hessian0;
+}
+
+
 } /* NuTo */

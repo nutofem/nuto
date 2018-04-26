@@ -13,12 +13,12 @@ public:
     //! Ctor
     //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
     //! @param dof dof type
-    QuasistaticSolver(TimeDependentProblem& equations, DofType dof);
+    QuasistaticSolver(TimeDependentProblem<0>& equations, DofType dof);
 
     //! Ctor
     //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
     //! @param dofs multiple dof types
-    QuasistaticSolver(TimeDependentProblem& equations, std::vector<DofType> dofs);
+    QuasistaticSolver(TimeDependentProblem<0>& equations, std::vector<DofType> dofs);
 
     //! @param constraints linear constraints
     void SetConstraints(Constraint::Constraints constraints);
@@ -81,7 +81,7 @@ private:
     //! @var mX last updated dof state
     DofVector<double> mX;
 
-    TimeDependentProblem& mProblem;
+    TimeDependentProblem<0>& mProblem;
     Constraint::Constraints mConstraints;
 
     std::vector<DofType> mDofs;

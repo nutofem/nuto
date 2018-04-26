@@ -39,14 +39,14 @@ public:
         mLaw.mEvolution.ResizeHistoryData(mCellGroup.Size(), mIntegrationType.GetNumIntegrationPoints());
 
 
-        auto Gradient = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
-        auto Hessian0 = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
-        TimeDependentProblem::UpdateFunction UpdateHistory = [&](const CellIpData& cellIpData, double, double dt) {
+        auto Gradient = TimeDependentProblem<0>::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
+        auto Hessian0 = TimeDependentProblem<0>::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
+        TimeDependentProblem<0>::UpdateFunction UpdateHistory = [&](const CellIpData& cellIpData, double, double dt) {
             mLaw.Update(cellIpData.Apply(mDof, Nabla::Strain()), dt, cellIpData.Ids());
         };
 
         mEquations.AddGradientFunction(mCellGroup, Gradient);
-        mEquations.AddHessian0Function(mCellGroup, Hessian0);
+        mEquations.AddHessianFunction<0>(mCellGroup, Hessian0);
         mEquations.AddUpdateFunction(mCellGroup, UpdateHistory);
 
         auto constraints = DefineConstraints(mMesh, mDof);
@@ -93,7 +93,7 @@ private:
     Laws::LocalIsotropicDamage<1> mLaw;
     Integrands::MomentumBalance<1> mMomentumBalance;
 
-    TimeDependentProblem mEquations;
+    TimeDependentProblem<0> mEquations;
     QuasistaticSolver mProblem;
 
     IntegrationTypeTensorProduct<1> mIntegrationType;

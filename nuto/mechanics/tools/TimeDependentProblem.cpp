@@ -1,15 +1,19 @@
 #include "nuto/mechanics/tools/TimeDependentProblem.h"
 #include "nuto/mechanics/dofs/DofNumbering.h"
 
-using namespace NuTo;
+namespace NuTo
+{
 
-TimeDependentProblem::TimeDependentProblem(MeshFem* rMesh)
+template <unsigned int TNumTimeDer>
+TimeDependentProblem<TNumTimeDer>::TimeDependentProblem(MeshFem* rMesh)
     : mMerger(rMesh)
 {
 }
 
-DofVector<double> TimeDependentProblem::RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
-                                                   DofVector<double> oldDofValues)
+template <unsigned int TNumTimeDer>
+DofVector<double> TimeDependentProblem<TNumTimeDer>::RenumberDofs(Constraint::Constraints constraints,
+                                                                  std::vector<DofType> dofTypes,
+                                                                  DofVector<double> oldDofValues)
 {
     DofInfo dofInfos;
 
@@ -31,30 +35,23 @@ DofVector<double> TimeDependentProblem::RenumberDofs(Constraint::Constraints con
     return renumberedValues;
 }
 
-void TimeDependentProblem::AddGradientFunction(Group<CellInterface> group, GradientFunction f)
+template <unsigned int TNumTimeDer>
+void TimeDependentProblem<TNumTimeDer>::AddGradientFunction(Group<CellInterface> group, GradientFunction f)
 {
     mGradientFunctions.push_back({group, f});
 }
 
-void TimeDependentProblem::AddHessian0Function(Group<CellInterface> group, HessianFunction f)
-{
-    mHessian0Functions.push_back({group, f});
-}
 
-void TimeDependentProblem::AddUpdateFunction(Group<CellInterface> group, UpdateFunction f)
+template <unsigned int TNumTimeDer>
+void TimeDependentProblem<TNumTimeDer>::AddUpdateFunction(Group<CellInterface> group, UpdateFunction f)
 {
     mUpdateFunctions.push_back({group, f});
 }
 
-template <typename TCellInterfaceFunction, typename TTimeDepFunction>
-TCellInterfaceFunction Apply(TTimeDepFunction& f, double t, double dt)
-{
-    using namespace std::placeholders;
-    return std::bind(f, _1, t, dt);
-}
 
-DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
-                                               double dt)
+template <unsigned int TNumTimeDer>
+DofVector<double> TimeDependentProblem<TNumTimeDer>::Gradient(const DofVector<double>& dofValues,
+                                                              std::vector<DofType> dofs, double t, double dt)
 {
     mMerger.Merge(dofValues, dofs);
     DofVector<double> gradient;
@@ -64,22 +61,19 @@ DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofVal
     return gradient;
 }
 
-DofMatrixSparse<double> TimeDependentProblem::Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs,
-                                                     double t, double dt)
-{
-    mMerger.Merge(dofValues, dofs);
-    DofMatrixSparse<double> hessian0;
-    for (auto& hessian0Function : mHessian0Functions)
-        hessian0 += mAssembler.BuildMatrix(hessian0Function.first, dofs,
-                                           Apply<CellInterface::MatrixFunction>(hessian0Function.second, t, dt));
-    return hessian0;
-}
 
-void TimeDependentProblem::UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
-                                         double dt)
+template <unsigned int TNumTimeDer>
+void TimeDependentProblem<TNumTimeDer>::UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs,
+                                                      double t, double dt)
 {
     mMerger.Merge(dofValues, dofs);
     for (auto& updateFunction : mUpdateFunctions)
         for (auto& cell : updateFunction.first)
             cell.Apply(Apply<CellInterface::VoidFunction>(updateFunction.second, t, dt));
 }
+
+
+template class TimeDependentProblem<0>;
+template class TimeDependentProblem<1>;
+template class TimeDependentProblem<2>;
+} // namespace NuTo

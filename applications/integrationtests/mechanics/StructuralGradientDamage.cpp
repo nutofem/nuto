@@ -68,10 +68,10 @@ BOOST_AUTO_TEST_CASE(Integrand)
     gdm.mKappas.row(cells.Size() / 2 + 1) = Eigen::VectorXd::Constant(nIp, 3 * k0);
 
     /* define time dependent functions */
-    TimeDependentProblem equations(&mesh);
-    equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
-    equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &Gdm::Hessian0));
-    equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Update));
+    TimeDependentProblem<0> equations(&mesh);
+    equations.AddGradientFunction(cells, TimeDependentProblem<0>::Bind(gdm, &Gdm::Gradient));
+    equations.AddHessianFunction<0>(cells, TimeDependentProblem<0>::Bind(gdm, &Gdm::Hessian0));
+    equations.AddUpdateFunction(cells, TimeDependentProblem<0>::Bind(gdm, &Gdm::Update));
 
     QuasistaticSolver problem(equations, {d, eeq});
     problem.mTolerance = 1.e-6;
@@ -186,12 +186,12 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     auto cellsLeft = cellStorage.AddCells(leftElements, integration);
     gdm.mKappas.setZero(cells.Size(), integration.GetNumIntegrationPoints());
 
-    TimeDependentProblem equations(&mesh);
+    TimeDependentProblem<0> equations(&mesh);
 
-    equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &Gdm::Hessian0));
-    equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
-    equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Update));
-    equations.AddGradientFunction(cellsLeft, TimeDependentProblem::Bind(neumann, &Neumann::ExternalLoad));
+    equations.AddHessianFunction<0>(cells, TimeDependentProblem<0>::Bind(gdm, &Gdm::Hessian0));
+    equations.AddGradientFunction(cells, TimeDependentProblem<0>::Bind(gdm, &Gdm::Gradient));
+    equations.AddUpdateFunction(cells, TimeDependentProblem<0>::Bind(gdm, &Gdm::Update));
+    equations.AddGradientFunction(cellsLeft, TimeDependentProblem<0>::Bind(neumann, &Neumann::ExternalLoad));
 
     QuasistaticSolver problem(equations, {d, eeq});
 

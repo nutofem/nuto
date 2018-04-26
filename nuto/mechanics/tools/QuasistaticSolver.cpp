@@ -14,13 +14,13 @@
 using namespace NuTo;
 
 
-QuasistaticSolver::QuasistaticSolver(TimeDependentProblem& s, DofType dof)
+QuasistaticSolver::QuasistaticSolver(TimeDependentProblem<0>& s, DofType dof)
     : mProblem(s)
     , mDofs({dof})
 {
 }
 
-QuasistaticSolver::QuasistaticSolver(TimeDependentProblem& s, std::vector<DofType> dofs)
+QuasistaticSolver::QuasistaticSolver(TimeDependentProblem<0>& s, std::vector<DofType> dofs)
     : mProblem(s)
     , mDofs(dofs)
 {
@@ -51,7 +51,7 @@ void QuasistaticSolver::SetGlobalTime(double globalTime)
 DofVector<double> QuasistaticSolver::TrialState(double newGlobalTime, const ConstrainedSystemSolver& solver)
 {
     // compute hessian for last converged time step
-    auto hessian0 = mProblem.Hessian0(mX, mDofs, mGlobalTime, mTimeStep);
+    auto hessian0 = mProblem.Hessian<0>(mX, mDofs, mGlobalTime, mTimeStep);
     Eigen::MatrixXd hessian0Eigen(ToEigen(hessian0, mDofs));
 
     // update time step
@@ -73,7 +73,7 @@ DofVector<double> QuasistaticSolver::Residual(const DofVector<double>& u)
 
 DofMatrixSparse<double> QuasistaticSolver::Derivative(const DofVector<double>& u)
 {
-    return mProblem.Hessian0(u, mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    return mProblem.Hessian<0>(u, mDofs, mGlobalTime + mTimeStep, mTimeStep);
 }
 
 void QuasistaticSolver::UpdateHistory(const DofVector<double>& x)
