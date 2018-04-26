@@ -5,7 +5,7 @@ namespace NuTo
 {
 namespace Matrix
 {
-inline NMatrix N(const ShapeFunctions& shapeFunctions, int numNodes, int dim)
+inline NMatrix N(const Eigen::VectorXd& shapeFunctions, int numNodes, int dim)
 {
     NMatrix n(dim, dim * numNodes);
     for (int i = 0; i < numNodes; ++i)

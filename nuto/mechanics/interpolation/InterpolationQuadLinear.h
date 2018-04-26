@@ -7,19 +7,15 @@ namespace NuTo
 class InterpolationQuadLinear : public InterpolationSimple
 {
 public:
+    static Eigen::Matrix<double, 2, 1> LocalCoords(int rNodeIndex);
+
+    static Eigen::Matrix<double, 4, 1> ShapeFunctions(const Eigen::VectorXd& rCoordinates);
+
+    static Eigen::Matrix<double, 4, 2> DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates);
+
     std::unique_ptr<InterpolationSimple> Clone() const override;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    static Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder1(int rNodeIndex);
-
-    static Eigen::Matrix<double, 4, 1> ShapeFunctionsQuadOrder1(const Eigen::VectorXd& rCoordinates);
-
-    static Eigen::Matrix<double, 4, 2> DerivativeShapeFunctionsQuadOrder1(const Eigen::VectorXd& rCoordinates);
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 

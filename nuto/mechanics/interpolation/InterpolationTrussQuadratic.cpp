@@ -8,20 +8,20 @@ std::unique_ptr<InterpolationSimple> InterpolationTrussQuadratic::Clone() const
     return std::make_unique<InterpolationTrussQuadratic>(*this);
 }
 
-ShapeFunctions InterpolationTrussQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationTrussQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsTrussOrder2(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationTrussQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsTrussOrder2(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationTrussQuadratic::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesTrussOrder2(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationTrussQuadratic::GetNumNodes() const
@@ -34,7 +34,7 @@ const Shape& InterpolationTrussQuadratic::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 1, 1> InterpolationTrussQuadratic::NodeCoordinatesTrussOrder2(int rNodeIndex)
+Eigen::Matrix<double, 1, 1> InterpolationTrussQuadratic::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -49,7 +49,7 @@ Eigen::Matrix<double, 1, 1> InterpolationTrussQuadratic::NodeCoordinatesTrussOrd
     }
 }
 
-Eigen::Matrix<double, 3, 1> InterpolationTrussQuadratic::ShapeFunctionsTrussOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 3, 1> InterpolationTrussQuadratic::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 3, 1> shapeFunctions;
     shapeFunctions[0] = 0.5 * (1. - rCoordinates[0]) - 0.5 * (1. - rCoordinates[0] * rCoordinates[0]);
@@ -58,8 +58,7 @@ Eigen::Matrix<double, 3, 1> InterpolationTrussQuadratic::ShapeFunctionsTrussOrde
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 3, 1>
-InterpolationTrussQuadratic::DerivativeShapeFunctionsTrussOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 3, 1> InterpolationTrussQuadratic::DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 3, 1> derivativeShapeFunctions;
     derivativeShapeFunctions[0] = -0.5 + rCoordinates[0];

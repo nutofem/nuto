@@ -7,19 +7,15 @@ namespace NuTo
 class InterpolationPyramidLinear : public InterpolationSimple
 {
 public:
+    static Eigen::Matrix<double, 3, 1> LocalCoords(int rNodeIndex);
+
+    static Eigen::Matrix<double, 5, 1> ShapeFunctions(const Eigen::VectorXd& rCoordinates);
+
+    static Eigen::Matrix<double, 5, 3> DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates);
+
     std::unique_ptr<InterpolationSimple> Clone() const override;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    static Eigen::Matrix<double, 3, 1> NodeCoordinatesPyramidOrder1(int rNodeIndex);
-
-    static Eigen::Matrix<double, 5, 1> ShapeFunctionsPyramidOrder1(const Eigen::VectorXd& rCoordinates);
-
-    static Eigen::Matrix<double, 5, 3> DerivativeShapeFunctionsPyramidOrder1(const Eigen::VectorXd& rCoordinates);
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 

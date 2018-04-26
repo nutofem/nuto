@@ -8,20 +8,20 @@ std::unique_ptr<InterpolationSimple> InterpolationBrickLinear::Clone() const
     return std::make_unique<InterpolationBrickLinear>(*this);
 }
 
-ShapeFunctions InterpolationBrickLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationBrickLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsBrickOrder1(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationBrickLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsBrickOrder1(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationBrickLinear::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesBrickOrder1(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationBrickLinear::GetNumNodes() const
@@ -34,7 +34,7 @@ const Shape& InterpolationBrickLinear::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 3, 1> InterpolationBrickLinear::NodeCoordinatesBrickOrder1(int rNodeIndex)
+Eigen::Matrix<double, 3, 1> InterpolationBrickLinear::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -60,7 +60,7 @@ Eigen::Matrix<double, 3, 1> InterpolationBrickLinear::NodeCoordinatesBrickOrder1
     }
 }
 
-Eigen::Matrix<double, 8, 1> InterpolationBrickLinear::ShapeFunctionsBrickOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 8, 1> InterpolationBrickLinear::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 8, 1> shapeFunctions;
 
@@ -84,8 +84,7 @@ Eigen::Matrix<double, 8, 1> InterpolationBrickLinear::ShapeFunctionsBrickOrder1(
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 8, 3>
-InterpolationBrickLinear::DerivativeShapeFunctionsBrickOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 8, 3> InterpolationBrickLinear::DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     double plus_r = 1.0 + rCoordinates[0];
     double plus_s = 1.0 + rCoordinates[1];

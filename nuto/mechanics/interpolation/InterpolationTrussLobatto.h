@@ -19,7 +19,7 @@ public:
         return std::make_unique<InterpolationTrussLobatto>(*this);
     }
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
         Eigen::VectorXd result(mNodes.size());
         const Eigen::VectorXd shapes = ShapeFunctions1D::ShapeFunctionsTrussLagrange(naturalIpCoords[0], mNodes);

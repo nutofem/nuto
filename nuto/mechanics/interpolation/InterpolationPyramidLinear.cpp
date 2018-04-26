@@ -9,20 +9,20 @@ std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::Clone() const
     return std::make_unique<InterpolationPyramidLinear>(*this);
 }
 
-ShapeFunctions InterpolationPyramidLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationPyramidLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsPyramidOrder1(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationPyramidLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsPyramidOrder1(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationPyramidLinear::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesPyramidOrder1(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationPyramidLinear::GetNumNodes() const
@@ -36,7 +36,7 @@ const Shape& InterpolationPyramidLinear::GetShape() const
 }
 
 
-Eigen::Matrix<double, 3, 1> InterpolationPyramidLinear::NodeCoordinatesPyramidOrder1(int rNodeIndex)
+Eigen::Matrix<double, 3, 1> InterpolationPyramidLinear::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -56,7 +56,7 @@ Eigen::Matrix<double, 3, 1> InterpolationPyramidLinear::NodeCoordinatesPyramidOr
     }
 }
 
-Eigen::Matrix<double, 5, 1> InterpolationPyramidLinear::ShapeFunctionsPyramidOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 5, 1> InterpolationPyramidLinear::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     const double x = rCoordinates[0];
     const double y = rCoordinates[1];
@@ -78,8 +78,7 @@ Eigen::Matrix<double, 5, 1> InterpolationPyramidLinear::ShapeFunctionsPyramidOrd
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 5, 3>
-InterpolationPyramidLinear::DerivativeShapeFunctionsPyramidOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 5, 3> InterpolationPyramidLinear::DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     const double x = rCoordinates[0];
     const double y = rCoordinates[1];

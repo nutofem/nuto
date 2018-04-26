@@ -20,7 +20,7 @@ public:
     virtual Eigen::VectorXi GetDofNumbering() const = 0;
     virtual int GetNumNodes() const = 0;
     virtual NMatrix GetNMatrix(NaturalCoords ipCoords) const = 0;
-    virtual ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const = 0;
+    virtual Eigen::VectorXd GetShapeFunctions(NaturalCoords ipCoords) const = 0;
     virtual DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const = 0;
 };
 

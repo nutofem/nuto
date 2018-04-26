@@ -8,19 +8,19 @@ std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::Clone() con
     return std::make_unique<InterpolationTetrahedronLinear>(*this);
 }
 
-ShapeFunctions InterpolationTetrahedronLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationTetrahedronLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsTetrahedronOrder1(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural InterpolationTetrahedronLinear::GetDerivativeShapeFunctions(const NaturalCoords&) const
 {
-    return DerivativeShapeFunctionsTetrahedronOrder1();
+    return DerivativeShapeFunctions();
 }
 
 NaturalCoords InterpolationTetrahedronLinear::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesTetrahedronOrder1(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationTetrahedronLinear::GetNumNodes() const
@@ -33,7 +33,7 @@ const Shape& InterpolationTetrahedronLinear::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 3, 1> InterpolationTetrahedronLinear::NodeCoordinatesTetrahedronOrder1(int rNodeIndex)
+Eigen::Matrix<double, 3, 1> InterpolationTetrahedronLinear::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -50,8 +50,7 @@ Eigen::Matrix<double, 3, 1> InterpolationTetrahedronLinear::NodeCoordinatesTetra
     }
 }
 
-Eigen::Matrix<double, 4, 1>
-InterpolationTetrahedronLinear::ShapeFunctionsTetrahedronOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 4, 1> InterpolationTetrahedronLinear::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 4, 1> shapeFunctions;
     shapeFunctions[0] = 1. - rCoordinates.sum();
@@ -61,7 +60,7 @@ InterpolationTetrahedronLinear::ShapeFunctionsTetrahedronOrder1(const Eigen::Vec
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 4, 3> InterpolationTetrahedronLinear::DerivativeShapeFunctionsTetrahedronOrder1()
+Eigen::Matrix<double, 4, 3> InterpolationTetrahedronLinear::DerivativeShapeFunctions()
 {
     Eigen::Matrix<double, 4, 3> derivativeShapeFunctions;
     derivativeShapeFunctions(0, 0) = -1;

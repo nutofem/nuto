@@ -8,19 +8,19 @@ std::unique_ptr<InterpolationSimple> InterpolationTrussLinear::Clone() const
     return std::make_unique<InterpolationTrussLinear>(*this);
 }
 
-ShapeFunctions InterpolationTrussLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationTrussLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsTrussOrder1(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural InterpolationTrussLinear::GetDerivativeShapeFunctions(const NaturalCoords&) const
 {
-    return DerivativeShapeFunctionsTrussOrder1();
+    return DerivativeShapeFunctions();
 }
 
 NaturalCoords InterpolationTrussLinear::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesTrussOrder1(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationTrussLinear::GetNumNodes() const
@@ -33,7 +33,7 @@ const Shape& InterpolationTrussLinear::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 1, 1> InterpolationTrussLinear::NodeCoordinatesTrussOrder1(int rNodeIndex)
+Eigen::Matrix<double, 1, 1> InterpolationTrussLinear::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -46,12 +46,12 @@ Eigen::Matrix<double, 1, 1> InterpolationTrussLinear::NodeCoordinatesTrussOrder1
     }
 }
 
-Eigen::Matrix<double, 2, 1> InterpolationTrussLinear::ShapeFunctionsTrussOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 2, 1> InterpolationTrussLinear::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     return Eigen::Vector2d(0.5 * (1. - rCoordinates[0]), 0.5 * (1. + rCoordinates[0]));
 }
 
-Eigen::Matrix<double, 2, 1> InterpolationTrussLinear::DerivativeShapeFunctionsTrussOrder1()
+Eigen::Matrix<double, 2, 1> InterpolationTrussLinear::DerivativeShapeFunctions()
 {
     return Eigen::Vector2d(-0.5, 0.5);
 }

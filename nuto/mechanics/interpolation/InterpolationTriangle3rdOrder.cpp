@@ -8,20 +8,20 @@ std::unique_ptr<InterpolationSimple> InterpolationTriangle3rdOrder::Clone() cons
     return std::make_unique<InterpolationTriangle3rdOrder>(*this);
 }
 
-ShapeFunctions InterpolationTriangle3rdOrder::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationTriangle3rdOrder::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsTriangleOrder3(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationTriangle3rdOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsTriangleOrder3(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationTriangle3rdOrder::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesTriangleOrder3(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationTriangle3rdOrder::GetNumNodes() const
@@ -34,7 +34,7 @@ const Shape& InterpolationTriangle3rdOrder::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 2, 1> InterpolationTriangle3rdOrder::NodeCoordinatesTriangleOrder3(int rNodeIndex)
+Eigen::Matrix<double, 2, 1> InterpolationTriangle3rdOrder::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -63,8 +63,7 @@ Eigen::Matrix<double, 2, 1> InterpolationTriangle3rdOrder::NodeCoordinatesTriang
     }
 }
 
-Eigen::Matrix<double, 10, 1>
-InterpolationTriangle3rdOrder::ShapeFunctionsTriangleOrder3(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 10, 1> InterpolationTriangle3rdOrder::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 10, 1> shapeFunctions;
     double r = rCoordinates[0];
@@ -86,7 +85,7 @@ InterpolationTriangle3rdOrder::ShapeFunctionsTriangleOrder3(const Eigen::VectorX
 }
 
 Eigen::Matrix<double, 10, 2>
-InterpolationTriangle3rdOrder::DerivativeShapeFunctionsTriangleOrder3(const Eigen::VectorXd& rCoordinates)
+InterpolationTriangle3rdOrder::DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 10, 2> derivativeShapeFunctions;
     double r = rCoordinates[0];

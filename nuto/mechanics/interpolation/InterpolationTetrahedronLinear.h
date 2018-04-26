@@ -8,19 +8,15 @@ namespace NuTo
 class InterpolationTetrahedronLinear : public InterpolationSimple
 {
 public:
+    static Eigen::Matrix<double, 3, 1> LocalCoords(int rNodeIndex);
+
+    static Eigen::Matrix<double, 4, 1> ShapeFunctions(const Eigen::VectorXd& rCoordinates);
+
+    static Eigen::Matrix<double, 4, 3> DerivativeShapeFunctions();
+
     std::unique_ptr<InterpolationSimple> Clone() const override;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    static Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder1(int rNodeIndex);
-
-    static Eigen::Matrix<double, 4, 1> ShapeFunctionsTetrahedronOrder1(const Eigen::VectorXd& rCoordinates);
-
-    static Eigen::Matrix<double, 4, 3> DerivativeShapeFunctionsTetrahedronOrder1();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords&) const override;
 

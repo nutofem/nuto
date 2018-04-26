@@ -18,7 +18,7 @@ public:
         return std::make_unique<InterpolationBrickLobatto>(*this);
     }
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
         return ShapeFunctions3D::ShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
     }

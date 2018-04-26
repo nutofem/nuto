@@ -42,7 +42,7 @@ public:
         return NuTo::Matrix::N(GetShapeFunctions(ipCoords), GetNumNodes(), GetDofDimension());
     }
 
-    ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const override
+    Eigen::VectorXd GetShapeFunctions(NaturalCoords ipCoords) const override
     {
         return NurbsGeometry().BasisFunctionsAndDerivativesRational(0, Transformation(ipCoords));
     }

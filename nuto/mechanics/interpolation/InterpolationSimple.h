@@ -19,7 +19,7 @@ public:
     //! @brief calculates the shape functions
     //! @param naturalIpCoords integration point coordinates in the natural coordinate system
     //! @return vector of shape functions, dimension: [GetNumNodes() x 1]
-    virtual ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const = 0;
+    virtual Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const = 0;
 
     //! @brief calculates the derivative shape functions
     //! @param naturalIpCoords integration point coordinates in the natural coordinate system

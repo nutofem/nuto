@@ -8,20 +8,20 @@ std::unique_ptr<InterpolationSimple> InterpolationTriangleLinear::Clone() const
     return std::make_unique<InterpolationTriangleLinear>(*this);
 }
 
-ShapeFunctions InterpolationTriangleLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationTriangleLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsTriangleOrder1(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationTriangleLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsTriangleOrder1(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationTriangleLinear::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesTriangleOrder1(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationTriangleLinear::GetNumNodes() const
@@ -34,7 +34,7 @@ const Shape& InterpolationTriangleLinear::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 2, 1> InterpolationTriangleLinear::NodeCoordinatesTriangleOrder1(int rNodeIndex)
+Eigen::Matrix<double, 2, 1> InterpolationTriangleLinear::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -49,8 +49,7 @@ Eigen::Matrix<double, 2, 1> InterpolationTriangleLinear::NodeCoordinatesTriangle
     }
 }
 
-Eigen::Matrix<double, 3, 1>
-InterpolationTriangleLinear::ShapeFunctionsTriangleOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 3, 1> InterpolationTriangleLinear::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 3, 1> shapeFunctions;
     shapeFunctions[0] = 1. - rCoordinates(0) - rCoordinates(1);
@@ -59,7 +58,7 @@ InterpolationTriangleLinear::ShapeFunctionsTriangleOrder1(const Eigen::VectorXd&
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 3, 2> InterpolationTriangleLinear::DerivativeShapeFunctionsTriangleOrder1(const Eigen::VectorXd&)
+Eigen::Matrix<double, 3, 2> InterpolationTriangleLinear::DerivativeShapeFunctions(const Eigen::VectorXd&)
 {
     Eigen::Matrix<double, 3, 2> derivativeShapeFunctions;
     derivativeShapeFunctions(0, 0) = -1.0;

@@ -8,20 +8,20 @@ std::unique_ptr<InterpolationSimple> InterpolationTruss4thOrder::Clone() const
     return std::make_unique<InterpolationTruss4thOrder>(*this);
 }
 
-ShapeFunctions InterpolationTruss4thOrder::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationTruss4thOrder::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsTrussOrder4(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationTruss4thOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsTrussOrder4(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationTruss4thOrder::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesTrussOrder4(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationTruss4thOrder::GetNumNodes() const
@@ -34,7 +34,7 @@ const Shape& InterpolationTruss4thOrder::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 1, 1> InterpolationTruss4thOrder::NodeCoordinatesTrussOrder4(int rNodeIndex)
+Eigen::Matrix<double, 1, 1> InterpolationTruss4thOrder::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -53,7 +53,7 @@ Eigen::Matrix<double, 1, 1> InterpolationTruss4thOrder::NodeCoordinatesTrussOrde
     }
 }
 
-Eigen::Matrix<double, 5, 1> InterpolationTruss4thOrder::ShapeFunctionsTrussOrder4(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 5, 1> InterpolationTruss4thOrder::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 5, 1> shapeFunctions;
     double r = rCoordinates[0];
@@ -68,8 +68,7 @@ Eigen::Matrix<double, 5, 1> InterpolationTruss4thOrder::ShapeFunctionsTrussOrder
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 5, 1>
-InterpolationTruss4thOrder::DerivativeShapeFunctionsTrussOrder4(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 5, 1> InterpolationTruss4thOrder::DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 5, 1> derivativeShapeFunctions;
     double r = rCoordinates[0];

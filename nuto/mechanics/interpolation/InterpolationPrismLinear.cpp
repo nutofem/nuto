@@ -8,20 +8,20 @@ std::unique_ptr<InterpolationSimple> InterpolationPrismLinear::Clone() const
     return std::make_unique<InterpolationPrismLinear>(*this);
 }
 
-ShapeFunctions InterpolationPrismLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationPrismLinear::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsPrismOrder1(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationPrismLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsPrismOrder1(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationPrismLinear::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesPrismOrder1(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationPrismLinear::GetNumNodes() const
@@ -34,7 +34,7 @@ const Shape& InterpolationPrismLinear::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 3, 1> InterpolationPrismLinear::NodeCoordinatesPrismOrder1(int rNodeIndex)
+Eigen::Matrix<double, 3, 1> InterpolationPrismLinear::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -56,7 +56,7 @@ Eigen::Matrix<double, 3, 1> InterpolationPrismLinear::NodeCoordinatesPrismOrder1
     }
 }
 
-Eigen::Matrix<double, 6, 1> InterpolationPrismLinear::ShapeFunctionsPrismOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 6, 1> InterpolationPrismLinear::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 6, 1> shapeFunctions;
 
@@ -73,8 +73,7 @@ Eigen::Matrix<double, 6, 1> InterpolationPrismLinear::ShapeFunctionsPrismOrder1(
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 6, 3>
-InterpolationPrismLinear::DerivativeShapeFunctionsPrismOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 6, 3> InterpolationPrismLinear::DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 6, 3> derivativeShapeFunctions;
 

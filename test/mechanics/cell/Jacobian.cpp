@@ -11,7 +11,7 @@ using namespace NuTo;
 
 BOOST_AUTO_TEST_CASE(Jacobian1DDet)
 {
-    Eigen::MatrixXd B = InterpolationTrussLinear::DerivativeShapeFunctionsTrussOrder1();
+    Eigen::MatrixXd B = InterpolationTrussLinear::DerivativeShapeFunctions();
     Eigen::VectorXd coordinates = Eigen::Vector2d({12., 17});
     Jacobian jacobian(coordinates, B, 1);
     BOOST_CHECK_CLOSE(jacobian.Det(), 2.5, 1.e-10);
@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(Jacobian1DDet)
 
 BOOST_AUTO_TEST_CASE(Jacobian2DDet)
 {
-    Eigen::MatrixXd B = InterpolationQuadLinear::DerivativeShapeFunctionsQuadOrder1(Eigen::Vector2d({0, 0}));
+    Eigen::MatrixXd B = InterpolationQuadLinear::DerivativeShapeFunctions(Eigen::Vector2d({0, 0}));
     Eigen::VectorXd coordinates = Eigen::VectorXd(8);
     coordinates << 0, 0, 2, 0, 2, 8, 0, 8; // rectangle from (0,0) to (2,8)
 
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(Jacobian2DDet)
 
 BOOST_AUTO_TEST_CASE(Jacobian3DDet)
 {
-    Eigen::MatrixXd B = InterpolationTetrahedronLinear::DerivativeShapeFunctionsTetrahedronOrder1();
+    Eigen::MatrixXd B = InterpolationTetrahedronLinear::DerivativeShapeFunctions();
     Eigen::VectorXd coordinates = Eigen::VectorXd(12);
     coordinates << 0, 0, 0, 10, 0, 0, 0, 5, 0, 0, 0, 42;
 
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(Jacobian3DDet)
 BOOST_AUTO_TEST_CASE(Jacobian1Din2D)
 {
     {
-        Eigen::MatrixXd B = InterpolationTrussLinear::DerivativeShapeFunctionsTrussOrder1();
+        Eigen::MatrixXd B = InterpolationTrussLinear::DerivativeShapeFunctions();
         Eigen::VectorXd coordinates = Eigen::VectorXd(4);
         coordinates << 0, 0, 3, 4;
 
@@ -55,10 +55,10 @@ BOOST_AUTO_TEST_CASE(Jacobian1Din2D)
         Eigen::VectorXd coordinates = Eigen::VectorXd(6);
         coordinates << 0, 0, 1.5, 2, 3, 4;
 
-        Eigen::MatrixXd B0 = InterpolationTrussQuadratic::DerivativeShapeFunctionsTrussOrder2(
+        Eigen::MatrixXd B0 = InterpolationTrussQuadratic::DerivativeShapeFunctions(
                 Eigen::VectorXd::Constant(1, -std::sqrt(1. / 3.)));
-        Eigen::MatrixXd B1 = InterpolationTrussQuadratic::DerivativeShapeFunctionsTrussOrder2(
-                Eigen::VectorXd::Constant(1, std::sqrt(1. / 3.)));
+        Eigen::MatrixXd B1 =
+                InterpolationTrussQuadratic::DerivativeShapeFunctions(Eigen::VectorXd::Constant(1, std::sqrt(1. / 3.)));
         Jacobian jacobian0(coordinates, B0, 2);
         Jacobian jacobian1(coordinates, B1, 2);
         BOOST_CHECK_CLOSE(jacobian0.Det() + jacobian1.Det(), 5, 1.e-10);
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(Jacobian1Din2D)
 //! @brief calculates the area of the triangle (a,b,c) via the jacobian to a reference unit triangle
 double TriangleAreaViaJacobian(Eigen::Vector3d a, Eigen::Vector3d b, Eigen::Vector3d c)
 {
-    Eigen::MatrixXd B = InterpolationTriangleLinear::DerivativeShapeFunctionsTriangleOrder1(Eigen::Vector2d::Zero());
+    Eigen::MatrixXd B = InterpolationTriangleLinear::DerivativeShapeFunctions(Eigen::Vector2d::Zero());
     Eigen::VectorXd coordinates = Eigen::VectorXd(9);
     coordinates << a.x(), a.y(), a.z(), b.x(), b.y(), b.z(), c.x(), c.y(), c.z();
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(Jacobian2Din3DComputeNormal)
     Eigen::Vector3d p2(0., 1., 0.);
     Eigen::Vector3d p3(0., 0., 1.);
 
-    Eigen::MatrixXd B = InterpolationTriangleLinear::DerivativeShapeFunctionsTriangleOrder1(Eigen::Vector2d::Zero());
+    Eigen::MatrixXd B = InterpolationTriangleLinear::DerivativeShapeFunctions(Eigen::Vector2d::Zero());
     Eigen::VectorXd coordinates = Eigen::VectorXd(9);
     coordinates << p1, p2, p3;
 
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(Jacobian1Din2DComputeNormal)
     Eigen::Vector2d p1(1., 0.);
     Eigen::Vector2d p2(0., 1.);
 
-    Eigen::MatrixXd B = InterpolationTrussLinear::DerivativeShapeFunctionsTrussOrder1();
+    Eigen::MatrixXd B = InterpolationTrussLinear::DerivativeShapeFunctions();
     Eigen::VectorXd coordinates = Eigen::VectorXd(4);
     coordinates << p1, p2;
 

@@ -10,20 +10,20 @@ std::unique_ptr<InterpolationSimple> InterpolationPrismQuadratic::Clone() const
     return std::make_unique<InterpolationPrismQuadratic>(*this);
 }
 
-ShapeFunctions InterpolationPrismQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationPrismQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsPrismOrder2(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationPrismQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsPrismOrder2(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationPrismQuadratic::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesPrismOrder2(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationPrismQuadratic::GetNumNodes() const
@@ -36,7 +36,7 @@ const Shape& InterpolationPrismQuadratic::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 3, 1> InterpolationPrismQuadratic::NodeCoordinatesPrismOrder2(int rNodeIndex)
+Eigen::Matrix<double, 3, 1> InterpolationPrismQuadratic::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -86,14 +86,12 @@ Eigen::Matrix<double, 3, 1> InterpolationPrismQuadratic::NodeCoordinatesPrismOrd
     }
 }
 
-Eigen::Matrix<double, 18, 1> InterpolationPrismQuadratic::ShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 18, 1> InterpolationPrismQuadratic::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 18, 1> shapeFunctions;
 
-    auto NTriangle2 = InterpolationTriangleQuadratic::ShapeFunctionsTriangleOrder2(
-            Eigen::Vector2d(rCoordinates[0], rCoordinates[1]));
-    auto NTruss2 = InterpolationTrussQuadratic::ShapeFunctionsTrussOrder2(
-            Eigen::Matrix<double, 1, 1>::Constant(rCoordinates[2]));
+    auto NTriangle2 = InterpolationTriangleQuadratic::ShapeFunctions(Eigen::Vector2d(rCoordinates[0], rCoordinates[1]));
+    auto NTruss2 = InterpolationTrussQuadratic::ShapeFunctions(Eigen::Matrix<double, 1, 1>::Constant(rCoordinates[2]));
 
     shapeFunctions[0] = NTriangle2[0] * NTruss2[0];
     shapeFunctions[1] = NTriangle2[1] * NTruss2[0];
@@ -117,18 +115,15 @@ Eigen::Matrix<double, 18, 1> InterpolationPrismQuadratic::ShapeFunctionsPrismOrd
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 18, 3>
-InterpolationPrismQuadratic::DerivativeShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 18, 3> InterpolationPrismQuadratic::DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
 
-    auto NTriangle2 = InterpolationTriangleQuadratic::ShapeFunctionsTriangleOrder2(
-            Eigen::Vector2d(rCoordinates[0], rCoordinates[1]));
-    auto dNTriangle2 = InterpolationTriangleQuadratic::DerivativeShapeFunctionsTriangleOrder2(
-            Eigen::Vector2d(rCoordinates[0], rCoordinates[1]));
+    auto NTriangle2 = InterpolationTriangleQuadratic::ShapeFunctions(Eigen::Vector2d(rCoordinates[0], rCoordinates[1]));
+    auto dNTriangle2 =
+            InterpolationTriangleQuadratic::DerivativeShapeFunctions(Eigen::Vector2d(rCoordinates[0], rCoordinates[1]));
 
-    auto NTruss2 = InterpolationTrussQuadratic::ShapeFunctionsTrussOrder2(
-            Eigen::Matrix<double, 1, 1>::Constant(rCoordinates[2]));
-    auto dNTruss2 = InterpolationTrussQuadratic::DerivativeShapeFunctionsTrussOrder2(
+    auto NTruss2 = InterpolationTrussQuadratic::ShapeFunctions(Eigen::Matrix<double, 1, 1>::Constant(rCoordinates[2]));
+    auto dNTruss2 = InterpolationTrussQuadratic::DerivativeShapeFunctions(
             Eigen::Matrix<double, 1, 1>::Constant(rCoordinates[2]));
 
     Eigen::Matrix<double, 18, 3> derivativeShapeFunctions;

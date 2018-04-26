@@ -8,20 +8,20 @@ std::unique_ptr<InterpolationSimple> InterpolationBrickQuadratic::Clone() const
     return std::make_unique<InterpolationBrickQuadratic>(*this);
 }
 
-ShapeFunctions InterpolationBrickQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::VectorXd InterpolationBrickQuadratic::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return ShapeFunctionsBrickOrder2(naturalIpCoords);
+    return ShapeFunctions(naturalIpCoords);
 }
 
 DerivativeShapeFunctionsNatural
 InterpolationBrickQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
-    return DerivativeShapeFunctionsBrickOrder2(naturalIpCoords);
+    return DerivativeShapeFunctions(naturalIpCoords);
 }
 
 NaturalCoords InterpolationBrickQuadratic::GetLocalCoords(int nodeId) const
 {
-    return NodeCoordinatesBrickOrder2(nodeId);
+    return LocalCoords(nodeId);
 }
 
 int InterpolationBrickQuadratic::GetNumNodes() const
@@ -34,7 +34,7 @@ const Shape& InterpolationBrickQuadratic::GetShape() const
     return mShape;
 }
 
-Eigen::Matrix<double, 3, 1> InterpolationBrickQuadratic::NodeCoordinatesBrickOrder2(int rNodeIndex)
+Eigen::Matrix<double, 3, 1> InterpolationBrickQuadratic::LocalCoords(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -91,7 +91,7 @@ Eigen::Matrix<double, 3, 1> InterpolationBrickQuadratic::NodeCoordinatesBrickOrd
     }
 }
 
-Eigen::Matrix<double, 20, 1> InterpolationBrickQuadratic::ShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 20, 1> InterpolationBrickQuadratic::ShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 20, 1> shapeFunctions;
 
@@ -138,8 +138,7 @@ Eigen::Matrix<double, 20, 1> InterpolationBrickQuadratic::ShapeFunctionsBrickOrd
     return shapeFunctions;
 }
 
-Eigen::Matrix<double, 20, 3>
-InterpolationBrickQuadratic::DerivativeShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 20, 3> InterpolationBrickQuadratic::DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates)
 {
 
     double r = rCoordinates[0];

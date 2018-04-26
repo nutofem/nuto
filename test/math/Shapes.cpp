@@ -24,8 +24,8 @@ BOOST_AUTO_TEST_CASE(LineIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
 
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTrussLinear::NodeCoordinatesTrussOrder1(0)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTrussLinear::NodeCoordinatesTrussOrder1(1)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTrussLinear::LocalCoords(0)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTrussLinear::LocalCoords(1)));
 
     BoostUnitTest::CheckOutstream(shape, "Line");
 }
@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE(TriangleIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
 
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::NodeCoordinatesTriangleOrder1(0)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::NodeCoordinatesTriangleOrder1(1)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::NodeCoordinatesTriangleOrder1(2)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::LocalCoords(0)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::LocalCoords(1)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::LocalCoords(2)));
 
     BoostUnitTest::CheckOutstream(shape, "Triangle");
 }
@@ -72,10 +72,10 @@ BOOST_AUTO_TEST_CASE(TetrahedronIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
 
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::NodeCoordinatesTetrahedronOrder1(0)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::NodeCoordinatesTetrahedronOrder1(1)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::NodeCoordinatesTetrahedronOrder1(2)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::NodeCoordinatesTetrahedronOrder1(3)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::LocalCoords(0)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::LocalCoords(1)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::LocalCoords(2)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::LocalCoords(3)));
 
     BoostUnitTest::CheckOutstream(shape, "Tetrahedron");
 }
@@ -105,11 +105,11 @@ BOOST_AUTO_TEST_CASE(PrismIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
 
-    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::NodeCoordinatesPrismOrder1(0)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::NodeCoordinatesPrismOrder1(1)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::NodeCoordinatesPrismOrder1(2)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::NodeCoordinatesPrismOrder1(3)));
-    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::NodeCoordinatesPrismOrder1(4)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(0)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(1)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(2)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(3)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(4)));
 
     BoostUnitTest::CheckOutstream(shape, "Prism");
 }

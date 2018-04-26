@@ -18,7 +18,7 @@ public:
         return std::make_unique<InterpolationQuadLobatto>(*this);
     }
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
     {
         return ShapeFunctions2D::ShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
     }
