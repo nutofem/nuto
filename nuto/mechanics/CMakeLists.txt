@@ -19,6 +19,8 @@ add_sources(cell/SimpleAssembler.cpp
     tools/QuasistaticSolver.cpp
     tools/TimeDependentProblem.cpp
 
+    interpolation/InterpolationTriangleLinear.cpp
+
     integrationtypes/IntegrationCompanion.cpp    
     integrationtypes/IntegrationType0DBoundary.cpp
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp

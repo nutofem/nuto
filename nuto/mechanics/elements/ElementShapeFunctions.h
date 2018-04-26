@@ -52,14 +52,6 @@ namespace ShapeFunctions2D
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder1(int rNodeIndex);
-
-Eigen::Matrix<double, 3, 1> ShapeFunctionsTriangleOrder1(const Eigen::VectorXd& rCoordinates);
-
-Eigen::Matrix<double, 3, 2> DerivativeShapeFunctionsTriangleOrder1(const Eigen::VectorXd& rCoordinates);
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder2(int rNodeIndex);
 
 Eigen::Matrix<double, 6, 1> ShapeFunctionsTriangleOrder2(const Eigen::VectorXd& rCoordinates);
