@@ -49,15 +49,6 @@ Eigen::Matrix<double, 5, 1> DerivativeShapeFunctionsTrussOrder4(const Eigen::Vec
 namespace ShapeFunctions2D
 {
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder2(int rNodeIndex);
-
-Eigen::Matrix<double, 6, 1> ShapeFunctionsTriangleOrder2(const Eigen::VectorXd& rCoordinates);
-
-Eigen::Matrix<double, 6, 2> DerivativeShapeFunctionsTriangleOrder2(const Eigen::VectorXd& rCoordinates);
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder3(int rNodeIndex);

@@ -20,6 +20,7 @@ add_sources(cell/SimpleAssembler.cpp
     tools/TimeDependentProblem.cpp
 
     interpolation/InterpolationTriangleLinear.cpp
+    interpolation/InterpolationTriangleQuadratic.cpp
 
     integrationtypes/IntegrationCompanion.cpp    
     integrationtypes/IntegrationType0DBoundary.cpp
