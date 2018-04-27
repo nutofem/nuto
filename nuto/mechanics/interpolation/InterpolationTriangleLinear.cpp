@@ -71,5 +71,3 @@ Eigen::Matrix<double, 3, 2> InterpolationTriangleLinear::DerivativeShapeFunction
     derivativeShapeFunctions(2, 1) = 1.0;
     return derivativeShapeFunctions;
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
