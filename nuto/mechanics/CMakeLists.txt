@@ -15,6 +15,7 @@ add_sources(cell/SimpleAssembler.cpp
     tools/AdaptiveSolve.cpp
     tools/CellStorage.cpp
     tools/GlobalFractureEnergyIntegrator.cpp
+    tools/NewmarkSolver.cpp
     tools/NodalValueMerger.cpp
     tools/QuasistaticSolver.cpp
     tools/TimeDependentProblem.cpp

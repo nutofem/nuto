@@ -44,11 +44,17 @@ public:
     void AddHessianFunction(Group<CellInterface> group, HessianFunction f);
     void AddUpdateFunction(Group<CellInterface> group, UpdateFunction f);
 
+    DofVector<double> Gradient(std::vector<DofType> dofs, double t, double dt);
     DofVector<double> Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
 
+    // maybe use type traits to activate different versions depending on TNumTimeDer
+    template <int TTimeDer>
+    DofMatrixSparse<double> Hessian(std::vector<DofType> dofs, double t, double dt);
     template <int TTimeDer>
     DofMatrixSparse<double> Hessian(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
-
+    template <int TTimeDer>
+    DofMatrixSparse<double> Hessian(const std::array<DofVector<double>, TNumTimeDer + 1>& dofValues,
+                                    std::vector<DofType> dofs, double t, double dt);
 
     void UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
 
@@ -114,13 +120,12 @@ void TimeDependentProblem<TNumTimeDer>::AddHessianFunction(Group<CellInterface> 
     mHessianFunctions[TTimeDer].push_back({group, f});
 }
 
+
 template <unsigned int TNumTimeDer>
 template <int TTimeDer>
-DofMatrixSparse<double> TimeDependentProblem<TNumTimeDer>::Hessian(const DofVector<double>& dofValues,
-                                                                   std::vector<DofType> dofs, double t, double dt)
+DofMatrixSparse<double> TimeDependentProblem<TNumTimeDer>::Hessian(std::vector<DofType> dofs, double t, double dt)
 {
     static_assert(TTimeDer <= TNumTimeDer, "Hessian time derivative bigger than the problems time derivative.");
-    mMerger.Merge(dofValues, dofs);
     DofMatrixSparse<double> hessian0;
     for (auto& hessianFunction : mHessianFunctions[TTimeDer])
         hessian0 += mAssembler.BuildMatrix(hessianFunction.first, dofs,
@@ -128,5 +133,24 @@ DofMatrixSparse<double> TimeDependentProblem<TNumTimeDer>::Hessian(const DofVect
     return hessian0;
 }
 
+template <unsigned int TNumTimeDer>
+template <int TTimeDer>
+DofMatrixSparse<double> TimeDependentProblem<TNumTimeDer>::Hessian(const DofVector<double>& dofValues,
+                                                                   std::vector<DofType> dofs, double t, double dt)
+{
+    mMerger.Merge(dofValues, dofs);
+    return Hessian<TTimeDer>(dofs, t, dt);
+}
+
+template <unsigned int TNumTimeDer>
+template <int TTimeDer>
+DofMatrixSparse<double>
+TimeDependentProblem<TNumTimeDer>::Hessian(const std::array<DofVector<double>, TNumTimeDer + 1>& dofValues,
+                                           std::vector<DofType> dofs, double t, double dt)
+{
+    for (size_t i = 0; i < dofValues.size(); ++i)
+        mMerger.Merge(dofValues[i], dofs, i);
+    return Hessian<TTimeDer>(dofs, t, dt);
+}
 
 } /* NuTo */

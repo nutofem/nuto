@@ -48,17 +48,23 @@ void TimeDependentProblem<TNumTimeDer>::AddUpdateFunction(Group<CellInterface> g
     mUpdateFunctions.push_back({group, f});
 }
 
+template <unsigned int TNumTimeDer>
+DofVector<double> TimeDependentProblem<TNumTimeDer>::Gradient(std::vector<DofType> dofs, double t, double dt)
+{
+    DofVector<double> gradient;
+    for (auto& gradientFunction : mGradientFunctions)
+        gradient += mAssembler.BuildVector(gradientFunction.first, dofs,
+                                           Apply<CellInterface::VectorFunction>(gradientFunction.second, t, dt));
+    return gradient;
+}
+
 
 template <unsigned int TNumTimeDer>
 DofVector<double> TimeDependentProblem<TNumTimeDer>::Gradient(const DofVector<double>& dofValues,
                                                               std::vector<DofType> dofs, double t, double dt)
 {
     mMerger.Merge(dofValues, dofs);
-    DofVector<double> gradient;
-    for (auto& gradientFunction : mGradientFunctions)
-        gradient += mAssembler.BuildVector(gradientFunction.first, dofs,
-                                           Apply<CellInterface::VectorFunction>(gradientFunction.second, t, dt));
-    return gradient;
+    return Gradient(dofs, t, dt);
 }
 
 
