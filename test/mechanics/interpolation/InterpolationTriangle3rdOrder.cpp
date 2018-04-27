@@ -10,5 +10,14 @@ std::vector<Eigen::VectorXd> GetTestPoints()
 
 BOOST_AUTO_TEST_CASE(InterpolationTriangle3rdOrder)
 {
-    NuTo::Test::RunTests<NuTo::InterpolationTriangle3rdOrder>(GetTestPoints());
+    NuTo::InterpolationTriangle3rdOrder interpolation;
+
+    BOOST_TEST_MESSAGE("Checking copy move...");
+    NuTo::Test::CheckCopyMove<NuTo::InterpolationTriangle3rdOrder>();
+    BOOST_TEST_MESSAGE("Checking match of shape functions and node positions...");
+    NuTo::Test::CheckShapeFunctionsAndNodePositions(interpolation);
+    BOOST_TEST_MESSAGE("Checking patrition of unity...");
+    NuTo::Test::CheckPartitionOfUnity(interpolation, GetTestPoints());
+    BOOST_TEST_MESSAGE("Checking shape function derivatives via CDF...");
+    NuTo::Test::CheckDerivativeShapeFunctionsCDF(interpolation, GetTestPoints(), 1e-9);
 }
