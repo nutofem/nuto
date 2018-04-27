@@ -113,6 +113,7 @@ DofVector<double> NewmarkSolver::TrialState(double newGlobalTime, const NuTo::Co
     //    return result;
 
 
+    missing trial state for v and a
     DofVector<double> trialU = mX[0] - result;
 
     return trialU;
