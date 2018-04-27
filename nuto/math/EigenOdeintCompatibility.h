@@ -1,7 +1,7 @@
 #pragma once
 
-#include <boost/numeric/odeint/external/eigen/eigen_algebra_dispatcher.hpp>
 #include <boost/numeric/odeint/external/eigen/eigen_resize.hpp>
+#include <boost/numeric/odeint/external/eigen/eigen_algebra_dispatcher.hpp>
 
 namespace Eigen
 {
