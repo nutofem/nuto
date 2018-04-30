@@ -5,7 +5,7 @@
 
 namespace NuTo
 {
-    Eigen::MatrixXd InterpolationBrickLobatto::NodeCoordinatesBrickLobatto(int nodeId, const Eigen::VectorXd& nodes)
+    Eigen::MatrixXd InterpolationBrickLobatto::LocalCoords(int nodeId, const Eigen::VectorXd& nodes)
     {
         const int d = nodes.rows();
 
@@ -24,11 +24,11 @@ namespace NuTo
     }
 
 
-    Eigen::VectorXd InterpolationBrickLobatto::ShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const Eigen::VectorXd& nodes)
+    Eigen::VectorXd InterpolationBrickLobatto::ShapeFunctions(const Eigen::Vector3d x, const Eigen::VectorXd& nodes)
     {
-        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(0), nodes);
-        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(1), nodes);
-        Eigen::VectorXd Nz = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(2), nodes);
+        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctions(x(0), nodes);
+        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctions(x(1), nodes);
+        Eigen::VectorXd Nz = InterpolationTrussLobatto::ShapeFunctions(x(2), nodes);
 
         Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.rows() * nodes.rows() * nodes.rows());
         int count = 0;
@@ -47,16 +47,16 @@ namespace NuTo
     }
 
 
-    Eigen::MatrixXd InterpolationBrickLobatto::DerivativeShapeFunctionsBrickLagrange(const Eigen::Vector3d x,
+    Eigen::MatrixXd InterpolationBrickLobatto::DerivativeShapeFunctions(const Eigen::Vector3d x,
                                                                             const Eigen::VectorXd& nodes)
     {
-        Eigen::VectorXd DNx = InterpolationTrussLobatto::DerivativeShapeFunctionsTrussLagrange(x(0), nodes);
-        Eigen::VectorXd DNy = InterpolationTrussLobatto::DerivativeShapeFunctionsTrussLagrange(x(1), nodes);
-        Eigen::VectorXd DNz = InterpolationTrussLobatto::DerivativeShapeFunctionsTrussLagrange(x(2), nodes);
+        Eigen::VectorXd DNx = InterpolationTrussLobatto::DerivativeShapeFunctions(x(0), nodes);
+        Eigen::VectorXd DNy = InterpolationTrussLobatto::DerivativeShapeFunctions(x(1), nodes);
+        Eigen::VectorXd DNz = InterpolationTrussLobatto::DerivativeShapeFunctions(x(2), nodes);
 
-        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(0), nodes);
-        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(1), nodes);
-        Eigen::VectorXd Nz = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(2), nodes);
+        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctions(x(0), nodes);
+        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctions(x(1), nodes);
+        Eigen::VectorXd Nz = InterpolationTrussLobatto::ShapeFunctions(x(2), nodes);
 
         Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.rows() * nodes.rows() * nodes.rows(), 3);
         int count = 0;
@@ -78,7 +78,7 @@ namespace NuTo
 
     InterpolationBrickLobatto::InterpolationBrickLobatto(int order)
     {
-        mNodes = InterpolationTrussLobatto::NodeCoordinatesTrussLobatto(order);
+        mNodes = InterpolationTrussLobatto::LocalCoords(order);
     }
 
     std::unique_ptr<InterpolationSimple> InterpolationBrickLobatto::Clone() const
@@ -88,17 +88,17 @@ namespace NuTo
 
     Eigen::VectorXd InterpolationBrickLobatto::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
     {
-        return ShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
+        return ShapeFunctions(naturalIpCoords, mNodes);
     }
 
     DerivativeShapeFunctionsNatural InterpolationBrickLobatto::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
     {
-        return DerivativeShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
+        return DerivativeShapeFunctions(naturalIpCoords, mNodes);
     }
 
     NaturalCoords InterpolationBrickLobatto::GetLocalCoords(int nodeId) const
     {
-        return NodeCoordinatesBrickLobatto(nodeId, mNodes);
+        return LocalCoords(nodeId, mNodes);
     }
 
     int InterpolationBrickLobatto::GetNumNodes() const

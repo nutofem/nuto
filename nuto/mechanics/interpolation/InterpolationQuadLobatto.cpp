@@ -5,7 +5,7 @@
 
 namespace NuTo
 {
-     Eigen::MatrixXd InterpolationQuadLobatto::NodeCoordinatesQuadLobatto(int nodeId, const Eigen::VectorXd& nodes)
+     Eigen::MatrixXd InterpolationQuadLobatto::LocalCoords(int nodeId, const Eigen::VectorXd& nodes)
     {
         const int d = nodes.rows();
 
@@ -21,10 +21,10 @@ namespace NuTo
         return Eigen::Vector2d({cX, cY});
     }
 
-    Eigen::VectorXd InterpolationQuadLobatto::ShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const Eigen::VectorXd& nodes)
+    Eigen::VectorXd InterpolationQuadLobatto::ShapeFunctions(const Eigen::Vector2d x, const Eigen::VectorXd& nodes)
     {
-        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(0), nodes);
-        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(1), nodes);
+        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctions(x(0), nodes);
+        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctions(x(1), nodes);
 
         Eigen::VectorXd result(nodes.rows() * nodes.rows());
         int count = 0;
@@ -39,14 +39,14 @@ namespace NuTo
         return result;
     }
 
-    Eigen::MatrixXd InterpolationQuadLobatto::DerivativeShapeFunctionsQuadLagrange(const Eigen::Vector2d x,
+    Eigen::MatrixXd InterpolationQuadLobatto::DerivativeShapeFunctions(const Eigen::Vector2d x,
                                                                            const Eigen::VectorXd& nodes)
     {
-        Eigen::VectorXd DNx = InterpolationTrussLobatto::DerivativeShapeFunctionsTrussLagrange(x(0), nodes);
-        Eigen::VectorXd DNy = InterpolationTrussLobatto::DerivativeShapeFunctionsTrussLagrange(x(1), nodes);
+        Eigen::VectorXd DNx = InterpolationTrussLobatto::DerivativeShapeFunctions(x(0), nodes);
+        Eigen::VectorXd DNy = InterpolationTrussLobatto::DerivativeShapeFunctions(x(1), nodes);
 
-        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(0), nodes);
-        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(x(1), nodes);
+        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctions(x(0), nodes);
+        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctions(x(1), nodes);
 
         Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.rows() * nodes.rows(), 2);
         int count = 0;
@@ -64,7 +64,7 @@ namespace NuTo
 
     InterpolationQuadLobatto::InterpolationQuadLobatto(int order)
     {
-        mNodes = InterpolationTrussLobatto::NodeCoordinatesTrussLobatto(order);
+        mNodes = InterpolationTrussLobatto::LocalCoords(order);
     }
 
     std::unique_ptr<InterpolationSimple> InterpolationQuadLobatto::Clone() const
@@ -74,17 +74,17 @@ namespace NuTo
 
     Eigen::VectorXd InterpolationQuadLobatto::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
     {
-        return ShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
+        return ShapeFunctions(naturalIpCoords, mNodes);
     }
 
     DerivativeShapeFunctionsNatural InterpolationQuadLobatto::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
     {
-        return DerivativeShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
+        return DerivativeShapeFunctions(naturalIpCoords, mNodes);
     }
 
     NaturalCoords InterpolationQuadLobatto::GetLocalCoords(int nodeId) const
     {
-        return NodeCoordinatesQuadLobatto(nodeId, mNodes);
+        return LocalCoords(nodeId, mNodes);
     }
 
     int InterpolationQuadLobatto::GetNumNodes() const

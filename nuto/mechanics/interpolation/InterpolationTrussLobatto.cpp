@@ -7,7 +7,7 @@
 
 namespace NuTo
 {
-    Eigen::VectorXd InterpolationTrussLobatto::NodeCoordinatesTrussLobatto(int order)
+    Eigen::VectorXd InterpolationTrussLobatto::LocalCoords(int order)
     {
         if (order < 1)
             throw NuTo::Exception(__PRETTY_FUNCTION__, "Order too low. Must be 1 or higher");
@@ -40,7 +40,7 @@ namespace NuTo
     }
 
 
-    Eigen::VectorXd InterpolationTrussLobatto::ShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes)
+    Eigen::VectorXd InterpolationTrussLobatto::ShapeFunctions(const double x, const Eigen::VectorXd& nodes)
     {
         Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.rows());
         Eigen::VectorXd w = BarycentricWeights(nodes);
@@ -76,7 +76,7 @@ namespace NuTo
     }
 
 
-    Eigen::VectorXd InterpolationTrussLobatto::DerivativeShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes)
+    Eigen::VectorXd InterpolationTrussLobatto::DerivativeShapeFunctions(const double x, const Eigen::VectorXd& nodes)
     {
         Eigen::VectorXd result = Eigen::VectorXd::Zero(nodes.rows());
         Eigen::VectorXd w = BarycentricWeights(nodes);
@@ -104,7 +104,7 @@ namespace NuTo
 
     InterpolationTrussLobatto::InterpolationTrussLobatto(int order)
     {
-        mNodes = NodeCoordinatesTrussLobatto(order);
+        mNodes = LocalCoords(order);
     }
 
     std::unique_ptr<InterpolationSimple> InterpolationTrussLobatto::Clone() const
@@ -115,7 +115,7 @@ namespace NuTo
     Eigen::VectorXd InterpolationTrussLobatto::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
     {
         Eigen::VectorXd result(mNodes.size());
-        const Eigen::VectorXd shapes = ShapeFunctionsTrussLagrange(naturalIpCoords[0], mNodes);
+        const Eigen::VectorXd shapes = ShapeFunctions(naturalIpCoords[0], mNodes);
         for (int i = 0; i < mNodes.size(); i++)
         {
             result[i] = shapes[i];
@@ -127,7 +127,7 @@ namespace NuTo
     {
         Eigen::VectorXd result(mNodes.size());
         const Eigen::VectorXd shapes =
-                DerivativeShapeFunctionsTrussLagrange(naturalIpCoords[0], mNodes);
+                DerivativeShapeFunctions(naturalIpCoords[0], mNodes);
         for (int i = 0; i < mNodes.size(); i++)
         {
             result[i] = shapes[i];

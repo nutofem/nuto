@@ -11,13 +11,13 @@ class InterpolationTrussLobatto : public InterpolationSimple
 {
 public:
 
-    static Eigen::VectorXd NodeCoordinatesTrussLobatto(int order);
+    static Eigen::VectorXd LocalCoords(int order);
 
     static Eigen::VectorXd BarycentricWeights(const Eigen::VectorXd& nodes);
 
-    static Eigen::VectorXd ShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes);
+    static Eigen::VectorXd ShapeFunctions(const double x, const Eigen::VectorXd& nodes);
 
-    static Eigen::VectorXd DerivativeShapeFunctionsTrussLagrange(const double x, const Eigen::VectorXd& nodes);
+    static Eigen::VectorXd DerivativeShapeFunctions(const double x, const Eigen::VectorXd& nodes);
 
     InterpolationTrussLobatto(int order);
 

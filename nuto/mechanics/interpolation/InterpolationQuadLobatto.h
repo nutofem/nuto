@@ -9,11 +9,11 @@ class InterpolationQuadLobatto : public InterpolationSimple
 {
 public:
 
-    static Eigen::MatrixXd NodeCoordinatesQuadLobatto(int nodeId, const Eigen::VectorXd& nodes);
+    static Eigen::MatrixXd LocalCoords(int nodeId, const Eigen::VectorXd& nodes);
 
-    static Eigen::VectorXd ShapeFunctionsQuadLagrange(const Eigen::Vector2d x, const Eigen::VectorXd& nodes);
+    static Eigen::VectorXd ShapeFunctions(const Eigen::Vector2d x, const Eigen::VectorXd& nodes);
 
-    static Eigen::MatrixXd DerivativeShapeFunctionsQuadLagrange(const Eigen::Vector2d x,
+    static Eigen::MatrixXd DerivativeShapeFunctions(const Eigen::Vector2d x,
                                                                            const Eigen::VectorXd& nodes);
     InterpolationQuadLobatto(int order);
 

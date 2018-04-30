@@ -10,11 +10,11 @@ class InterpolationBrickLobatto : public InterpolationSimple
 {
 public:
 
-    static Eigen::MatrixXd NodeCoordinatesBrickLobatto(int nodeId, const Eigen::VectorXd& nodes);
+    static Eigen::MatrixXd LocalCoords(int nodeId, const Eigen::VectorXd& nodes);
 
-    static Eigen::VectorXd ShapeFunctionsBrickLagrange(const Eigen::Vector3d x, const Eigen::VectorXd& nodes);
+    static Eigen::VectorXd ShapeFunctions(const Eigen::Vector3d x, const Eigen::VectorXd& nodes);
 
-    static Eigen::MatrixXd DerivativeShapeFunctionsBrickLagrange(const Eigen::Vector3d x,
+    static Eigen::MatrixXd DerivativeShapeFunctions(const Eigen::Vector3d x,
                                                                             const Eigen::VectorXd& nodes);
 
     InterpolationBrickLobatto(int order);
