@@ -5,6 +5,7 @@ add_unit_test(NeumannBc
     )
 
 add_unit_test(GradientDamage
+    mechanics/interpolation/InterpolationTrussLobatto.cpp
     math/Legendre.cpp
     math/Quadrature.cpp)
 

@@ -21,6 +21,7 @@ add_sources(cell/SimpleAssembler.cpp
     interpolation/InterpolationTrussQuadratic.cpp
     interpolation/InterpolationTruss3rdOrder.cpp
     interpolation/InterpolationTruss4thOrder.cpp
+    interpolation/InterpolationTrussLobatto.cpp
     interpolation/InterpolationTriangleLinear.cpp
     interpolation/InterpolationTriangleQuadratic.cpp
     interpolation/InterpolationTriangle3rdOrder.cpp
@@ -29,8 +30,10 @@ add_sources(cell/SimpleAssembler.cpp
     interpolation/InterpolationTetrahedronQuadratic.cpp
     interpolation/InterpolationQuadLinear.cpp
     interpolation/InterpolationQuadSerendipity.cpp
+    interpolation/InterpolationQuadLobatto.cpp
     interpolation/InterpolationBrickLinear.cpp
     interpolation/InterpolationBrickQuadratic.cpp
+    interpolation/InterpolationBrickLobatto.cpp
     interpolation/InterpolationPrismLinear.cpp
     interpolation/InterpolationPrismQuadratic.cpp
     interpolation/InterpolationPyramidLinear.cpp
