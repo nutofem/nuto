@@ -2,7 +2,6 @@ add_sources(cell/SimpleAssembler.cpp
     constraints/ConstraintCompanion.cpp
     constraints/Constraints.cpp
     dofs/DofNumbering.cpp
-    elements/SpectralShapeFunctions.cpp
 
     mesh/MeshFem.cpp
     mesh/MeshFemDofConvert.cpp

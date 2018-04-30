@@ -47,5 +47,4 @@ add_unit_test(MeshGmsh
     mechanics/interpolation/InterpolationBrickLinear.cpp
     mechanics/interpolation/InterpolationPrismLinear.cpp
     mechanics/interpolation/InterpolationPrismQuadratic.cpp
-    mechanics/interpolation/InterpolationPyramidLinear.cpp
-    mechanics/elements/SpectralShapeFunctions.cpp)
+    mechanics/interpolation/InterpolationPyramidLinear.cpp)
