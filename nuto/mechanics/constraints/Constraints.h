@@ -9,6 +9,26 @@ namespace NuTo
 namespace Constraint
 {
 
+//! @brief represents a numbering where first the independent dofs are consecutively numbered
+//! leaving out the dependent ones and then the dependent dof numbers are appended.
+//!
+//! mNumJ number of independent Dofs
+//! mNumK number of dependent Dofs
+//!
+//! The order of the dependent dofs is given by the order of the constraint equations
+//!
+//! Example:
+//!
+//! dofNumber                   0  1  2*  3  4  5*  6  (* = constrained)
+//! constraintEqNr                    1         0
+//!
+//! JKNumbering
+//! (independent dofs)          0  1      2  3      4
+//!
+//! (dependent dofs)
+//! appended and ordered
+//! like constraint equations         6         5
+//!
 struct JKNumbering
 {
     JKNumbering(Eigen::VectorXi indices, int numK)
@@ -19,8 +39,8 @@ struct JKNumbering
     }
 
     Eigen::VectorXi mIndices;
-    Eigen::VectorXi mNumJ;
-    Eigen::VectorXi mNumK;
+    int mNumJ;
+    int mNumK;
 };
 
 //! @brief stores constraint equations, separated by their dof type
