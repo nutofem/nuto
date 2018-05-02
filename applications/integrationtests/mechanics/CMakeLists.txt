@@ -26,6 +26,10 @@ add_integrationtest(PatchTest)
 add_integrationtest(CreepLaw)
 add_integrationtest(QuasistaticProblem1D)
 add_integrationtest(VibrationalModes1D)
+
+add_integrationtest(Wave1D Boost::filesystem)
+target_link_libraries(Wave1D Boost::filesystem)
+
 add_integrationtest(IntegrationCompanion)
 #add_integrationtest(AdditiveInput)
 #add_integrationtest(AdditiveOutput)
