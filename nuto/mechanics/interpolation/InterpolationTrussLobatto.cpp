@@ -123,7 +123,7 @@ namespace NuTo
         return result;
     }
 
-    DerivativeShapeFunctionsNatural InterpolationTrussLobatto::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+    Eigen::MatrixXd InterpolationTrussLobatto::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
     {
         Eigen::VectorXd result(mNodes.size());
         const Eigen::VectorXd shapes =

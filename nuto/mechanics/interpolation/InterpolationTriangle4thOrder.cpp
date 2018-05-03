@@ -13,7 +13,7 @@ Eigen::VectorXd InterpolationTriangle4thOrder::GetShapeFunctions(const NaturalCo
     return ShapeFunctions(naturalIpCoords);
 }
 
-DerivativeShapeFunctionsNatural
+Eigen::MatrixXd
 InterpolationTriangle4thOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);

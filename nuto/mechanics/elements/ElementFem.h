@@ -30,7 +30,7 @@ public:
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
-    virtual NodeValues ExtractNodeValues(int instance = 0) const override
+    virtual Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
     {
         const int dim = GetDofDimension();
         Eigen::VectorXd nodeValues(GetNumNodes() * dim);
@@ -39,7 +39,7 @@ public:
         return nodeValues;
     }
 
-    NMatrix GetNMatrix(NaturalCoords ipCoords) const override
+    Eigen::MatrixXd GetNMatrix(NaturalCoords ipCoords) const override
     {
         return Matrix::N(Interpolation().GetShapeFunctions(ipCoords), Interpolation().GetNumNodes(), GetDofDimension());
     }
@@ -49,7 +49,7 @@ public:
         return Interpolation().GetShapeFunctions(ipCoords);
     }
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
+    Eigen::MatrixXd GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
     {
         return Interpolation().GetDerivativeShapeFunctions(ipCoords);
     }

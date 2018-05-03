@@ -77,9 +77,9 @@ public:
         auto eeqGradient = data.Apply(mEeq, Nabla::Gradient());
         NuTo::EngineeringStrain<TDim> strain = data.Apply(mDisp, Nabla::Strain());
 
-        NMatrix Neeq = data.N(mEeq);
-        NMatrix Beeq = data.B(mEeq, Nabla::Gradient());
-        BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
+        Eigen::MatrixXd Neeq = data.N(mEeq);
+        Eigen::MatrixXd Beeq = data.B(mEeq, Nabla::Gradient());
+        Eigen::MatrixXd Bdisp = data.B(mDisp, Nabla::Strain());
 
         double g = mInteraction.Factor(omega);
 
@@ -100,9 +100,9 @@ public:
 
         NuTo::EngineeringStrain<TDim> strain = data.Apply(mDisp, Nabla::Strain());
 
-        NMatrix Neeq = data.N(mEeq);
-        BMatrixGradient Beeq = data.B(mEeq, Nabla::Gradient());
-        BMatrixStrain Bdisp = data.B(mDisp, Nabla::Strain());
+        Eigen::MatrixXd Neeq = data.N(mEeq);
+        Eigen::MatrixXd Beeq = data.B(mEeq, Nabla::Gradient());
+        Eigen::MatrixXd Bdisp = data.B(mDisp, Nabla::Strain());
 
         double g = mInteraction.Factor(omega);
         double dgdw = mInteraction.Derivative(omega);

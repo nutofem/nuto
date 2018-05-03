@@ -15,7 +15,7 @@ Eigen::VectorXd InterpolationPrismQuadratic::GetShapeFunctions(const NaturalCoor
     return ShapeFunctions(naturalIpCoords);
 }
 
-DerivativeShapeFunctionsNatural
+Eigen::MatrixXd
 InterpolationPrismQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);

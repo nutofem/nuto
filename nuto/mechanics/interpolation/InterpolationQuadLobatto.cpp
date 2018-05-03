@@ -77,7 +77,7 @@ namespace NuTo
         return ShapeFunctions(naturalIpCoords, mNodes);
     }
 
-    DerivativeShapeFunctionsNatural InterpolationQuadLobatto::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+    Eigen::MatrixXd InterpolationQuadLobatto::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
     {
         return DerivativeShapeFunctions(naturalIpCoords, mNodes);
     }

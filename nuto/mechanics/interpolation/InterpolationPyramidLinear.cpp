@@ -14,8 +14,7 @@ Eigen::VectorXd InterpolationPyramidLinear::GetShapeFunctions(const NaturalCoord
     return ShapeFunctions(naturalIpCoords);
 }
 
-DerivativeShapeFunctionsNatural
-InterpolationPyramidLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::MatrixXd InterpolationPyramidLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);
 }

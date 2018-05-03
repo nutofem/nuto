@@ -13,7 +13,7 @@ Eigen::VectorXd InterpolationTetrahedronLinear::GetShapeFunctions(const NaturalC
     return ShapeFunctions(naturalIpCoords);
 }
 
-DerivativeShapeFunctionsNatural InterpolationTetrahedronLinear::GetDerivativeShapeFunctions(const NaturalCoords&) const
+Eigen::MatrixXd InterpolationTetrahedronLinear::GetDerivativeShapeFunctions(const NaturalCoords&) const
 {
     return DerivativeShapeFunctions();
 }

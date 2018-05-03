@@ -13,7 +13,7 @@ Eigen::VectorXd InterpolationQuadQuadratic::GetShapeFunctions(const NaturalCoord
     return ShapeFunctions(naturalIpCoords);
 }
 
-DerivativeShapeFunctionsNatural
+Eigen::MatrixXd
 InterpolationQuadQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);

@@ -18,7 +18,7 @@ public:
 
     Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords&) const override;
+    Eigen::MatrixXd GetDerivativeShapeFunctions(const NaturalCoords&) const override;
 
     NaturalCoords GetLocalCoords(int nodeId) const override;
 

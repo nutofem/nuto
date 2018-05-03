@@ -25,17 +25,17 @@ public:
         return mCellId;
     }
 
-    NodeValues GetCoordinates() const
+    Eigen::VectorXd GetCoordinates() const
     {
         return mElements.CoordinateElement().ExtractNodeValues();
     }
 
-    const NodeValues& GetNodeValues(DofType dofType, int instance = 0) const
+    const Eigen::VectorXd& GetNodeValues(DofType dofType, int instance = 0) const
     {
         if (instance >= static_cast<int>(mNodeValues[dofType].size()))
             mNodeValues[dofType].resize(instance + 1);
 
-        NodeValues& nodeValues = mNodeValues[dofType][instance];
+        Eigen::VectorXd& nodeValues = mNodeValues[dofType][instance];
         if (nodeValues.size() == 0)
             nodeValues = mElements.DofElement(dofType).ExtractNodeValues(instance);
 
@@ -48,7 +48,7 @@ public:
     }
 
 private:
-    mutable DofContainer<std::vector<NodeValues>> mNodeValues;
+    mutable DofContainer<std::vector<Eigen::VectorXd>> mNodeValues;
     const ElementCollection& mElements;
     int mCellId;
 };
