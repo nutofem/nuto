@@ -1,6 +1,6 @@
 #pragma once
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
-#include "nuto/mechanics/elements/SpectralShapeFunctions.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 #include "nuto/math/shapes/Quadrilateral.h"
 
 namespace NuTo
@@ -8,40 +8,26 @@ namespace NuTo
 class InterpolationQuadLobatto : public InterpolationSimple
 {
 public:
-    InterpolationQuadLobatto(int order)
-    {
-        mNodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
-    }
 
-    std::unique_ptr<InterpolationSimple> Clone() const override
-    {
-        return std::make_unique<InterpolationQuadLobatto>(*this);
-    }
+    static Eigen::MatrixXd LocalCoords(int nodeId, const Eigen::VectorXd& nodes);
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctions2D::ShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
-    }
+    static Eigen::VectorXd ShapeFunctions(const Eigen::Vector2d x, const Eigen::VectorXd& nodes);
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctions2D::DerivativeShapeFunctionsQuadLagrange(naturalIpCoords, mNodes);
-    }
+    static Eigen::MatrixXd DerivativeShapeFunctions(const Eigen::Vector2d x,
+                                                                           const Eigen::VectorXd& nodes);
+    InterpolationQuadLobatto(int order);
 
-    NaturalCoords GetLocalCoords(int nodeId) const override
-    {
-        return ShapeFunctions2D::NodeCoordinatesQuadLobatto(nodeId, mNodes);
-    }
+    std::unique_ptr<InterpolationSimple> Clone() const override;
 
-    int GetNumNodes() const override
-    {
-        return mNodes.size() * mNodes.size();
-    }
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
-    const Shape& GetShape() const override
-    {
-        return mShape;
-    }
+    Eigen::MatrixXd GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
+
+    NaturalCoords GetLocalCoords(int nodeId) const override;
+
+    int GetNumNodes() const override;
+
+    const Shape& GetShape() const override;
 
 private:
     Eigen::VectorXd mNodes;

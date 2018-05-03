@@ -97,7 +97,7 @@ public:
     //! Returns memoized nodal values
     //! @return nodal values for dofType
     //! @param instance id of the dof instance
-    const NodeValues& NodeValueVector(DofType dofType, int instance = 0) const
+    const Eigen::VectorXd& NodeValueVector(DofType dofType, int instance = 0) const
     {
         return mCellData.GetNodeValues(dofType, instance);
     }
@@ -105,9 +105,9 @@ public:
 private:
     //! Transforms the derivative shape functions from the natural coordinate system (dN_d(xi, eta, ...)) to the global
     //! coordinate system (dN_d(x,y,...))
-    DerivativeShapeFunctionsGlobal CalculateDerivativeShapeFunctionsGlobal(DofType dofType) const
+    Eigen::MatrixXd CalculateDerivativeShapeFunctionsGlobal(DofType dofType) const
     {
-        DerivativeShapeFunctionsNatural dShapeNatural =
+        Eigen::MatrixXd dShapeNatural =
                 mCellData.Elements().DofElement(dofType).GetDerivativeShapeFunctions(mIPCoords);
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }

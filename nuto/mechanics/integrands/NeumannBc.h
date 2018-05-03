@@ -28,8 +28,8 @@ public:
 
     NuTo::DofVector<double> ExternalLoad(const NuTo::CellIpData& cellIpData)
     {
-        NuTo::NMatrix N = cellIpData.N(mDofType);
-        NuTo::DofVector<double> gradient;
+        Eigen::MatrixXd N = cellIpData.N(mDofType);
+        DofVector<double> gradient;
 
         gradient[mDofType] = N.transpose() * mFactor;
 
@@ -37,7 +37,7 @@ public:
     }
 
 private:
-    NuTo::DofType mDofType;
+    DofType mDofType;
     Eigen::Matrix<double, TDim, 1> mFactor;
 };
 } /* Integrand */

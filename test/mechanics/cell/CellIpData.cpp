@@ -5,8 +5,8 @@
 
 BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
 {
-    NuTo::DerivativeShapeFunctionsNatural dNdXi = Eigen::MatrixXd::Random(3, 2);
-    NuTo::NodeValues nodalValues(6);
+    Eigen::MatrixXd dNdXi = Eigen::MatrixXd::Random(3, 2);
+    Eigen::VectorXd nodalValues(6);
     nodalValues << 0, 0, 1, 0, 0, 1;
 
     fakeit::Mock<NuTo::ElementInterface> mockElement;

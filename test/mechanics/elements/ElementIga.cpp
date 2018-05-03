@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(ExtractNodeValues1D)
 
     std::array<int, 1> knotIDsCell = {4};
     NuTo::ElementIga<1> iga(knotIDsCell, curve);
-    NuTo::NodeValues nodeValues = iga.ExtractNodeValues();
+    Eigen::VectorXd nodeValues = iga.ExtractNodeValues();
 
     // ip coordinates are passed in
     Eigen::VectorXd param(1);

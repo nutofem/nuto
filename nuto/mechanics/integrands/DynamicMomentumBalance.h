@@ -22,7 +22,7 @@ public:
     DofMatrix<double> Hessian2(const CellIpData& cellIpData)
     {
 
-        NMatrix N = cellIpData.N(mDofType);
+        Eigen::MatrixXd N = cellIpData.N(mDofType);
         DofMatrix<double> hessian2;
 
         hessian2(mDofType, mDofType) = N.transpose() * N * mRho;

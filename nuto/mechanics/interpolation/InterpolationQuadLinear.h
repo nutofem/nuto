@@ -1,6 +1,5 @@
 #pragma once
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/math/shapes/Quadrilateral.h"
 
 namespace NuTo
@@ -8,35 +7,23 @@ namespace NuTo
 class InterpolationQuadLinear : public InterpolationSimple
 {
 public:
-    std::unique_ptr<InterpolationSimple> Clone() const override
-    {
-        return std::make_unique<InterpolationQuadLinear>(*this);
-    }
+    static Eigen::Matrix<double, 2, 1> LocalCoords(int rNodeIndex);
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctions2D::ShapeFunctionsQuadOrder1(naturalIpCoords);
-    }
+    static Eigen::Matrix<double, 4, 1> ShapeFunctions(const Eigen::VectorXd& rCoordinates);
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder1(naturalIpCoords);
-    }
+    static Eigen::Matrix<double, 4, 2> DerivativeShapeFunctions(const Eigen::VectorXd& rCoordinates);
 
-    NaturalCoords GetLocalCoords(int nodeId) const override
-    {
-        return ShapeFunctions2D::NodeCoordinatesQuadOrder1(nodeId);
-    }
+    std::unique_ptr<InterpolationSimple> Clone() const override;
 
-    int GetNumNodes() const override
-    {
-        return 4;
-    }
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
 
-    const Shape& GetShape() const override
-    {
-        return mShape;
-    }
+    Eigen::MatrixXd GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
+
+    NaturalCoords GetLocalCoords(int nodeId) const override;
+
+    int GetNumNodes() const override;
+
+    const Shape& GetShape() const override;
 
 private:
     Quadrilateral mShape;

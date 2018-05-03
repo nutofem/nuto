@@ -32,22 +32,22 @@ public:
 
     //! @brief extracts all node values of this element
     //! @remark virtual to make it testable
-    virtual NodeValues ExtractNodeValues(int instance = 0) const override
+    virtual Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
     {
         return NurbsGeometry().GetControlPointsElement(mKnotIDs, instance);
     }
 
-    NMatrix GetNMatrix(NaturalCoords ipCoords) const override
+    Eigen::MatrixXd GetNMatrix(NaturalCoords ipCoords) const override
     {
         return NuTo::Matrix::N(GetShapeFunctions(ipCoords), GetNumNodes(), GetDofDimension());
     }
 
-    ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const override
+    Eigen::VectorXd GetShapeFunctions(NaturalCoords ipCoords) const override
     {
         return NurbsGeometry().BasisFunctionsAndDerivativesRational(0, Transformation(ipCoords));
     }
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
+    Eigen::MatrixXd GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
     {
         return NurbsGeometry().BasisFunctionsAndDerivativesRational(1, Transformation(ipCoords));
     }
