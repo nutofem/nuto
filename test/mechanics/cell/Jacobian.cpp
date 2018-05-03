@@ -5,6 +5,7 @@
 #include "nuto/mechanics/interpolation/InterpolationTrussQuadratic.h"
 #include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationBrickLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTetrahedronLinear.h"
 
 using namespace NuTo;
@@ -131,4 +132,12 @@ BOOST_AUTO_TEST_CASE(Jacobian1Din2DComputeNormal)
 BOOST_AUTO_TEST_CASE(JacobianTransform)
 {
     // TODO! How?
+}
+
+BOOST_AUTO_TEST_CASE(JacobianExceptions)
+{
+    Eigen::MatrixXd B = InterpolationBrickLinear::DerivativeShapeFunctions(Eigen::Vector3d(0., 0., 0.));
+    Eigen::Vector3d coordinates(1., 2., 3.);
+    BOOST_CHECK_THROW(Jacobian jacobian(coordinates, B, 4), Exception);
+    BOOST_CHECK_THROW(Jacobian jacobian(coordinates, B, 2), Exception);
 }

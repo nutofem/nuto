@@ -79,13 +79,20 @@ public:
             }
             default:
             {
-                throw;
+                throw Exception(__PRETTY_FUNCTION__,
+                                "Global dimension should be 2 or 3 for codimension 1 objects, got: " +
+                                        std::to_string(globalDimension) + ".");
             }
             }
         }
         else
         {
-            throw;
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Jacobian only implemented for interpolationDimension equal to globaldimension or one "
+                            "less, got: \n"
+                            "InterpolationDimension: " +
+                                    std::to_string(interpolationDimension) + "\n" +
+                                    "GlobalDimension: " + std::to_string(globalDimension));
         }
     }
 
