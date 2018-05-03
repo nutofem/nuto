@@ -15,6 +15,8 @@ add_unit_test(CellData)
 
 add_unit_test(DifferentialOperators)
 
+add_unit_test(Assembler)
+
 add_unit_test(SimpleAssembler)
 
 add_unit_test(Matrix)

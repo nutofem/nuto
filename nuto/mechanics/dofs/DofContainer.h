@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include "nuto/mechanics/dofs/DofType.h"
 
 namespace NuTo
@@ -19,7 +20,7 @@ public:
     //! @remark This requires T to be default constructable.
     T& operator[](DofType dofType)
     {
-        return mData[dofType.Id()];
+        return mData[dofType];
     }
 
     //! @brief nonconst access, similar to map::at()
@@ -29,7 +30,7 @@ public:
     //          require T to be default constructable.
     T& At(DofType dofType)
     {
-        return mData.at(dofType.Id());
+        return mData.at(dofType);
     }
 
     //! @brief const access
@@ -37,7 +38,7 @@ public:
     //! @return const reference to existing value, throws if there is no value
     const T& operator[](DofType dofType) const
     {
-        return mData.at(dofType.Id());
+        return mData.at(dofType);
     }
 
     //! @brief copies a `t` into the container, throws, if there already is an entry at `dofType`
@@ -45,18 +46,28 @@ public:
     //! @param t value to insert
     void Insert(DofType dofType, T t)
     {
-        auto it = mData.emplace(dofType.Id(), t); // it = pair<iterator, bool>
+        auto it = mData.emplace(dofType, t); // it = pair<iterator, bool>
         if (not it.second)
             throw Exception(__PRETTY_FUNCTION__,
                             "Insert failed. Container already contains an entry for " + dofType.GetName() + ".");
     }
 
-    bool Has(DofType dof) const
+    bool Has(DofType dofType) const
     {
-        return mData.find(dof.Id()) != mData.end();
+        return mData.find(dofType) != mData.end();
+    }
+
+    auto begin() const
+    {
+        return mData.begin();
+    }
+
+    auto end() const
+    {
+        return mData.end();
     }
 
 protected:
-    std::map<int, T> mData;
+    std::map<DofType, T, CompareDofType> mData;
 };
 } /* NuTo */

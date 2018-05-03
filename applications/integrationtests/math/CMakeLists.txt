@@ -4,3 +4,4 @@ if (ARPACK_FOUND)
 endif()
 
 add_integrationtest(PolynomialLeastSquaresFitting)
+add_integrationtest(HarmonicOscillator)
