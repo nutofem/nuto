@@ -21,6 +21,8 @@ BOOST_AUTO_TEST_CASE(LineIsInside)
 
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions1D::NodeCoordinatesTrussOrder1(0)));
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions1D::NodeCoordinatesTrussOrder1(1)));
+
+    BoostUnitTest::CheckOutstream(shape, "Line");
 }
 
 BOOST_AUTO_TEST_CASE(TriangleIsInside)
@@ -36,6 +38,8 @@ BOOST_AUTO_TEST_CASE(TriangleIsInside)
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions2D::NodeCoordinatesTriangleOrder1(0)));
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions2D::NodeCoordinatesTriangleOrder1(1)));
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions2D::NodeCoordinatesTriangleOrder1(2)));
+
+    BoostUnitTest::CheckOutstream(shape, "Triangle");
 }
 
 BOOST_AUTO_TEST_CASE(QuadIsInside)
@@ -49,6 +53,8 @@ BOOST_AUTO_TEST_CASE(QuadIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
     BOOST_CHECK(shape.IsWithinShape(pBoundary));
+
+    BoostUnitTest::CheckOutstream(shape, "Quadrilateral");
 }
 
 BOOST_AUTO_TEST_CASE(TetrahedronIsInside)
@@ -65,6 +71,8 @@ BOOST_AUTO_TEST_CASE(TetrahedronIsInside)
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesTetrahedronOrder1(1)));
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesTetrahedronOrder1(2)));
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesTetrahedronOrder1(3)));
+
+    BoostUnitTest::CheckOutstream(shape, "Tetrahedron");
 }
 
 BOOST_AUTO_TEST_CASE(HexahedronIsInside)
@@ -78,6 +86,8 @@ BOOST_AUTO_TEST_CASE(HexahedronIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
     BOOST_CHECK(shape.IsWithinShape(pBoundary));
+
+    BoostUnitTest::CheckOutstream(shape, "Hexahedron");
 }
 
 BOOST_AUTO_TEST_CASE(PrismIsInside)
@@ -95,6 +105,8 @@ BOOST_AUTO_TEST_CASE(PrismIsInside)
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesPrismOrder1(2)));
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesPrismOrder1(3)));
     BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesPrismOrder1(4)));
+
+    BoostUnitTest::CheckOutstream(shape, "Prism");
 }
 
 BOOST_AUTO_TEST_CASE(PyramidIsInside)
@@ -108,4 +120,6 @@ BOOST_AUTO_TEST_CASE(PyramidIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
     BOOST_CHECK(shape.IsWithinShape(pBoundary));
+
+    BoostUnitTest::CheckOutstream(shape, "Pyramid");
 }

@@ -37,4 +37,12 @@ void CheckEigenMatrix(const T1& r1, const T2& r2, double rTolerance = 1.e-10)
     }
     BOOST_CHECK(isApprox);
 }
+
+template <typename T>
+void CheckOutstream(const T& object, std::string expected_output)
+{
+    std::stringstream output;
+    output << object;
+    BOOST_CHECK_EQUAL(output.str(), expected_output);
+}
 } /* BoostUnitTest */

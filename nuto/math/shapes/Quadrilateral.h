@@ -19,6 +19,12 @@ public:
         double y = xi[1];
         return (-1.-e < x) && (x < 1.+e) && (-1.-e < y) && (y < 1.+e);
     }
+
+protected:
+    void Info(std::ostream& out) const override
+    {
+        out << "Quadrilateral";
+    }
 };
 
 } // namespace NuTo
