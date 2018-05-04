@@ -13,10 +13,11 @@ public:
     using Dynamic3by3 = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor, 3, 3>;
     using Dynamic3by1 = Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor, 3, 1>;
 
-    Jacobian(const Eigen::VectorXd& nodeValues, const Eigen::MatrixXd& derivativeShapeFunctions, int globalDimension)
+    Jacobian(const Eigen::VectorXd& nodeValues, const Eigen::MatrixXd& derivativeShapeFunctions)
     {
         const int interpolationDimension = derivativeShapeFunctions.cols();
-        // case 1: global dimension ( node dimension ) matches the interpolation dimension.
+        const int numNodes = derivativeShapeFunctions.rows();
+        const int globalDimension = nodeValues.rows() / numNodes;
         if (interpolationDimension == globalDimension)
         {
             switch (globalDimension)

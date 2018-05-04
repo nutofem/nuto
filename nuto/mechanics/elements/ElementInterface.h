@@ -11,6 +11,10 @@ public:
     virtual ~ElementInterface() noexcept = default;
 
     //! @brief extracts all node values of this element
+    //!
+    //! They are ordered in blocks belonging to a node, e.g:
+    //! coordinate Nodes in 3D:
+    //!   NodeValues: (x1,y1,z1, x2,y2,z2, ...)
     virtual Eigen::VectorXd ExtractNodeValues(int instance = 0) const = 0;
 
     virtual int GetDofDimension() const = 0;
