@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense> // for determinant
 #include "nuto/mechanics/interpolation/TypeDefs.h"
+#include "nuto/mechanics/elements/ElementInterface.h"
 #include "nuto/base/Exception.h"
 
 namespace NuTo
@@ -12,6 +13,88 @@ class Jacobian
 public:
     using Dynamic3by3 = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor, 3, 3>;
     using Dynamic3by1 = Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor, 3, 1>;
+
+    Jacobian(const ElementInterface& element, const NaturalCoords& ipCoords)
+    {
+        const NodeValues& nodeValues = element.ExtractNodeValues();
+        const DerivativeShapeFunctionsNatural& derivativeShapeFunctions = element.GetDerivativeShapeFunctions(ipCoords);
+        int globalDimension = element.GetDofDimension();
+
+        const int interpolationDimension = derivativeShapeFunctions.cols();
+        // case 1: global dimension ( node dimension ) matches the interpolation dimension.
+        if (interpolationDimension == globalDimension)
+        {
+            switch (globalDimension)
+            {
+            case 1:
+            {
+                Eigen::Matrix<double, 1, 1> jacobian = CalculateFixedSize<1, 1>(nodeValues, derivativeShapeFunctions);
+                mJacobian = jacobian;
+                mInvJacobian = mJacobian.inverse();
+                mDetJacobian = mJacobian.determinant() * element.GetCalculateJacobianParametricSpaceIGA().determinant();
+                break;
+            }
+            case 2:
+            {
+                Eigen::Matrix<double, 2, 2> jacobian = CalculateFixedSize<2, 2>(nodeValues, derivativeShapeFunctions);
+                mJacobian = jacobian;
+                mInvJacobian = mJacobian.inverse();
+                mDetJacobian = mJacobian.determinant() * element.GetCalculateJacobianParametricSpaceIGA().determinant();
+                break;
+            }
+            case 3:
+            {
+                Eigen::Matrix<double, 3, 3> jacobian = CalculateFixedSize<3, 3>(nodeValues, derivativeShapeFunctions);
+                mJacobian = jacobian;
+                mInvJacobian = mJacobian.inverse();
+                mDetJacobian = mJacobian.determinant() * element.GetCalculateJacobianParametricSpaceIGA().determinant();
+                break;
+            }
+            }
+        }
+        else if (globalDimension == interpolationDimension + 1)
+        {
+            switch (globalDimension)
+            {
+            case 2:
+            {
+                Eigen::Matrix<double, 2, 1> jacobian = CalculateFixedSize<2, 1>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 2, 2> extendedJacobianTemp;
+                mNormal = Eigen::Vector2d(jacobian(1, 0), -jacobian(0, 0)).normalized();
+                extendedJacobianTemp.col(0) = jacobian;
+                extendedJacobianTemp.col(1) = mNormal;
+                Eigen::Matrix<double, 2, 2> extendedJacobian = extendedJacobianTemp;
+                mJacobian = jacobian;
+                mInvJacobian = extendedJacobian.inverse().block<1, 2>(0, 0);
+                mDetJacobian = (jacobian * element.GetCalculateJacobianParametricSpaceIGA()).norm();
+                break;
+            }
+            case 3:
+            {
+                Eigen::Matrix<double, 3, 2> jacobian = CalculateFixedSize<3, 2>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 3, 3> extendedJacobian;
+                mNormal = (jacobian.col(0)).cross(jacobian.col(1)).normalized();
+                extendedJacobian.col(0) = jacobian.col(0);
+                extendedJacobian.col(1) = jacobian.col(1);
+                extendedJacobian.col(2) = mNormal;
+                mJacobian = jacobian;
+                mInvJacobian = extendedJacobian.inverse().block<2, 3>(0, 0);
+                mDetJacobian = extendedJacobian.determinant();
+                // mDetJacobian = (mNormal * element.GetCalculateJacobianParametricSpaceIGA()).norm();
+                break;
+            }
+            default:
+            {
+                throw;
+            }
+            }
+        }
+        else
+        {
+            throw;
+        }
+    }
+
 
     Jacobian(const NodeValues& nodeValues, const DerivativeShapeFunctionsNatural& derivativeShapeFunctions,
              int globalDimension)
@@ -24,7 +107,7 @@ public:
             {
             case 1:
             {
-                Eigen::Matrix<double, 1, 1> jacobian = CalculateFixedSize<1,1>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 1, 1> jacobian = CalculateFixedSize<1, 1>(nodeValues, derivativeShapeFunctions);
                 mJacobian = jacobian;
                 mInvJacobian = jacobian.inverse();
                 mDetJacobian = jacobian.determinant();
@@ -32,7 +115,7 @@ public:
             }
             case 2:
             {
-                Eigen::Matrix<double, 2, 2> jacobian = CalculateFixedSize<2,2>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 2, 2> jacobian = CalculateFixedSize<2, 2>(nodeValues, derivativeShapeFunctions);
                 mJacobian = jacobian;
                 mInvJacobian = jacobian.inverse();
                 mDetJacobian = jacobian.determinant();
@@ -40,7 +123,7 @@ public:
             }
             case 3:
             {
-                Eigen::Matrix<double, 3, 3> jacobian = CalculateFixedSize<3,3>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 3, 3> jacobian = CalculateFixedSize<3, 3>(nodeValues, derivativeShapeFunctions);
                 mJacobian = jacobian;
                 mInvJacobian = jacobian.inverse();
                 mDetJacobian = jacobian.determinant();
@@ -54,36 +137,37 @@ public:
             {
             case 2:
             {
-                Eigen::Matrix<double, 2, 1> jacobian = CalculateFixedSize<2,1>(nodeValues, derivativeShapeFunctions);
-                Eigen::Matrix<double, 2,2> extendedJacobian;
-                mNormal = Eigen::Vector2d(jacobian(1,0),-jacobian(0,0)).normalized();
+                Eigen::Matrix<double, 2, 1> jacobian = CalculateFixedSize<2, 1>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 2, 2> extendedJacobian;
+                mNormal = Eigen::Vector2d(jacobian(1, 0), -jacobian(0, 0)).normalized();
                 extendedJacobian.col(0) = jacobian;
                 extendedJacobian.col(1) = mNormal;
                 mJacobian = jacobian;
-                mInvJacobian = extendedJacobian.inverse().block<1,2>(0,0);
+                mInvJacobian = extendedJacobian.inverse().block<1, 2>(0, 0);
                 mDetJacobian = -extendedJacobian.determinant();
                 break;
             }
             case 3:
             {
-                Eigen::Matrix<double, 3, 2> jacobian = CalculateFixedSize<3,2>(nodeValues, derivativeShapeFunctions);
-                Eigen::Matrix<double, 3,3> extendedJacobian;
+                Eigen::Matrix<double, 3, 2> jacobian = CalculateFixedSize<3, 2>(nodeValues, derivativeShapeFunctions);
+                Eigen::Matrix<double, 3, 3> extendedJacobian;
                 mNormal = (jacobian.col(0)).cross(jacobian.col(1)).normalized();
                 extendedJacobian.col(0) = jacobian.col(0);
                 extendedJacobian.col(1) = jacobian.col(1);
                 extendedJacobian.col(2) = mNormal;
                 mJacobian = jacobian;
-                mInvJacobian = extendedJacobian.inverse().block<2,3>(0,0);;
+                mInvJacobian = extendedJacobian.inverse().block<2, 3>(0, 0);
+                ;
                 mDetJacobian = extendedJacobian.determinant();
                 break;
-
             }
             default:
             {
                 throw;
             }
             }
-        } else
+        }
+        else
         {
             throw;
         }
@@ -107,9 +191,10 @@ public:
 
     const Dynamic3by1& Normal() const
     {
-        if (mJacobian.cols() != (mJacobian.rows() - 1)) {
+        if (mJacobian.cols() != (mJacobian.rows() - 1))
+        {
             throw Exception(__PRETTY_FUNCTION__,
-                                  "Normal not available for elements with SpaceDimension - LocalDimension != 1");
+                            "Normal not available for elements with SpaceDimension - LocalDimension != 1");
         }
         return mNormal;
     }

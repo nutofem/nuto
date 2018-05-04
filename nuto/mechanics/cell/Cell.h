@@ -41,9 +41,7 @@ public:
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
-                              mElements.CoordinateElement().GetDofDimension());
+            Jacobian jacobian(mElements.CoordinateElement(), ipCoords);
             CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
             f(cellipData);
         }
@@ -76,9 +74,7 @@ public:
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
-                              mElements.CoordinateElement().GetDofDimension());
+            Jacobian jacobian(mElements.CoordinateElement(), ipCoords);
             CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
             result.push_back(f(cellipData));
         }
@@ -103,9 +99,7 @@ private:
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
-                              mElements.CoordinateElement().GetDofDimension());
+            Jacobian jacobian(mElements.CoordinateElement(), ipCoords);
             CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
             result += f(cellipData) * jacobian.Det() * ipWeight;
         }

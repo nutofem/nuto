@@ -1,5 +1,8 @@
 #include "Solve.h"
 #include "nuto/math/EigenSparseSolve.h"
+#include <Eigen/Eigenvalues>
+
+#include <iostream>
 
 namespace NuTo
 {
@@ -14,6 +17,11 @@ GlobalDofVector Solve(GlobalDofMatrixSparse K, GlobalDofVector f, Constraint::Co
     Eigen::VectorXd fmod_constrained = (K.JK(dof, dof) - cmat.transpose() * K.KK(dof, dof)) * (-bcs.GetRhs(dof, time));
 
     GlobalDofVector u;
+
+    Eigen::MatrixXd matrix(Kmod);
+    Eigen::VectorXcd eivals = matrix.eigenvalues();
+    std::cout << eivals << std::endl;
+
     u.J[dof] = EigenSparseSolve(Kmod, fmod + fmod_constrained, solver);
     u.K[dof] = -cmat * u.J[dof] + bcs.GetRhs(dof, time);
 

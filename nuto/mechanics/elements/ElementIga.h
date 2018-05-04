@@ -13,7 +13,7 @@ template <int TDimParameter>
 class ElementIga : public ElementInterface
 {
 public:
-    ElementIga(const std::array<int, TDimParameter>& knotIDs, const Nurbs<TDimParameter>& NurbsGeometry)
+    ElementIga(const std::array<int, TDimParameter>& knotIDs, Nurbs<TDimParameter>& NurbsGeometry)
         : mKnotIDs(knotIDs)
         , mNurbsGeometry(NurbsGeometry)
     {
@@ -45,12 +45,12 @@ public:
 
     ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const override
     {
-        return NurbsGeometry().BasisFunctionsAndDerivativesRational(0, Transformation(ipCoords));
+        return NurbsGeometry().BasisFunctionsAndDerivativesRational(0, Transformation(ipCoords), mKnotIDs);
     }
 
     DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
     {
-        return NurbsGeometry().BasisFunctionsAndDerivativesRational(1, Transformation(ipCoords));
+        return NurbsGeometry().BasisFunctionsAndDerivativesRational(1, Transformation(ipCoords), mKnotIDs);
     }
 
     int GetDofDimension() const override
@@ -84,14 +84,40 @@ public:
         return mShape;
     }
 
+    Eigen::MatrixXd GetCalculateJacobianParametricSpaceIGA() const override
+    {
+        Eigen::Matrix<double, TDimParameter, TDimParameter> jac;
+        jac.setZero(TDimParameter, TDimParameter);
+        std::vector<std::array<double, 2>> knotRanges = NurbsGeometry().GetKnots(mKnotIDs);
+
+        int count = 0;
+        for (std::array<double, 2>& knotRange : knotRanges)
+        {
+            jac(count, count) = 0.5 * (knotRange[1] - knotRange[0]);
+            count++;
+        }
+        return jac;
+    }
+
+    NodeSimple* GetNode(int i)
+    {
+        assert(i < GetNumNodes());
+        return NurbsGeometry().GetControlPointElement(mKnotIDs, i);
+    }
+
 private:
+    Nurbs<TDimParameter>& NurbsGeometry()
+    {
+        return mNurbsGeometry;
+    }
+
     const Nurbs<TDimParameter>& NurbsGeometry() const
     {
         return mNurbsGeometry;
     }
 
     std::array<int, TDimParameter> mKnotIDs;
-    std::reference_wrapper<const Nurbs<TDimParameter>> mNurbsGeometry;
+    std::reference_wrapper<Nurbs<TDimParameter>> mNurbsGeometry;
     Spline mShape;
 };
 } /* NuTo */

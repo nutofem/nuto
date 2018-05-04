@@ -102,6 +102,11 @@ public:
         return mShape;
     }
 
+    Eigen::MatrixXd GetCalculateJacobianParametricSpaceIGA() const override
+    {
+        Eigen::MatrixXd::Identity(GetDofDimension(), GetDofDimension());
+    }
+
 private:
     std::vector<std::reference_wrapper<NodeSimple>> mNodes;
     std::reference_wrapper<const InterpolationSimple> mInterpolation;

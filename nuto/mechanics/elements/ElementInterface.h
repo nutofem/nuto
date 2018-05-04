@@ -22,6 +22,7 @@ public:
     virtual NMatrix GetNMatrix(NaturalCoords ipCoords) const = 0;
     virtual ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const = 0;
     virtual DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const = 0;
+    virtual Eigen::MatrixXd GetCalculateJacobianParametricSpaceIGA() const = 0;
 };
 
 inline Eigen::VectorXd Interpolate(const ElementInterface& element, NaturalCoords ipCoords)

@@ -7,18 +7,19 @@
 #include <iostream>
 #include <vector>
 #include "nuto/base/ValueVector.h"
+#include "nuto/mechanics/DirectionEnum.h"
 
 namespace NuTo
 {
 //! @author Peter Otto, BAM
 //! @date September, 2017
 //! @brief ... Class for NURBS curves, with IGA specific functions. NURBS specific algorithms taken from Piegl, Tiller
-//! 'The NURBS book' 1996. TDimParameter is the dimension of the parametric space: curve is 1D and surface is 2D
+//! 'The NURBS book' 1996. TDimParameter is the dimension of the parametric space: curve is 1D and surface is 2D ...
 template <int TDimParameter>
 class Nurbs
 {
 public:
-    enum mParametrization
+    enum eParametrization
     {
         chord,
         centripetal
@@ -47,8 +48,60 @@ public:
             mNumControlPointsInDirection[i] = numControlPointsDir;
             numControlPoints *= numControlPointsDir;
         }
-
         assert(numControlPoints == controlPoints.size());
+    }
+
+    std::array<int, TDimParameter> VectorToTensor(int id)
+    {
+        std::array<int, TDimParameter> ind;
+
+        // TODO.. remove
+        std::array<int, TDimParameter + 1> numCPInDir;
+        numCPInDir[0] = 1;
+        for (int i = 1; i < TDimParameter + 1; i++)
+            numCPInDir[i] = mNumControlPointsInDirection[i - 1];
+        //
+
+        ind[0] = (id / numCPInDir[0]) % numCPInDir[1];
+        for (int i = 1; i < TDimParameter; i++)
+            ind[i] = (id / (numCPInDir[i - 1] * numCPInDir[i])) % numCPInDir[i];
+
+        return ind;
+    }
+
+    static void GetCPIndicesForRefinement(int accessIdLeft, int accessIdRight,
+                                          const std::array<int, TDimParameter + 1>& numCPinDirRight,
+                                          const std::array<int, TDimParameter + 1>& numCPinDirLeft, int dir,
+                                          int numCPsRight,
+                                          std::vector<int>& indicesLeft, // better std::vector<std::pair<int,int>>
+                                          std::vector<int>& indicesRight)
+    {
+        indicesLeft.clear();
+        indicesRight.clear();
+
+        for (int id = 0; id < numCPsRight; id++)
+        {
+            std::array<int, TDimParameter> indexRight;
+            indexRight[0] = (id / numCPinDirRight[0]) % numCPinDirRight[1];
+            for (int i = 1; i < TDimParameter; i++)
+                indexRight[i] = (id / (numCPinDirRight[i - 1] * numCPinDirRight[i])) % numCPinDirRight[i];
+
+            if (indexRight[dir] == accessIdRight)
+            {
+                int indexRightVectorized = indexRight[0];
+                for (int i = 1; i < TDimParameter; i++)
+                    indexRightVectorized += indexRight[i] * numCPinDirRight[i];
+
+                indicesRight.push_back(indexRightVectorized);
+
+                indexRight[dir] = accessIdLeft;
+                int indexLeftVectorized = indexRight[0];
+                for (int i = 1; i < TDimParameter; i++)
+                    indexLeftVectorized += indexRight[i] * numCPinDirLeft[i];
+
+                indicesLeft.push_back(indexLeftVectorized);
+            }
+        }
     }
 
     //! @brief ... constructor
@@ -60,12 +113,164 @@ public:
     static void Refinement(const std::array<std::vector<double>, TDimParameter>& knots,
                            const std::vector<Eigen::VectorXd>& controlPoints, const std::vector<double>& weights,
                            const std::array<int, TDimParameter>& degree,
-                           const std::array<int, TDimParameter>& refinementLevel,
-                           std::array<std::vector<double>, TDimParameter>& rKnots,
+                           const std::array<std::vector<double>, TDimParameter>& knotsInserted,
                            std::vector<Eigen::VectorXd>& rControlPoints, std::vector<double>& rWeights,
-                           std::array<int, TDimParameter>& rDegree)
+                           std::array<std::vector<double>, TDimParameter>& rKnots)
     {
-        // ToDo
+        assert(weights.size() == controlPoints.size());
+
+        size_t numControlPoints = 1;
+        for (size_t i = 0; i < knots.size(); i++)
+            numControlPoints *= (knots[i].size() - degree[i] - 1);
+        assert(numControlPoints == controlPoints.size());
+
+        int dim = controlPoints[0].rows() + 1;
+
+        // define actual knots, cps, weigts
+        std::array<std::vector<double>, TDimParameter> actualKnots(knots);
+        std::vector<Eigen::VectorXd> actualControlPoints(controlPoints);
+        std::vector<double> actualWeights(weights);
+
+        for (int dir = 0; dir < TDimParameter; dir++)
+        {
+            int numControlPointsDir = actualKnots[dir].size() - degree[dir] - 1;
+
+            int numInsert = knotsInserted[dir].size();
+            int begin = Nurbs<TDimParameter>::FindSpan(knotsInserted[dir][0], degree[dir], actualKnots[dir]);
+            int end = Nurbs<TDimParameter>::FindSpan(knotsInserted[dir][numInsert - 1], degree[dir], actualKnots[dir]);
+            end++;
+
+            // new knot vector
+            std::vector<double> newKnots(actualKnots[dir].size() + numInsert);
+            for (int i = 0; i <= begin; i++)
+                newKnots[i] = actualKnots[dir][i];
+            for (int i = end + degree[0]; i < actualKnots[dir].size(); i++)
+                newKnots[numInsert + i] = actualKnots[dir][i];
+
+            // since we're dealing with NURBS and not B-Splines, a projection is needed ...
+            std::vector<Eigen::VectorXd> controlPointsProjected;
+            controlPointsProjected.resize(actualControlPoints.size());
+
+            int count = 0;
+            for (auto& it : actualControlPoints)
+            {
+                Eigen::VectorXd point(dim);
+                point.block(0, 0, dim - 1, 1) = actualWeights[count] * it;
+                point(dim - 1) = actualWeights[count];
+                controlPointsProjected[count] = point;
+                count++;
+            }
+
+            int numControlPointsNew = 1;
+            for (int i = 0; i < TDimParameter; i++)
+            {
+                if (i == dir)
+                    numControlPointsNew *= actualKnots[i].size() - degree[i] - 1 + numInsert;
+                else
+                    numControlPointsNew *= actualKnots[i].size() - degree[i] - 1;
+            }
+
+            std::vector<Eigen::VectorXd> newControlPoints;
+            newControlPoints.resize(numControlPointsNew);
+
+            std::array<int, TDimParameter + 1> numCPinDirOld;
+            numCPinDirOld[0] = 1;
+            for (int i = 1; i < TDimParameter + 1; i++)
+                numCPinDirOld[i] = actualKnots[i - 1].size() - degree[i - 1] - 1;
+
+            std::array<int, TDimParameter + 1> numCPinDirNew;
+            numCPinDirNew[0] = 1;
+            for (int i = 1; i < TDimParameter + 1; i++)
+            {
+                if (i - 1 == dir)
+                    numCPinDirNew[i] = newKnots.size() - degree[i - 1] - 1;
+                else
+                    numCPinDirNew[i] = actualKnots[i - 1].size() - degree[i - 1] - 1;
+            }
+
+            std::vector<int> indicesLeft, indicesRight;
+
+            for (int j = 0; j <= begin - degree[dir]; j++)
+            {
+                GetCPIndicesForRefinement(j, j, numCPinDirOld, numCPinDirNew, dir, actualControlPoints.size(),
+                                          indicesLeft, indicesRight);
+                for (int i = 0; i < indicesLeft.size(); i++)
+                    newControlPoints[indicesLeft[i]] = controlPointsProjected[indicesRight[i]];
+            }
+
+            for (int j = end - 1; j < numControlPointsDir; j++)
+            {
+                GetCPIndicesForRefinement(j + numInsert, j, numCPinDirOld, numCPinDirNew, dir,
+                                          actualControlPoints.size(), indicesLeft, indicesRight);
+                for (int i = 0; i < indicesLeft.size(); i++)
+                    newControlPoints[indicesLeft[i]] = controlPointsProjected[indicesRight[i]];
+            }
+
+            int i = end + degree[dir] - 1;
+            int k = end + degree[dir] + numInsert - 1;
+
+            for (int j = numInsert - 1; j >= 0; j--)
+            {
+                while (knotsInserted[dir][j] <= actualKnots[dir][i] && i > begin)
+                {
+                    newKnots[k] = actualKnots[dir][i];
+
+                    GetCPIndicesForRefinement(k - degree[dir] - 1, i - degree[dir] - 1, numCPinDirOld, numCPinDirNew,
+                                              dir, actualControlPoints.size(), indicesLeft, indicesRight);
+                    for (int i = 0; i < indicesLeft.size(); i++)
+                        newControlPoints[indicesLeft[i]] = controlPointsProjected[indicesRight[i]];
+
+                    k--;
+                    i--;
+                }
+
+                GetCPIndicesForRefinement(k - degree[dir] - 1, k - degree[dir], numCPinDirNew, numCPinDirNew, dir,
+                                          newControlPoints.size(), indicesLeft, indicesRight);
+                for (int i = 0; i < indicesLeft.size(); i++)
+                    newControlPoints[indicesLeft[i]] = newControlPoints[indicesRight[i]];
+
+                for (int l = 1; l <= degree[dir]; l++)
+                {
+                    int ind = k - degree[dir] + l;
+                    double alpha = newKnots[k + l] - knotsInserted[dir][j];
+                    if (std::fabs(alpha) == 0.0)
+                    {
+                        GetCPIndicesForRefinement(ind - 1, ind, numCPinDirNew, numCPinDirNew, dir,
+                                                  newControlPoints.size(), indicesLeft, indicesRight);
+                        for (int i = 0; i < indicesLeft.size(); i++)
+                            newControlPoints[indicesLeft[i]] = newControlPoints[indicesRight[i]];
+                    }
+                    else
+                    {
+                        alpha /= (newKnots[k + l] - actualKnots[dir][i - degree[dir] + l]);
+
+                        GetCPIndicesForRefinement(ind - 1, ind, numCPinDirNew, numCPinDirNew, dir,
+                                                  newControlPoints.size(), indicesLeft, indicesRight);
+                        for (int i = 0; i < indicesLeft.size(); i++)
+                            newControlPoints[indicesLeft[i]] = alpha * newControlPoints[indicesLeft[i]] +
+                                                               (1. - alpha) * newControlPoints[indicesRight[i]];
+                    }
+                }
+                newKnots[k] = knotsInserted[dir][j];
+                k--;
+            }
+
+            actualKnots[dir] = newKnots;
+            actualWeights.clear();
+            actualControlPoints.clear();
+
+            for (Eigen::VectorXd& it : newControlPoints)
+            {
+                Eigen::VectorXd point(dim - 1);
+                actualWeights.push_back(it(dim - 1));
+                point = (1. / it(dim - 1)) * it.block(0, 0, dim - 1, 1);
+                actualControlPoints.push_back(point);
+            }
+        }
+
+        rControlPoints = actualControlPoints;
+        rWeights = actualWeights;
+        rKnots = actualKnots;
     }
 
     /** Getter **/
@@ -77,7 +282,14 @@ public:
         return mControlPoints[0]->GetNumValues();
     }
 
-    //! @brief ... get the number of control points for each IGA element (one parametric span) in a specific direction
+    //! @brief ... get the number of control points in total
+    int GetNumControlPoints() const
+    {
+        return mControlPoints.size();
+    }
+
+    //! @brief ... get the number of control points for each IGA element (one parametric span) in a specific
+    //! direction
     //! @return ... degree + 1
     int GetNumControlPointsElement(int dir) const
     {
@@ -96,9 +308,169 @@ public:
         return numCPs;
     }
 
+    //! @brief ... get the number of elements = # of non-vanishing knot spans
+    //! @return ... number of isogeometric elements in this nurbs
+    int GetNumElementsTotal()
+    {
+        int numElements = 1;
+        for (auto& knots : mKnots)
+        {
+            int numElementsDir = 0;
+            for (int i = 1; i < knots.size(); i++)
+            {
+                if (knots[i - 1] < knots[i])
+                    numElementsDir++;
+            }
+            numElements *= numElementsDir;
+        }
+        return numElements;
+    }
+
+    //! @brief ... get the number of elements = # of non-vanishing knot spans
+    //! @return ... number of isogeometric elements in this nurbs
+    int GetNumElementsInDirection(int dir)
+    {
+        assert(dir < TDimParameter);
+
+        std::vector<double> knots = mKnots[dir];
+
+        int numElementsDir = 0;
+        for (int i = 1; i < knots.size(); i++)
+        {
+            if (knots[i - 1] < knots[i])
+                numElementsDir++;
+        }
+
+        return numElementsDir;
+    }
+
+    //! @brief  ... get the knot ids of the element with the local id
+    //! @return ... knot ids of the element with local id
+    std::array<int, TDimParameter> GetElement(const std::array<int, TDimParameter>& elementId)
+    {
+        std::array<int, TDimParameter> knotIDs;
+
+        int count = 0;
+        for (auto& knots : mKnots)
+        {
+            int countElementsDir = 0;
+            for (int i = 1; i < knots.size(); i++)
+            {
+                if (knots[i - 1] < knots[i])
+                    countElementsDir++;
+
+                if (countElementsDir == elementId[count])
+                {
+                    knotIDs[count] = countElementsDir;
+                    count++;
+                }
+            }
+        }
+
+        assert(count == TDimParameter);
+
+        return knotIDs;
+    }
+
+    //! @brief  ... get the knot ids of the element with the local id
+    //! @return ... knot ids of the element with local id
+    std::array<int, TDimParameter> GetElement(int id)
+    {
+        std::array<int, TDimParameter> knotIDs;
+
+        std::array<int, TDimParameter> index;
+        int power = 1;
+        for (int dim = 0; dim < TDimParameter; dim++)
+        {
+            int numElementsInOneDir = GetNumElementsInDirection(dim);
+            index[dim] = (id / power) % numElementsInOneDir;
+            power *= numElementsInOneDir;
+        }
+
+        int count = 0, countCheck = 0;
+        for (auto& knots : mKnots)
+        {
+            int countElementsDir = -1;
+            for (int i = 1; i < knots.size(); i++)
+            {
+                if (knots[i - 1] < knots[i])
+                    countElementsDir++;
+
+                if (countElementsDir == index[count])
+                {
+                    knotIDs[count] = i - 1;
+                    countCheck++;
+                    break;
+                }
+            }
+            count++;
+        }
+
+        assert(TDimParameter == countCheck);
+
+        return knotIDs;
+    }
+
+    const NodeSimple* GetControlPointElement(const std::array<int, TDimParameter>& knotID, int id) const
+    {
+        assert(id < GetNumControlPointsElement());
+        int index = GetElementControlPointIndex(knotID, id);
+        return mControlPoints[index];
+    }
+
+    NodeSimple* GetControlPointElement(const std::array<int, TDimParameter>& knotID, int id)
+    {
+        assert(id < GetNumControlPointsElement());
+        int index = GetElementControlPointIndex(knotID, id);
+        return mControlPoints[index];
+    }
+
+    //! @brief ... get the knot vector in the direction
+    //! @return ... knots
+    std::vector<double> GetKnotVectorDirection(eDirection dir) const
+    {
+        const int directionComponent = ToComponentIndex(dir);
+        assert(directionComponent < TDimParameter);
+        return mKnots[directionComponent];
+    }
+
+    int GetDegreeDirection(eDirection dir) const
+    {
+        const int directionComponent = ToComponentIndex(dir);
+        assert(directionComponent < TDimParameter);
+        return mDegree[directionComponent];
+    }
+
+    void GetControlPointsAnsWeightsBoundary(eDirection dirNotIncluded, int locationBoundary,
+                                            std::vector<NodeSimple*>& rControlPoints, std::vector<double>& rWeights)
+    {
+        rControlPoints.clear();
+        rWeights.clear();
+
+        const int dirNotIncludedComponent = ToComponentIndex(dirNotIncluded);
+        assert(dirNotIncludedComponent < TDimParameter);
+
+        int idTensorCheck = -1;
+        if (locationBoundary == 0)
+            idTensorCheck = 0;
+        else
+            idTensorCheck = mNumControlPointsInDirection[dirNotIncludedComponent] - 1;
+
+        for (int id = 0; id < mControlPoints.size(); id++)
+        {
+            std::array<int, TDimParameter> idTensor = VectorToTensor(id);
+            if (idTensor[dirNotIncludedComponent] == idTensorCheck)
+            {
+                rControlPoints.push_back(mControlPoints[id]);
+                rWeights.push_back(mWeights[id]);
+            }
+        }
+    }
+
+
     //! @brief ... get the knots to given knot ids
     //! @return ... knots
-    std::array<Eigen::Vector2d, TDimParameter> GetKnotVectorElement(std::array<int, TDimParameter> knotIDs) const
+    std::array<Eigen::Vector2d, TDimParameter> GetKnotVectorElement(const std::array<int, TDimParameter>& knotIDs) const
     {
         std::array<Eigen::Vector2d, TDimParameter> knots;
         Eigen::Vector2d knotCoordinates;
@@ -111,12 +483,39 @@ public:
         return knots;
     }
 
-    Eigen::VectorXi GetControlPointCoordinatesElementHelper(const std::array<int, TDimParameter>& knotID) const
+    std::vector<std::array<double, 2>> GetKnots(const std::array<int, TDimParameter>& knotID) const
+    {
+        std::vector<std::array<double, 2>> ret;
+        for (int i = 0; i < TDimParameter; i++)
+        {
+            assert(knotID[i] < mKnots[i].size() - mDegree[i] - 1);
+            std::array<double, 2> knots;
+            knots[0] = mKnots[i][knotID[i]];
+            knots[1] = mKnots[i][knotID[i] + 1];
+            ret.push_back(knots);
+        }
+
+        return ret;
+    }
+
+    Eigen::Matrix<double, TDimParameter, 1> Transformation(Eigen::VectorXd ipCoords,
+                                                           const std::array<int, TDimParameter>& knotIDs) const
+    {
+        std::array<Eigen::Vector2d, TDimParameter> knots = GetKnotVectorElement(knotIDs);
+        Eigen::Matrix<double, TDimParameter, 1> coordinateTransformed;
+        for (int i = 0; i < TDimParameter; i++)
+        {
+            coordinateTransformed[i] = (knots[i](0) + 0.5 * (ipCoords(i) + 1) * (knots[i](1) - knots[i](0)));
+        }
+        return coordinateTransformed;
+    }
+
+    std::array<int, TDimParameter> GetElementControlPointStartIndex(const std::array<int, TDimParameter>& knotID) const
     {
         for (int i = 0; i < TDimParameter; i++)
             assert(knotID[i] >= mDegree[i] && knotID[i] < mKnots[i].size());
 
-        Eigen::VectorXi indexBegin(TDimParameter);
+        std::array<int, TDimParameter> indexBegin;
 
         // tensor index
         for (int i = 0; i < TDimParameter; i++)
@@ -125,20 +524,65 @@ public:
         return indexBegin;
     }
 
+    int GetElementControlPointIndex(const std::array<int, TDimParameter>& knotID, int id) const
+    {
+        assert(id < GetNumControlPointsElement());
+
+        std::array<int, TDimParameter> indexBegin = GetElementControlPointStartIndex(knotID);
+
+        std::array<int, TDimParameter> indexAdd;
+        int power = 1;
+        for (int dim = 0; dim < TDimParameter; dim++)
+        {
+            int numCPInElementDir = mDegree[dim] + 1;
+            indexAdd[dim] = (id / power) % numCPInElementDir;
+            power *= numCPInElementDir;
+        }
+
+        int index = indexBegin[0] + indexAdd[0];
+
+        for (int i = 1; i < TDimParameter; i++)
+        {
+            int indexTemp = indexBegin[i] + indexAdd[i];
+            for (int j = 0; j < i; j++)
+                indexTemp *= mNumControlPointsInDirection[j];
+
+            index += indexTemp;
+        }
+
+        return index;
+    }
+
+
     Eigen::VectorXd GetControlPointCoordinatesElement(const std::array<int, TDimParameter>& knotID,
                                                       int instance = 0) const;
-
-    const NodeSimple* GetControlPointElement(const std::array<int, TDimParameter>& knotID, int i) const;
 
     NodeSimple* GetControlPoint(const Eigen::VectorXi& ids)
     {
         int index = ids[0];
 
         for (int i = 1; i < TDimParameter; i++)
+        {
+            int indexTemp = ids[i];
             for (int j = 0; j < i; j++)
-                index += mNumControlPointsInDirection[j] * ids[i];
+                indexTemp *= mNumControlPointsInDirection[j];
+
+            index += indexTemp;
+        }
 
         return mControlPoints[index];
+    }
+
+    NodeSimple* GetControlPoint(int id)
+    {
+        assert(id < mControlPoints.size());
+        return mControlPoints[id];
+    }
+
+    Eigen::VectorXd GetControlPointCoordinates(int id, int instance = 0)
+    {
+        assert(id < mControlPoints.size());
+        return mControlPoints[id]->GetValues(instance);
     }
 
     /** Evaluation **/
@@ -146,7 +590,7 @@ public:
     Eigen::VectorXd Evaluate(const Eigen::Matrix<double, TDimParameter, 1>& parameter, int derivativeOrder = 0) const
     {
         const std::array<int, TDimParameter> spanIdx = FindSpan(parameter);
-        Eigen::MatrixXd shapeFunctions = BasisFunctionsAndDerivativesRational(derivativeOrder, parameter);
+        Eigen::MatrixXd shapeFunctions = BasisFunctionsAndDerivativesRational(derivativeOrder, parameter, spanIdx);
 
         Eigen::VectorXd coordinates(GetDimension());
         coordinates.setZero(GetDimension());
@@ -206,7 +650,8 @@ public:
     //! @param spanIdx ... spanIdx to the parameter
     //! @param degree ... degree of the given NURBS curve
     //! @param knots ... knot vector
-    //! @return Eigen::MatrixXd ... matrix containing the shape functions up to derivative der, the row index represents
+    //! @return Eigen::MatrixXd ... matrix containing the shape functions up to derivative der, the row index
+    //! represents
     //! the derivative order
     static Eigen::MatrixXd BasisFunctionsAndDerivatives(int derivativeOrder, double parameter, int spanIdx, int degree,
                                                         const std::vector<double>& knots)
@@ -314,25 +759,9 @@ public:
         return parameterIDs;
     }
 
-    Eigen::MatrixXd
-    BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, TDimParameter, 1>& parameter) const;
-
-    /** Change the discretization (e.g. refinement) **/
-
-    void InsertKnot(const Eigen::Matrix<double, TDimParameter, 1>& knotToInsert, int rMultiplicity)
-    {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Iga - Not implemented yet!");
-    }
-
-    void RefineKnots(const std::vector<Eigen::Matrix<double, TDimParameter, 1>>& knotsToInsert)
-    {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Iga - Not implemented yet!");
-    }
-
-    void DuplicateKnots()
-    {
-        throw NuTo::Exception(__PRETTY_FUNCTION__, "Iga - Not implemented yet!");
-    }
+    Eigen::MatrixXd BasisFunctionsAndDerivativesRational(int der,
+                                                         const Eigen::Matrix<double, TDimParameter, 1>& parameter,
+                                                         const std::array<int, TDimParameter>& knotIDs) const;
 
     /** Projection (minimumDistance) **/
 
@@ -361,7 +790,7 @@ private:
 template <>
 inline Eigen::VectorXd Nurbs<1>::GetControlPointCoordinatesElement(const std::array<int, 1>& knotID, int instance) const
 {
-    Eigen::VectorXi indexBegin = GetControlPointCoordinatesElementHelper(knotID);
+    std::array<int, 1> indexBegin = GetElementControlPointStartIndex(knotID);
 
     int dim = GetDimension();
     int numCPs = GetNumControlPointsElement();
@@ -386,7 +815,7 @@ inline Eigen::VectorXd Nurbs<2>::GetControlPointCoordinatesElement(const std::ar
 
     Eigen::VectorXd nodeValues(numCPs * dim);
 
-    Eigen::VectorXi indexBegin = GetControlPointCoordinatesElementHelper(knotID);
+    std::array<int, 2> indexBegin = GetElementControlPointStartIndex(knotID);
 
     int count = 0;
     for (int j = indexBegin[1]; j <= indexBegin[1] + mDegree[1]; j++)
@@ -401,31 +830,14 @@ inline Eigen::VectorXd Nurbs<2>::GetControlPointCoordinatesElement(const std::ar
 }
 
 template <>
-inline const NodeSimple* Nurbs<1>::GetControlPointElement(const std::array<int, 1>& knotID, int i) const
-{
-    assert(i >= GetNumControlPointsElement());
-    assert(knotID[0] >= mDegree[0]);
-
-    return mControlPoints[knotID[0] - mDegree[0] + i];
-}
-
-template <>
-inline const NodeSimple* Nurbs<2>::GetControlPointElement(const std::array<int, 2>& knotID, int i) const
-{
-    assert(i < GetNumControlPointsElement());
-    assert(knotID[0] >= mDegree[0] && knotID[1] >= mDegree[1]);
-
-    return mControlPoints[i];
-}
-
-
-template <>
-inline Eigen::MatrixXd
-Nurbs<1>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, 1, 1>& parameter) const
+inline Eigen::MatrixXd Nurbs<1>::BasisFunctionsAndDerivativesRational(int der,
+                                                                      const Eigen::Matrix<double, 1, 1>& parameter,
+                                                                      const std::array<int, 1>& knotIDs) const
 {
     assert(der >= 0 && der <= 2);
 
-    int spanIdx = FindSpan(parameter)[0];
+    // int spanIdx = FindSpan(parameter)[0];
+    int spanIdx = knotIDs[0];
     Eigen::MatrixXd ders = BasisFunctionsAndDerivatives(der, parameter[0], spanIdx, mDegree[0], mKnots[0]);
 
     // NURBS specific ...
@@ -470,12 +882,13 @@ Nurbs<1>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<doub
 }
 
 template <>
-inline Eigen::MatrixXd
-Nurbs<2>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<double, 2, 1>& parameter) const
+inline Eigen::MatrixXd Nurbs<2>::BasisFunctionsAndDerivativesRational(int der,
+                                                                      const Eigen::Matrix<double, 2, 1>& parameter,
+                                                                      const std::array<int, 2>& spanIdx) const
 {
     assert(der >= 0 && der <= 2);
 
-    const std::array<int, 2> spanIdx = FindSpan(parameter);
+    //    const std::array<int, 2> spanIdx = FindSpan(parameter);
     std::array<Eigen::MatrixXd, 2> shapeFunctions;
 
     int numDers = 1;
@@ -576,4 +989,5 @@ Nurbs<2>::BasisFunctionsAndDerivativesRational(int der, const Eigen::Matrix<doub
     }
     return ders;
 }
-}
+
+} // namespace NuTo
