@@ -6,7 +6,6 @@
 #include "nuto/mechanics/interpolation/TypeDefs.h"
 #include "nuto/mechanics/cell/CellIpData.h"
 #include "nuto/mechanics/cell/CellData.h"
-#include <iostream>
 
 namespace NuTo
 {

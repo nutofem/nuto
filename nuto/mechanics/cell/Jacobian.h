@@ -157,7 +157,6 @@ public:
                 extendedJacobian.col(2) = mNormal;
                 mJacobian = jacobian;
                 mInvJacobian = extendedJacobian.inverse().block<2, 3>(0, 0);
-                ;
                 mDetJacobian = extendedJacobian.determinant();
                 break;
             }

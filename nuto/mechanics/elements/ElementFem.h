@@ -104,7 +104,7 @@ public:
 
     Eigen::MatrixXd GetCalculateJacobianParametricSpaceIGA() const override
     {
-        Eigen::MatrixXd::Identity(GetDofDimension(), GetDofDimension());
+        return Eigen::MatrixXd::Identity(GetDofDimension(), GetDofDimension());
     }
 
 private:
