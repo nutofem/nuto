@@ -8,6 +8,41 @@ namespace NuTo
 {
 namespace Constraint
 {
+
+//! @brief represents a numbering where first the independent dofs are consecutively numbered
+//! leaving out the dependent ones and then the dependent dof numbers are appended.
+//!
+//! mNumJ number of independent Dofs
+//! mNumK number of dependent Dofs
+//!
+//! The order of the dependent dofs is given by the order of the constraint equations
+//!
+//! Example:
+//!
+//! dofNumber                   0  1  2*  3  4  5*  6  (* = constrained)
+//! constraintEqNr                    1         0
+//!
+//! JKNumbering
+//! (independent dofs)          0  1      2  3      4
+//!
+//! (dependent dofs)
+//! appended and ordered
+//! like constraint equations         6         5
+//!
+struct JKNumbering
+{
+    JKNumbering(Eigen::VectorXi indices, int numK)
+        : mIndices(indices)
+        , mNumJ(indices.size() - numK)
+        , mNumK(numK)
+    {
+    }
+
+    Eigen::VectorXi mIndices;
+    int mNumJ;
+    int mNumK;
+};
+
 //! @brief stores constraint equations, separated by their dof type
 class Constraints
 {
@@ -36,6 +71,16 @@ public:
     //! @param time time at which the rhs vector should be evaluated
     //! @return sparse rhs vector of the constraint equations rhs(time)
     Eigen::SparseVector<double> GetSparseGlobalRhs(DofType dof, int numDofs, double time) const;
+
+    //! @brief builds a numbering where first the independent dofs are consecutively numbered
+    //! leaving out the dependent ones and then the dependent dof numbers are appended. The
+    //! order of the dependent dofs is given by the order of the constraint equations
+    //!
+    //! This numbering is used in BuildUnitConstraintMatrix
+    //! @param dof dof type
+    //! @param numDofs number dofs for the dof type
+    //! @return index vector with first independent dof numbers and then dependent
+    JKNumbering GetJKNumbering(DofType dof, int numDofs) const;
 
     //! @brief builds a sparse matrix containing the constraint terms for a specific dof type and a unit matrix for the
     //! independent dofs
