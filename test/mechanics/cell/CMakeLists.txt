@@ -8,6 +8,7 @@ add_unit_test(Jacobian
     mechanics/interpolation/InterpolationTrussQuadratic.cpp
     mechanics/interpolation/InterpolationTriangleLinear.cpp
     mechanics/interpolation/InterpolationQuadLinear.cpp
+    mechanics/interpolation/InterpolationBrickLinear.cpp
     mechanics/interpolation/InterpolationTetrahedronLinear.cpp
     )
 

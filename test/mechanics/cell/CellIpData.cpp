@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
-    NuTo::Jacobian jac(nodalValues, dNdXi, 2);
+    NuTo::Jacobian jac(nodalValues, dNdXi);
     NuTo::CellData cellData(elements.get(), 0);
     NuTo::CellIpData ipData(cellData, jac, ipCoords, 0);
 

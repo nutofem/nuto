@@ -35,8 +35,7 @@ void CheckMesh(std::string meshFile, int numNodesExpected)
     for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
     {
         auto coord = interpolation.GetLocalCoords(iNode);
-        int globalDimension = coord.rows();
-        Jacobian j(element.ExtractNodeValues(), interpolation.GetDerivativeShapeFunctions(coord), globalDimension);
+        Jacobian j(element.ExtractNodeValues(), interpolation.GetDerivativeShapeFunctions(coord));
         bool isPositiveForINode = j.Det() > -1.e-10;
         if (iNode == 0)
             isPositive = isPositiveForINode;

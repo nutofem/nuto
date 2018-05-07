@@ -13,10 +13,11 @@ public:
     using Dynamic3by3 = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor, 3, 3>;
     using Dynamic3by1 = Eigen::Matrix<double, Eigen::Dynamic, 1, Eigen::ColMajor, 3, 1>;
 
-    Jacobian(const Eigen::VectorXd& nodeValues, const Eigen::MatrixXd& derivativeShapeFunctions, int globalDimension)
+    Jacobian(const Eigen::VectorXd& nodeValues, const Eigen::MatrixXd& derivativeShapeFunctions)
     {
         const int interpolationDimension = derivativeShapeFunctions.cols();
-        // case 1: global dimension ( node dimension ) matches the interpolation dimension.
+        const int numNodes = derivativeShapeFunctions.rows();
+        const int globalDimension = nodeValues.rows() / numNodes;
         if (interpolationDimension == globalDimension)
         {
             switch (globalDimension)
@@ -79,13 +80,20 @@ public:
             }
             default:
             {
-                throw;
+                throw Exception(__PRETTY_FUNCTION__,
+                                "Global dimension should be 2 or 3 for codimension 1 objects, got: " +
+                                        std::to_string(globalDimension) + ".");
             }
             }
         }
         else
         {
-            throw;
+            throw Exception(__PRETTY_FUNCTION__,
+                            "Jacobian only implemented for interpolationDimension equal to globaldimension or one "
+                            "less, got: \n"
+                            "InterpolationDimension: " +
+                                    std::to_string(interpolationDimension) + "\n" +
+                                    "GlobalDimension: " + std::to_string(globalDimension));
         }
     }
 
