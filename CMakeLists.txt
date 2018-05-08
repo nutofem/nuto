@@ -43,3 +43,7 @@ install(EXPORT NuToTargets
     NAMESPACE NuTo::
     DESTINATION lib/cmake/NuTo
     )
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "christoph.pohl@bam.de")
+include(CPack)
