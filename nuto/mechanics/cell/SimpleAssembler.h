@@ -4,7 +4,6 @@
 #include "nuto/mechanics/cell/CellInterface.h"
 #include "nuto/mechanics/dofs/DofNumbering.h"
 #include "nuto/mechanics/dofs/DofVector.h"
-#include "nuto/mechanics/dofs/DofMatrixSparse.h"
 
 namespace NuTo
 {
@@ -17,7 +16,8 @@ public:
     DofVector<double> BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                 CellInterface::VectorFunction f) const;
 
-    DofMatrixSparse<double> BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+    Eigen::SparseMatrix<double> BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+                                                         DofInfo dofInfo,
                                       CellInterface::MatrixFunction f) const;
 
     //! @brief Assembles a diagonally lumped matrix from local matrices calculated by f
@@ -35,7 +35,6 @@ public:
 
 private:
     DofVector<double> ProperlyResizedVector(std::vector<DofType> dofTypes) const;
-    DofMatrixSparse<double> ProperlyResizedMatrix(std::vector<DofType> dofTypes) const;
 
     DofInfo mDofInfo;
 

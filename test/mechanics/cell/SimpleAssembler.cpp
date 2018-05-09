@@ -85,7 +85,9 @@ BOOST_AUTO_TEST_CASE(AssemblerHessian)
     auto mockCell0 = MockCell(d, Eigen::Vector3i(0, 1, 2));
     auto mockCell1 = MockCell(d, Eigen::Vector3i(2, 3, 4));
 
-
+    NuTo::DofInfo dofInfo;
+    dofInfo.numDependentDofs[d] = 2;
+    dofInfo.numIndependentDofs[d] = 3;
     /*
      *   11    12    13 ||
      *                  ||
@@ -100,8 +102,8 @@ BOOST_AUTO_TEST_CASE(AssemblerHessian)
      *     active J         dependent K
      */
 
-    NuTo::DofMatrixSparse<double> hessian =
-            assembler.BuildMatrix({mockCell0.get(), mockCell1.get()}, {d}, NuTo::CellInterface::MatrixFunction());
+    auto hessian =
+            assembler.BuildMatrix({mockCell0.get(), mockCell1.get()}, {d}, dofInfo, NuTo::CellInterface::MatrixFunction());
 
     Eigen::MatrixXd hessianE = (Eigen::MatrixXd(5,5) << 11, 12, 13,  0,  0,
                                                        21, 22, 23,  0,  0,
@@ -110,7 +112,7 @@ BOOST_AUTO_TEST_CASE(AssemblerHessian)
                                                         0,  0, 31, 32, 33).finished();
 
 
-    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(hessian(d, d)), hessianE);
+    BoostUnitTest::CheckEigenMatrix(Eigen::MatrixXd(hessian), hessianE);
 }
 
 BOOST_AUTO_TEST_CASE(AssemblerLumpedMass)

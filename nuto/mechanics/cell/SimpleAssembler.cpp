@@ -36,7 +36,7 @@ std::vector<DofType> DofIntersection(std::vector<DofType> one, std::vector<DofTy
 }
 
 DofVector<double> SimpleAssembler::BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                             CellInterface::VectorFunction f) const
+                                               CellInterface::VectorFunction f) const
 {
     ThrowOnZeroDofNumbering(dofTypes);
 
@@ -57,8 +57,8 @@ DofVector<double> SimpleAssembler::BuildVector(const Group<CellInterface>& cells
 }
 
 DofVector<double> SimpleAssembler::BuildDiagonallyLumpedMatrix(const Group<CellInterface>& cells,
-                                                             std::vector<DofType> dofTypes,
-                                                             CellInterface::MatrixFunction f) const
+                                                               std::vector<DofType> dofTypes,
+                                                               CellInterface::MatrixFunction f) const
 {
     DofVector<double> lumpedMatrix = ProperlyResizedVector(dofTypes);
     for (NuTo::CellInterface& cell : cells)
@@ -81,19 +81,51 @@ DofVector<double> SimpleAssembler::BuildDiagonallyLumpedMatrix(const Group<CellI
     return lumpedMatrix;
 }
 
-DofMatrixSparse<double> SimpleAssembler::BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                                   CellInterface::MatrixFunction f) const
+class DofNumberMapping
+{
+public:
+    DofNumberMapping(std::vector<DofType> activeDofTypes, DofInfo dofInfo)
+    {
+        int offSet = 0;
+        mOffSets.resize(activeDofTypes.size());
+        auto numAllDofs = dofInfo.numAllDofs();
+        for(auto dof : activeDofTypes)
+        {
+            mOffSets[dof.Id()] = offSet;
+            offSet += numAllDofs[dof];
+        }
+        overallSize = offSet;
+    }
+
+    int map(int localId, DofType dof)
+    {
+        return mOffSets[dof.Id()] + localId; 
+    }
+
+    int overallSize;
+private:
+    std::vector<int> mOffSets;
+};
+
+Eigen::SparseMatrix<double> SimpleAssembler::BuildMatrix(const Group<CellInterface>& cells,
+                                                         std::vector<DofType> dofTypes,
+                                                         DofInfo dofInfo,
+                                                         CellInterface::MatrixFunction f) const
 {
     ThrowOnZeroDofNumbering(dofTypes);
 
     using TripletList = std::vector<Eigen::Triplet<double>>;
-    DofMatrixContainer<TripletList> triplets;
+    TripletList triplets;
+
+    Eigen::SparseMatrix<double> hessian;
 
     for (NuTo::CellInterface& cell : cells)
     {
         const DofMatrix<double> cellHessian = cell.Integrate(f);
         auto dofTypesToAssemble = DofIntersection(cellHessian.DofTypes(), dofTypes);
 
+        DofNumberMapping mapping(dofTypesToAssemble, dofInfo);
+        hessian.resize(mapping.overallSize, mapping.overallSize);
         for (DofType dofI : dofTypesToAssemble)
         {
             Eigen::VectorXi numberingDofI = cell.DofNumbering(dofI);
@@ -106,22 +138,18 @@ DofMatrixSparse<double> SimpleAssembler::BuildMatrix(const Group<CellInterface>&
                 {
                     for (int j = 0; j < numberingDofJ.rows(); ++j)
                     {
-                        const int globalDofNumberI = numberingDofI[i];
-                        const int globalDofNumberJ = numberingDofJ[j];
+                        const int globalDofNumberI = mapping.map(numberingDofI[i], dofI);
+                        const int globalDofNumberJ = mapping.map(numberingDofJ[j], dofJ);
                         const double globalDofValue = cellHessianDof(i, j);
 
-                        triplets(dofI, dofJ).push_back({globalDofNumberI, globalDofNumberJ, globalDofValue});
+                        triplets.push_back({globalDofNumberI, globalDofNumberJ, globalDofValue});
                     }
                 }
             }
         }
     }
-    DofMatrixSparse<double> hessian = ProperlyResizedMatrix(dofTypes);
-    for (DofType dofI : dofTypes)
-        for (DofType dofJ : dofTypes)
-        {
-            hessian(dofI, dofJ).setFromTriplets(triplets(dofI, dofJ).begin(), triplets(dofI, dofJ).end());
-        }
+
+    hessian.setFromTriplets(triplets.begin(), triplets.end());
     return hessian;
 }
 
@@ -133,16 +161,4 @@ DofVector<double> SimpleAssembler::ProperlyResizedVector(std::vector<DofType> do
         v[dof].setZero(mDofInfo.numIndependentDofs[dof] + mDofInfo.numDependentDofs[dof]);
     }
     return v;
-}
-
-DofMatrixSparse<double> SimpleAssembler::ProperlyResizedMatrix(std::vector<DofType> dofTypes) const
-{
-    DofMatrixSparse<double> m;
-    for (auto dofI : dofTypes)
-        for (auto dofJ : dofTypes)
-        {
-            m(dofI, dofJ).resize(mDofInfo.numIndependentDofs[dofI] + mDofInfo.numDependentDofs[dofI],
-                                 mDofInfo.numIndependentDofs[dofJ] + mDofInfo.numDependentDofs[dofJ]);
-        }
-    return m;
 }

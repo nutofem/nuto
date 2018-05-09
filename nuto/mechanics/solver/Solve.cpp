@@ -1,14 +1,12 @@
 #include "Solve.h"
 #include "nuto/math/EigenSparseSolve.h"
 #include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
-#include "nuto/mechanics/dofs/DofMatrixSparseConvertEigen.h"
 
 using namespace NuTo;
 
-DofVector<double> NuTo::Solve(const DofMatrixSparse<double>& K, const DofVector<double>& f,
+DofVector<double> NuTo::Solve(const Eigen::SparseMatrix<double>& K, const DofVector<double>& f,
                               Constraint::Constraints& bcs, std::vector<DofType> dofs, std::string solver)
 {
-    auto K_full = ToEigen(K, dofs);
     auto f_full = ToEigen(f, dofs);
 
     DofMatrixSparse<double> C_dof;
@@ -33,7 +31,7 @@ DofVector<double> NuTo::Solve(const DofMatrixSparse<double>& K, const DofVector<
     return result;
 }
 
-DofVector<double> NuTo::SolveTrialState(const DofMatrixSparse<double>& K, const DofVector<double>& f, double oldTime,
+DofVector<double> NuTo::SolveTrialState(const Eigen::SparseMatrix<double>& K, const DofVector<double>& f, double oldTime,
                                         double newTime, Constraint::Constraints& bcs, std::vector<DofType> dofs,
                                         std::string solver)
 {

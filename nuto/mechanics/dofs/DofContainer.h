@@ -67,6 +67,14 @@ public:
         return mData.end();
     }
 
+    std::vector<DofType> DofTypes() const
+    {
+        std::vector<DofType> dofTypes;
+        for (const auto& data : mData)
+            dofTypes.push_back(data.first);
+        return dofTypes;
+    }
+
 protected:
     std::map<DofType, T, CompareDofType> mData;
 };
