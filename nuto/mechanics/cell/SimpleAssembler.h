@@ -15,10 +15,10 @@ public:
     SimpleAssembler(DofInfo dofInfo);
 
     DofVector<double> BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                CellInterface::VectorFunction f) const;
+                                  CellInterface::VectorFunction f) const;
 
     DofMatrixSparse<double> BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                      CellInterface::MatrixFunction f) const;
+                                        CellInterface::MatrixFunction f) const;
 
     //! @brief Assembles a diagonally lumped matrix from local matrices calculated by f
     //! @param cells group of cells to be used for assembly
@@ -29,7 +29,7 @@ public:
     //!   summing over all entries of the local mass matrix
     //! - the total mass of a cell is the same for all components of the considered dof
     DofVector<double> BuildDiagonallyLumpedMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                                CellInterface::MatrixFunction f) const;
+                                                  CellInterface::MatrixFunction f) const;
 
     void SetDofInfo(DofInfo dofInfo);
 

@@ -3,14 +3,15 @@ cmake_minimum_required(VERSION 3.5)
 project(NuTo)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
+option(ENABLE_OPENMP "enables OpenMP" TRUE)
 
 # set module path for custom cmake scripts
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scripts/cmake ${CMAKE_MODULE_PATH})
 include(NuToMacros)
 
-set_compiler_flags()
 get_git_head_revision(git_refspec commit_nr)
 check_for_dependencies()
+set_compiler_flags()
 
 add_subdirectory(external)
 
