@@ -3,8 +3,8 @@
 #include "nuto/base/Group.h"
 #include "nuto/mechanics/cell/CellInterface.h"
 #include "nuto/mechanics/dofs/DofNumbering.h"
-#include "nuto/mechanics/dofs/GlobalDofVector.h"
-#include "nuto/mechanics/dofs/GlobalDofMatrixSparse.h"
+#include "nuto/mechanics/dofs/DofVector.h"
+#include "nuto/mechanics/dofs/DofMatrixSparse.h"
 
 namespace NuTo
 {
@@ -14,28 +14,28 @@ public:
     SimpleAssembler() = default;
     SimpleAssembler(DofInfo dofInfo);
 
-    GlobalDofVector BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+    DofVector<double> BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                 CellInterface::VectorFunction f) const;
 
-    GlobalDofMatrixSparse BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+    DofMatrixSparse<double> BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                       CellInterface::MatrixFunction f) const;
 
     //! @brief Assembles a diagonally lumped matrix from local matrices calculated by f
     //! @param cells group of cells to be used for assembly
     //! @param dofTypes vector of dofTypes
-    //! @return a global dof vector that represents a collection of diagonal matrices
+    //! @return a dof vector that represents a collection of diagonal matrices
     //! @remark HRZ lumping is used here, the assumptions made are:
     //! - shape functions sum to 1, only then the total mass for a cell can be calculated by
     //!   summing over all entries of the local mass matrix
     //! - the total mass of a cell is the same for all components of the considered dof
-    GlobalDofVector BuildDiagonallyLumpedMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
+    DofVector<double> BuildDiagonallyLumpedMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
                                                 CellInterface::MatrixFunction f) const;
 
     void SetDofInfo(DofInfo dofInfo);
 
 private:
-    GlobalDofVector ProperlyResizedGlobalVector(std::vector<DofType> dofTypes) const;
-    GlobalDofMatrixSparse ProperlyResizedGlobalMatrix(std::vector<DofType> dofTypes) const;
+    DofVector<double> ProperlyResizedVector(std::vector<DofType> dofTypes) const;
+    DofMatrixSparse<double> ProperlyResizedMatrix(std::vector<DofType> dofTypes) const;
 
     DofInfo mDofInfo;
 

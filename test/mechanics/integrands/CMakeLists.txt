@@ -1,14 +1,17 @@
 add_unit_test(NeumannBc
-    mechanics/elements/ElementShapeFunctions.cpp)
+    mechanics/interpolation/InterpolationTrussLinear.cpp
+    mechanics/interpolation/InterpolationTriangleLinear.cpp
+    mechanics/interpolation/InterpolationTriangleQuadratic.cpp
+    )
 
 add_unit_test(GradientDamage
+    mechanics/interpolation/InterpolationTrussLobatto.cpp
     math/Legendre.cpp
-    math/Quadrature.cpp
-    mechanics/elements/SpectralShapeFunctions.cpp)
+    math/Quadrature.cpp)
 
 add_unit_test(HistoryData
     math/Legendre.cpp
     math/Quadrature.cpp
-    mechanics/elements/ElementShapeFunctions.cpp
+    mechanics/interpolation/InterpolationTrussLinear.cpp
     mechanics/integrationtypes/IntegrationTypeTensorProduct.cpp)
 

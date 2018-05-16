@@ -1,6 +1,7 @@
 #pragma once
+
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
-#include "nuto/mechanics/elements/SpectralShapeFunctions.h"
+#include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 #include "nuto/math/shapes/Hexahedron.h"
 
 namespace NuTo
@@ -8,40 +9,27 @@ namespace NuTo
 class InterpolationBrickLobatto : public InterpolationSimple
 {
 public:
-    InterpolationBrickLobatto(int order)
-    {
-        mNodes = ShapeFunctions1D::NodeCoordinatesTrussLobatto(order);
-    }
 
-    std::unique_ptr<InterpolationSimple> Clone() const override
-    {
-        return std::make_unique<InterpolationBrickLobatto>(*this);
-    }
+    static Eigen::MatrixXd LocalCoords(int nodeId, const Eigen::VectorXd& nodes);
 
-    ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctions3D::ShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
-    }
+    static Eigen::VectorXd ShapeFunctions(const Eigen::Vector3d x, const Eigen::VectorXd& nodes);
 
-    DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override
-    {
-        return ShapeFunctions3D::DerivativeShapeFunctionsBrickLagrange(naturalIpCoords, mNodes);
-    }
+    static Eigen::MatrixXd DerivativeShapeFunctions(const Eigen::Vector3d x,
+                                                                            const Eigen::VectorXd& nodes);
 
-    NaturalCoords GetLocalCoords(int nodeId) const override
-    {
-        return ShapeFunctions3D::NodeCoordinatesBrickLobatto(nodeId, mNodes);
-    }
+    InterpolationBrickLobatto(int order);
 
-    int GetNumNodes() const override
-    {
-        return mNodes.size() * mNodes.size() * mNodes.size();
-    }
+    std::unique_ptr<InterpolationSimple> Clone() const override;
 
-    const Shape& GetShape() const override
-    {
-        return mShape;
-    }
+    Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
+
+    Eigen::MatrixXd GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const override;
+
+    NaturalCoords GetLocalCoords(int nodeId) const override;
+
+    int GetNumNodes() const override;
+
+    const Shape& GetShape() const override;
 
 private:
     Eigen::VectorXd mNodes;

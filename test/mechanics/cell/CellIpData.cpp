@@ -5,8 +5,8 @@
 
 BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
 {
-    NuTo::DerivativeShapeFunctionsNatural dNdXi = Eigen::MatrixXd::Random(3, 2);
-    NuTo::NodeValues nodalValues(6);
+    Eigen::MatrixXd dNdXi = Eigen::MatrixXd::Random(3, 2);
+    Eigen::VectorXd nodalValues(6);
     nodalValues << 0, 0, 1, 0, 0, 1;
 
     fakeit::Mock<NuTo::ElementInterface> mockElement;
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
 
     NuTo::NaturalCoords ipCoords = Eigen::Vector2d({1. / 3., 1. / 3.});
 
-    NuTo::Jacobian jac(nodalValues, dNdXi, 2);
+    NuTo::Jacobian jac(nodalValues, dNdXi);
     NuTo::CellData cellData(elements.get(), 0);
     NuTo::CellIpData ipData(cellData, jac, ipCoords, 0);
 

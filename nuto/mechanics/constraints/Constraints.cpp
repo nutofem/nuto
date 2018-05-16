@@ -33,42 +33,106 @@ Eigen::VectorXd Constraints::GetRhs(DofType dof, double time) const
     return rhs;
 }
 
-Eigen::SparseMatrix<double> Constraints::BuildConstraintMatrix(DofType dof, int numIndependentDofs) const
+
+Eigen::SparseVector<double> Constraints::GetSparseGlobalRhs(DofType dof, int numDofs, double time) const
 {
     if (not mEquations.Has(dof))
-        return Eigen::SparseMatrix<double>(0, numIndependentDofs); // no equations for this dof type
+        return Eigen::SparseVector<float>(numDofs); // no equations for this dof type
 
     const Equations& equations = mEquations[dof];
     int numEquations = equations.size();
+    Eigen::SparseVector<float> globalVector(numDofs);
+    for (int iEquation = 0; iEquation < numEquations; ++iEquation)
+    {
+        globalVector.coeffRef(equations[iEquation].GetDependentDofNumber()) = equations[iEquation].GetRhs(time);
+    }
+    return globalVector;
+}
 
-    Eigen::SparseMatrix<double> matrix(numEquations, numIndependentDofs);
+JKNumbering Constraints::GetJKNumbering(DofType dof, int numDofs) const
+{
+    int numJ = numDofs - GetNumEquations(dof);
+    int numK = GetNumEquations(dof);
+    Eigen::VectorXi independentGlobalNumbering(numJ);
+    Eigen::VectorXi dependentGlobalNumbering(numK);
 
+    std::vector<bool> isDofConstrained(numDofs, false);
+    for (int i = 0; i < numK; i++)
+    {
+        int globalDofNumber = GetEquation(dof, i).GetDependentDofNumber();
+        if (globalDofNumber == -1 /* should be NodeSimple::NOT_SET */)
+            throw Exception(__PRETTY_FUNCTION__,
+                            "There is no dof numbering for a node in equation" + std::to_string(i) + ".");
+        if (globalDofNumber >= numDofs)
+            throw Exception(__PRETTY_FUNCTION__,
+                            "The provided dof number of the dependent term exceeds "
+                            "the total number of dofs in equation " +
+                                    std::to_string(i) + ".");
+        isDofConstrained[globalDofNumber] = true;
+        dependentGlobalNumbering(i) = globalDofNumber;
+    }
+
+    int independentCount = 0;
+    for (int i = 0; i < numDofs; i++)
+    {
+        if (isDofConstrained[i])
+            continue;
+        independentGlobalNumbering(independentCount) = i;
+        independentCount++;
+    }
+    Eigen::VectorXi joinedNumbering(numDofs);
+    joinedNumbering << independentGlobalNumbering, dependentGlobalNumbering;
+
+    return JKNumbering(joinedNumbering, numK);
+}
+
+Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, int numDofs) const
+{
+    if (not mEquations.Has(dof))
+    {
+        Eigen::SparseMatrix<double> unitMatrix(numDofs, numDofs);
+        unitMatrix.setIdentity();
+        return unitMatrix; // no equations for this dof type
+    }
+
+    Eigen::VectorXi jkNumbering = GetJKNumbering(dof, numDofs).mIndices;
+    Eigen::VectorXi reverseJKNumbering =
+            ((Eigen::PermutationMatrix<Eigen::Dynamic>(jkNumbering)).transpose()).eval().indices();
+
+    const Equations& equations = mEquations[dof];
+    int numEquations = equations.size();
+    int numIndependentDofs = numDofs - numEquations;
+
+    Eigen::SparseMatrix<double> matrix(numDofs, numIndependentDofs);
+    matrix.setZero();
+
+    // add unit entry for all independent dofs
+    std::vector<Eigen::Triplet<double>> tripletList;
+    for (auto i = 0; i < numIndependentDofs; i++)
+    {
+        tripletList.push_back(Eigen::Triplet<double>(jkNumbering(i), i, 1.));
+    }
+
+    // add entries for constraint dofs
     for (int iEquation = 0; iEquation < numEquations; ++iEquation)
     {
         const auto& equation = equations[iEquation];
-        for (Term term : equation.GetTerms())
+        for (Term term : equation.GetIndependentTerms())
         {
             double coefficient = term.GetCoefficient();
             int globalDofNumber = term.GetConstrainedDofNumber();
+            int independentDofNumber = reverseJKNumbering[globalDofNumber];
+            assert(independentDofNumber < numIndependentDofs);
             if (globalDofNumber == -1 /* should be NodeSimple::NOT_SET */)
                 throw Exception(__PRETTY_FUNCTION__,
                                 "There is no dof numbering for a node in equation" + std::to_string(iEquation) + ".");
 
-            if (globalDofNumber >= numIndependentDofs)
-            {
-                // This corresponds to the last block of size numDependentDofs x numDependentDofs that should be an
-                // identity matrix
-                int transformedDof = globalDofNumber - numIndependentDofs;
-                if (transformedDof != iEquation)
-                    throw Exception(__PRETTY_FUNCTION__, "The numbering of the dependent dofs "
-                                                         "is not in accordance with the equation numbering.");
-                continue; // Do not put the value into the matrix.
-            }
-
             if (std::abs(coefficient) > 1.e-18)
-                matrix.coeffRef(iEquation, globalDofNumber) = coefficient;
+                tripletList.push_back(
+                        Eigen::Triplet<double>(equation.GetDependentDofNumber(), independentDofNumber, -coefficient));
         }
     }
+    matrix.setFromTriplets(tripletList.begin(), tripletList.end());
     return matrix;
 }
 
@@ -100,28 +164,26 @@ bool Constraints::TermChecker::TermCompare::operator()(const Term& lhs, const Te
 void Constraints::TermChecker::CheckEquation(Equation e)
 {
     // The new dependent term must not constrain the same dof as any existing terms
-    Term newDependentTerm = e.GetTerms()[0];
+    Term newDependentTerm = e.GetDependentTerm();
 
     if (Contains(mDependentTerms, newDependentTerm))
         throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
                                              "is already constrained as a dependent dof in another equation.");
 
-    if (Contains(mOtherTerms, newDependentTerm))
+    if (Contains(mIndependentTerms, newDependentTerm))
         throw Exception(__PRETTY_FUNCTION__, "The dependent dof of the new equation "
                                              "is already constrained in another equation.");
 
 
     // Any term in the new equation must not constrain the same dof as any existing _dependent_ terms
-    // since the dependent term of the new equation is already checked above, we omit it here and start loop at 1.
-    for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
+    for (auto& newTerm : e.GetIndependentTerms())
     {
-        Term newTerm = e.GetTerms()[iNewTerm];
         if (Contains(mDependentTerms, newTerm))
-            throw Exception(__PRETTY_FUNCTION__, "One of the new terms is already constrained "
+            throw Exception(__PRETTY_FUNCTION__, "One of the independent terms is already constrained "
                                                  "as a dependent dof in another equation");
     }
 
-    mDependentTerms.insert(e.GetTerms()[0]);
-    for (size_t iNewTerm = 1; iNewTerm < e.GetTerms().size(); ++iNewTerm)
-        mOtherTerms.insert(e.GetTerms()[iNewTerm]);
+    mDependentTerms.insert(e.GetDependentTerm());
+    for (auto& newTerm : e.GetIndependentTerms())
+        mIndependentTerms.insert(newTerm);
 }

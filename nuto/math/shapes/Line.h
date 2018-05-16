@@ -18,6 +18,12 @@ public:
         double x = xi[0];
         return (-1.-e < x) && (x < 1.+e);
     }
+
+protected:
+    void Info(std::ostream& out) const override
+    {
+        out << "Line";
+    }
 };
 
 } // namespace NuTo

@@ -19,13 +19,13 @@ public:
     //! @brief calculates the shape functions
     //! @param naturalIpCoords integration point coordinates in the natural coordinate system
     //! @return vector of shape functions, dimension: [GetNumNodes() x 1]
-    virtual ShapeFunctions GetShapeFunctions(const NaturalCoords& naturalIpCoords) const = 0;
+    virtual Eigen::VectorXd GetShapeFunctions(const NaturalCoords& naturalIpCoords) const = 0;
 
     //! @brief calculates the derivative shape functions
     //! @param naturalIpCoords integration point coordinates in the natural coordinate system
     //! @return matrix of derivate shape functions, dimension: [GetNumNodes() x local dimension]
     //! @remark 'local dimension' above is the dimension of rLocalIPCoords
-    virtual DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const = 0;
+    virtual Eigen::MatrixXd GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const = 0;
 
     //! @brief returns the local node coordinates
     //! @param nodeId local node number

@@ -8,7 +8,6 @@
 #include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTriangleQuadratic.h"
 #include "nuto/mechanics/cell/Matrix.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 
 using namespace NuTo;
 
@@ -36,7 +35,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
 
     CellData cellData(element, cellID);
     Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
-                      element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(1, 0.)), 2);
+                      element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(1, 0.)));
 
 
     // Gradient. What should happen here?
@@ -114,7 +113,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
 
     CellData cellData(element, cellID);
     Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
-                      element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(2, 1, 0.)), 3);
+                      element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(2, 1, 0.)));
 
     std::vector<Eigen::Vector2d> points;
     points.push_back(Eigen::Vector2d(1. / 6., 1. / 6.));

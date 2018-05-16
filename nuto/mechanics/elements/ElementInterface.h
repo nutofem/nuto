@@ -11,7 +11,11 @@ public:
     virtual ~ElementInterface() noexcept = default;
 
     //! @brief extracts all node values of this element
-    virtual NodeValues ExtractNodeValues(int instance = 0) const = 0;
+    //!
+    //! They are ordered in blocks belonging to a node, e.g:
+    //! coordinate Nodes in 3D:
+    //!   NodeValues: (x1,y1,z1, x2,y2,z2, ...)
+    virtual Eigen::VectorXd ExtractNodeValues(int instance = 0) const = 0;
 
     virtual int GetDofDimension() const = 0;
 
@@ -19,9 +23,9 @@ public:
     //! @remark They have to be in the same order as defined in ExtractNodeValues()
     virtual Eigen::VectorXi GetDofNumbering() const = 0;
     virtual int GetNumNodes() const = 0;
-    virtual NMatrix GetNMatrix(NaturalCoords ipCoords) const = 0;
-    virtual ShapeFunctions GetShapeFunctions(NaturalCoords ipCoords) const = 0;
-    virtual DerivativeShapeFunctionsNatural GetDerivativeShapeFunctions(NaturalCoords ipCoords) const = 0;
+    virtual Eigen::MatrixXd GetNMatrix(NaturalCoords ipCoords) const = 0;
+    virtual Eigen::VectorXd GetShapeFunctions(NaturalCoords ipCoords) const = 0;
+    virtual Eigen::MatrixXd GetDerivativeShapeFunctions(NaturalCoords ipCoords) const = 0;
 };
 
 inline Eigen::VectorXd Interpolate(const ElementInterface& element, NaturalCoords ipCoords)

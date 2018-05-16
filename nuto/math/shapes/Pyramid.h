@@ -20,6 +20,12 @@ public:
         double z = xi[2];
         return (-(1.-z)-e < x) && (x < (1.-z) + e) && ( -(1.-z)-e < y) && (y< (1.-z) + e);
     }
+
+protected:
+    void Info(std::ostream& out) const override
+    {
+        out << "Pyramid";
+    }
 };
 
 } // namespace NuTo

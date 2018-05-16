@@ -6,7 +6,7 @@
 #include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTriangleQuadratic.h"
 #include "nuto/mechanics/interpolation/InterpolationQuadLinear.h"
-#include "nuto/mechanics/interpolation/InterpolationQuadQuadratic.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadSerendipity.h"
 #include "nuto/mechanics/interpolation/InterpolationQuadLobatto.h"
 #include "nuto/mechanics/interpolation/InterpolationTetrahedronLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTetrahedronQuadratic.h"

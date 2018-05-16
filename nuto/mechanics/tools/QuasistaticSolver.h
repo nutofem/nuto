@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nuto/mechanics/solver/Solve.h"
 #include "nuto/mechanics/tools/TimeDependentProblem.h"
 #include "nuto/mechanics/constraints/Constraints.h"
 #include <iosfwd>
@@ -26,35 +27,32 @@ public:
     //! @param globalTime global time
     void SetGlobalTime(double globalTime);
 
-    //! builds the trial system where its residual contains forces equivialent to the applied constraints from time step
-    //! t_n to t_n+1
-    //! @param x independent dof values corresponding to globalTime
-    //! @param globalTime t_n
-    //! @param timeStep t_n+1 - t_n
-    std::pair<Eigen::SparseMatrix<double>, Eigen::VectorXd> TrialSystem(const Eigen::VectorXd& x, double globalTime,
-                                                                        double timeStep);
+    //! computes the trial state of the system
+    //! @param newGlobalTime new time, for which the trial state is to be computed
+    //! @param solver that allows to extract the constraint displacements from previous steps
+    DofVector<double> TrialState(double newGlobalTime, const NuTo::ConstrainedSystemSolver& solver);
 
     //! calculates and stores the history variables for the state x
     //! @param x independent dof values
-    void UpdateHistory(const Eigen::VectorXd& x);
+    void UpdateHistory(const DofVector<double>& x);
 
-    //! evaluates the residual R(x), part of NuTo::NewtonRaphson::Problem
-    //! @param x independent dof values
-    Eigen::VectorXd Residual(const Eigen::VectorXd& x);
+    //! evaluates the residual R(u), part of NuTo::NewtonRaphson::Problem
+    //! @param u independent dof values
+    DofVector<double> Residual(const DofVector<double>& u);
 
     //! evaluates the derivative dR/dx, part of NuTo::NewtonRaphson::Problem
-    //! @param x independent dof values
-    Eigen::SparseMatrix<double> Derivative(const Eigen::VectorXd& x);
+    //! @param u independent dof values
+    DofMatrixSparse<double> Derivative(const DofVector<double>& u);
 
 
     //! evaluates the norm of R, part of NuTo::NewtonRaphson::Problem
     //! @param residual residual vector
-    double Norm(const Eigen::VectorXd& residual) const;
+    double Norm(const DofVector<double>& residual) const;
 
 
     //! prints values during the newton iterations, part of NuTo::NewtonRaphson::Problem
     //! @param r residual residual vector
-    void Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const;
+    void Info(int i, const DofVector<double>& x, const DofVector<double>& r) const;
 
 
     //! tolerance for Norm(R), public member because it is part of NuTo::NewtonRaphson::Problem
@@ -75,15 +73,14 @@ public:
     void WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers);
 
 private:
-    GlobalDofVector ToGlobalDofVector(const Eigen::VectorXd& x) const;
-
+    //! @var mX last updated dof state
     DofVector<double> mX;
 
     TimeDependentProblem& mProblem;
     Constraint::Constraints mConstraints;
 
     std::vector<DofType> mDofs;
-    DofMatrixSparse<double> mCmat;
+    DofMatrixSparse<double> mCmatUnit;
 
     double mGlobalTime = 0;
     double mTimeStep = 0;

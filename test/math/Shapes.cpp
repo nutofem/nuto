@@ -6,12 +6,17 @@
 #include "nuto/math/shapes/Hexahedron.h"
 #include "nuto/math/shapes/Prism.h"
 #include "nuto/math/shapes/Pyramid.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
 
+#include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationTetrahedronLinear.h"
+#include "nuto/mechanics/interpolation/InterpolationPrismLinear.h"
+
+using namespace NuTo;
 
 BOOST_AUTO_TEST_CASE(LineIsInside)
 {
-    NuTo::Line shape;
+    Line shape;
 
     Eigen::VectorXd pIn = Eigen::VectorXd::Constant(1, -0.1);
     Eigen::VectorXd pOut = Eigen::VectorXd::Constant(1, -5.1);
@@ -19,13 +24,15 @@ BOOST_AUTO_TEST_CASE(LineIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
 
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions1D::NodeCoordinatesTrussOrder1(0)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions1D::NodeCoordinatesTrussOrder1(1)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTrussLinear::LocalCoords(0)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTrussLinear::LocalCoords(1)));
+
+    BoostUnitTest::CheckOutstream(shape, "Line");
 }
 
 BOOST_AUTO_TEST_CASE(TriangleIsInside)
 {
-    NuTo::Triangle shape;
+    Triangle shape;
 
     Eigen::Vector2d pIn(0.1, 0.1);
     Eigen::Vector2d pOut(1., 1.);
@@ -33,14 +40,16 @@ BOOST_AUTO_TEST_CASE(TriangleIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
 
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions2D::NodeCoordinatesTriangleOrder1(0)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions2D::NodeCoordinatesTriangleOrder1(1)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions2D::NodeCoordinatesTriangleOrder1(2)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::LocalCoords(0)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::LocalCoords(1)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTriangleLinear::LocalCoords(2)));
+
+    BoostUnitTest::CheckOutstream(shape, "Triangle");
 }
 
 BOOST_AUTO_TEST_CASE(QuadIsInside)
 {
-    NuTo::Quadrilateral shape;
+    Quadrilateral shape;
 
     Eigen::Vector2d pIn(0.1, -0.1);
     Eigen::Vector2d pOut(1.2, 1.);
@@ -49,11 +58,13 @@ BOOST_AUTO_TEST_CASE(QuadIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
     BOOST_CHECK(shape.IsWithinShape(pBoundary));
+
+    BoostUnitTest::CheckOutstream(shape, "Quadrilateral");
 }
 
 BOOST_AUTO_TEST_CASE(TetrahedronIsInside)
 {
-    NuTo::Tetrahedron shape;
+    Tetrahedron shape;
 
     Eigen::Vector3d pIn(0.1, 0.1, 0.1);
     Eigen::Vector3d pOut(0.1, 0.1, -0.1);
@@ -61,15 +72,17 @@ BOOST_AUTO_TEST_CASE(TetrahedronIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
 
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesTetrahedronOrder1(0)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesTetrahedronOrder1(1)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesTetrahedronOrder1(2)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesTetrahedronOrder1(3)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::LocalCoords(0)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::LocalCoords(1)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::LocalCoords(2)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationTetrahedronLinear::LocalCoords(3)));
+
+    BoostUnitTest::CheckOutstream(shape, "Tetrahedron");
 }
 
 BOOST_AUTO_TEST_CASE(HexahedronIsInside)
 {
-    NuTo::Hexahedron shape;
+    Hexahedron shape;
 
     Eigen::Vector3d pIn(0.1, 0.1, -0.1);
     Eigen::Vector3d pOut(-1.1, 0.1, -0.1);
@@ -78,11 +91,13 @@ BOOST_AUTO_TEST_CASE(HexahedronIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
     BOOST_CHECK(shape.IsWithinShape(pBoundary));
+
+    BoostUnitTest::CheckOutstream(shape, "Hexahedron");
 }
 
 BOOST_AUTO_TEST_CASE(PrismIsInside)
 {
-    NuTo::Prism shape;
+    Prism shape;
 
     Eigen::Vector3d pIn(0.1, 0.1, -0.1);
     Eigen::Vector3d pOut(0.6, 0.6, -0.1);
@@ -90,16 +105,18 @@ BOOST_AUTO_TEST_CASE(PrismIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
 
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesPrismOrder1(0)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesPrismOrder1(1)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesPrismOrder1(2)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesPrismOrder1(3)));
-    BOOST_CHECK(shape.IsWithinShape(NuTo::ShapeFunctions3D::NodeCoordinatesPrismOrder1(4)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(0)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(1)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(2)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(3)));
+    BOOST_CHECK(shape.IsWithinShape(InterpolationPrismLinear::LocalCoords(4)));
+
+    BoostUnitTest::CheckOutstream(shape, "Prism");
 }
 
 BOOST_AUTO_TEST_CASE(PyramidIsInside)
 {
-    NuTo::Pyramid shape;
+    Pyramid shape;
 
     Eigen::Vector3d pIn(0.2, 0.2, 0.2);
     Eigen::Vector3d pOut(0.2, 0.2, 0.9);
@@ -108,4 +125,6 @@ BOOST_AUTO_TEST_CASE(PyramidIsInside)
     BOOST_CHECK(shape.IsWithinShape(pIn));
     BOOST_CHECK(!shape.IsWithinShape(pOut));
     BOOST_CHECK(shape.IsWithinShape(pBoundary));
+
+    BoostUnitTest::CheckOutstream(shape, "Pyramid");
 }

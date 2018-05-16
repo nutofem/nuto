@@ -18,15 +18,15 @@ public:
     //! @param rhs value for the constant rhs
     Equation(const NodeSimple& dependentNode, int dependentComponent, RhsFunction rhs)
         : mRhs(rhs)
-        , mTerms{Term(dependentNode, dependentComponent, 1)}
+        , mDependentTerm(dependentNode, dependentComponent, 1)
     {
     }
 
     //! @brief adds a term to the equation
     //! @param term equation term
-    void AddTerm(Term term)
+    void AddIndependentTerm(Term term)
     {
-        mTerms.push_back(term);
+        mIndependentTerms.push_back(term);
     }
 
     //! @brief evaluates the rhs function at a given time
@@ -38,22 +38,31 @@ public:
     }
 
     //! @brief getter for mTerms
-    const std::vector<Term>& GetTerms() const
+    const Term& GetDependentTerm() const
     {
-        return mTerms;
+        return mDependentTerm;
+    }
+
+    //! @brief getter for mTerms
+    const std::vector<Term>& GetIndependentTerms() const
+    {
+        return mIndependentTerms;
     }
 
     int GetDependentDofNumber() const
     {
-        return mTerms.front().GetConstrainedDofNumber();
+        return mDependentTerm.GetConstrainedDofNumber();
     }
 
 private:
     //! @brief rhs function
     RhsFunction mRhs;
 
-    //! @brief terms
-    std::vector<Term> mTerms;
+    //! @brief dependent term rhs(t) = dependentTerm + independentTerms
+    Term mDependentTerm;
+
+    //! @brief all other terms
+    std::vector<Term> mIndependentTerms;
 };
 
 } /* Constaint */

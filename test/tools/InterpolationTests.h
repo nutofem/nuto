@@ -16,10 +16,11 @@ void CheckCopyMove()
     NuTo::Test::Move<T>();
 }
 
-void CheckPartitionOfUnity(const NuTo::InterpolationSimple& r, const std::vector<Eigen::VectorXd>& rPoints)
+void CheckPartitionOfUnity(const NuTo::InterpolationSimple& r, const std::vector<Eigen::VectorXd>& rPoints,
+                           double tol = 1.e-10)
 {
     for (const auto& point : rPoints)
-        BOOST_CHECK_CLOSE(r.GetShapeFunctions(point).sum(), 1, 1.e-10);
+        BOOST_CHECK_CLOSE(r.GetShapeFunctions(point).sum(), 1, tol);
 }
 
 void CheckDerivativeShapeFunctionsCDF(const NuTo::InterpolationSimple& r, const std::vector<Eigen::VectorXd>& rPoints,
@@ -43,7 +44,7 @@ void CheckDerivativeShapeFunctionsCDF(const NuTo::InterpolationSimple& r, const 
     }
 }
 
-void CheckShapeFunctionsAndNodePositions(const NuTo::InterpolationSimple& r)
+void CheckShapeFunctionsAndNodePositions(const NuTo::InterpolationSimple& r, double tol = 1.e-10)
 {
 
     for (int iNode = 0; iNode < r.GetNumNodes(); ++iNode)
@@ -53,9 +54,9 @@ void CheckShapeFunctionsAndNodePositions(const NuTo::InterpolationSimple& r)
         for (int i = 0; i < r.GetNumNodes(); ++i)
         {
             if (i == iNode)
-                BOOST_CHECK_CLOSE(N[i], 1, 1.e-10);
+                BOOST_CHECK_CLOSE(N[i], 1, tol);
             else
-                BOOST_CHECK_SMALL(N[i], 1.e-10);
+                BOOST_CHECK_SMALL(N[i], tol);
         }
     }
 }

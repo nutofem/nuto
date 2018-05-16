@@ -180,6 +180,15 @@ void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<Elem
 
         const auto& coordinateElement = elementCollection.CoordinateElement();
         const auto& interpolation = optionalInterpolation.value_or(coordinateElement.Interpolation());
+
+        if (coordinateElement.GetShape() != interpolation.GetShape())
+        {
+            std::stringstream message;
+            message << "Shape of interpolation (" << interpolation.GetShape() << ") and coordinate element ("
+                    << coordinateElement.GetShape() << ") don't match.";
+            throw Exception(__PRETTY_FUNCTION__, message.str());
+        }
+
         for (int iNode = 0; iNode < interpolation.GetNumNodes(); ++iNode)
         {
             Eigen::Vector3d coord = To3D(Interpolate(coordinateElement, interpolation.GetLocalCoords(iNode)));

@@ -27,7 +27,7 @@ public:
     {
         DofVector<double> gradient;
 
-        BMatrixStrain B = cellIpData.B(mDofType, Nabla::Strain());
+        Eigen::MatrixXd B = cellIpData.B(mDofType, Nabla::Strain());
         gradient[mDofType] =
                 B.transpose() * mLaw.Stress(cellIpData.Apply(mDofType, Nabla::Strain()), deltaT, cellIpData.Ids());
 
@@ -38,7 +38,7 @@ public:
     {
         DofMatrix<double> hessian0;
 
-        BMatrixStrain B = cellIpData.B(mDofType, Nabla::Strain());
+        Eigen::MatrixXd B = cellIpData.B(mDofType, Nabla::Strain());
         hessian0(mDofType, mDofType) =
                 B.transpose() * mLaw.Tangent(cellIpData.Apply(mDofType, Nabla::Strain()), deltaT, cellIpData.Ids()) * B;
 

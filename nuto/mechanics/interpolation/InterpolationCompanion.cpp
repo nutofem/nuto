@@ -6,7 +6,7 @@
 #include "InterpolationTriangleLinear.h"
 #include "InterpolationTriangleQuadratic.h"
 #include "InterpolationQuadLinear.h"
-#include "InterpolationQuadQuadratic.h"
+#include "InterpolationQuadSerendipity.h"
 #include "InterpolationTetrahedronLinear.h"
 #include "InterpolationTetrahedronQuadratic.h"
 #include "InterpolationBrickLinear.h"

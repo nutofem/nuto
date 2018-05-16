@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sstream>
+
 #include "nuto/mechanics/cell/CellInterface.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
 #include "nuto/mechanics/dofs/DofContainer.h"
@@ -18,6 +20,13 @@ public:
         , mId(id)
         , mShape(elements.GetShape())
     {
+        if (elements.GetShape() != integrationType.GetShape())
+        {
+            std::stringstream message;
+            message << "The shape of the element (" << elements.GetShape() << ") and integrationtype ("
+                    << integrationType.GetShape() << ") don't match.";
+            throw Exception(__PRETTY_FUNCTION__, message.str());
+        }
     }
 
     DofVector<double> Integrate(VectorFunction f) override
@@ -42,8 +51,7 @@ public:
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
-                              mElements.CoordinateElement().GetDofDimension());
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
             CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
             f(cellipData);
         }
@@ -77,8 +85,7 @@ public:
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
-                              mElements.CoordinateElement().GetDofDimension());
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
             CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
             result.push_back(f(cellipData));
         }
@@ -104,8 +111,7 @@ private:
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
             Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords),
-                              mElements.CoordinateElement().GetDofDimension());
+                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
             CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
             result += f(cellipData) * jacobian.Det() * ipWeight;
         }
