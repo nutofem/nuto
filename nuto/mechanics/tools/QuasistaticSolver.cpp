@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <boost/range/numeric.hpp>
 
-#include "nuto/base/Timer.h"
+#include "nuto/base/Logger.h"
 #include "nuto/math/NewtonRaphson.h"
 #include "nuto/mechanics/dofs/DofMatrix.h"
 #include "nuto/mechanics/dofs/DofVector.h"
@@ -91,11 +91,7 @@ double QuasistaticSolver::Norm(const DofVector<double>& residual) const
 
 void QuasistaticSolver::Info(int i, const DofVector<double>& x, const DofVector<double>& r) const
 {
-    if (mQuiet)
-        return;
-    std::cout << std::right << std::setfill(' ');
-    std::cout << "Iteration " << i << ": |R| = " << std::setw(11) << Norm(r) << " |x| = " << std::setw(11) << Norm(x)
-              << '\n';
+    Log::Info << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << Norm(x) << '\n';
 }
 
 void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers)
