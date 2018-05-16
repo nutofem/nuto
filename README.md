@@ -1,8 +1,8 @@
 ![alt text](doc/images/NuTo_logo.png "NuTo logo")
 
-[![Build Status](https://travis-ci.org/nutofem/nuto.svg?branch=master)](https://travis-ci.org/nutofem/nuto)
-[![codecov](https://codecov.io/gh/nutofem/nuto/branch/master/graph/badge.svg)](https://codecov.io/gh/nutofem/nuto)
-[![Documentation Status](https://readthedocs.org/projects/nuto/badge/?version=master)](http://nuto.readthedocs.io/en/master/?badge=master)
+[![Build Status](https://travis-ci.org/nutofem/nuto.svg?branch=develop)](https://travis-ci.org/nutofem/nuto)
+[![codecov](https://codecov.io/gh/nutofem/nuto/branch/develop/graph/badge.svg)](https://codecov.io/gh/nutofem/nuto/branch/develop)
+[![Documentation Status](https://readthedocs.org/projects/nuto/badge/?version=develop)](http://nuto.readthedocs.io/en/develop/?badge=develop)
 
 # What is it?
 
@@ -77,4 +77,4 @@ make test
 
 # Can I see some code?
 
-Sure, take a look at [our documentation](https://nuto.readthedocs.io/en/master/).
+Sure, take a look at [our documentation](https://nuto.readthedocs.io/en/develop/).
