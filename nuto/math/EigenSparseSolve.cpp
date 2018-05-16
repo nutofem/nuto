@@ -1,5 +1,7 @@
 #include "EigenSparseSolve.h"
 #include "nuto/base/Exception.h"
+#include "nuto/base/Timer.h"
+#include "nuto/base/Logger.h"
 #include <Eigen/SparseLU>
 #include <Eigen/SparseQR>
 #include <Eigen/SparseCholesky>
@@ -20,6 +22,7 @@ namespace NuTo
 template <typename TSolver>
 Eigen::VectorXd SolveWithSolver(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b)
 {
+    Timer t(__FUNCTION__, true, Log::Debug);
     TSolver solver;
     solver.analyzePattern(A);
     solver.factorize(A);

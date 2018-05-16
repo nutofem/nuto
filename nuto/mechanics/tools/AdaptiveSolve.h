@@ -23,8 +23,6 @@ public:
     //! @remark tStart comes second (may be unintuitive) to default it to zero.
     void Solve(double tEnd, double tStart = 0);
 
-    void SetQuiet();
-
     double dt = 0.1;
     double dtMax = 0.1;
     double dtMin = 1.e-6;
@@ -35,6 +33,5 @@ public:
 private:
     std::function<int(double)> mDoStepFunction;
     std::function<void(double)> mPostProcess;
-    bool mPrintOutput = true;
 };
 } /* NuTo */

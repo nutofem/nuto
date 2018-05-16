@@ -1,5 +1,6 @@
 #include <iostream>
 #include "nuto/base/Timer.h"
+#include "nuto/base/Logger.h"
 #include "nuto/base/Exception.h"
 #include "nuto/math/NewtonRaphson.h"
 #include "nuto/mechanics/tools/AdaptiveSolve.h"
@@ -16,25 +17,22 @@ AdaptiveSolve::AdaptiveSolve(std::function<int(double)> doStepFunction, std::fun
 
 void AdaptiveSolve::Solve(double tEnd, double tStart)
 {
-    Timer timer(__PRETTY_FUNCTION__, mPrintOutput);
+    Timer timer(__PRETTY_FUNCTION__, true, Log::Info);
     double t = tStart;
-    if (mPrintOutput)
-        std::cout << rang::fg::blue << "Starting adaptive solve from t = " << t << rang::style::reset << '\n';
+    Log::Info << rang::fg::blue << "Starting adaptive solve from t = " << t << rang::style::reset << '\n';
     int iStep = 0;
 
     mPostProcess(t);
 
     while (true)
     {
-        if (mPrintOutput)
-            std::cout << "Step " << iStep << " at t = " << t << " with dt = " << dt << ".\n";
+        Log::Info << "Step " << iStep << " at t = " << t << " with dt = " << dt << ".\n";
 
         try
         {
             int numIterations = mDoStepFunction(t + dt);
 
-            if (mPrintOutput)
-                std::cout << "Converence after " << numIterations << " iterations.\n";
+            Log::Info << "Converence after " << numIterations << " iterations.\n";
             t += dt;
             iStep++;
             mPostProcess(t);
@@ -46,9 +44,8 @@ void AdaptiveSolve::Solve(double tEnd, double tStart)
             {
                 dt *= increaseFactor;
                 dt = std::min(dt, dtMax);
-                if (mPrintOutput)
-                    std::cout << rang::fg::green << rang::style::bold << "Increasing time step to " << dt
-                              << rang::style::reset << '\n';
+                Log::Info << rang::fg::green << rang::style::bold << "Increasing time step to " << dt
+                          << rang::style::reset << '\n';
             }
 
             if (t + dt > tEnd)
@@ -57,9 +54,8 @@ void AdaptiveSolve::Solve(double tEnd, double tStart)
         catch (NewtonRaphson::NoConvergence& e)
         {
             dt *= decreaseFactor;
-            if (mPrintOutput)
-                std::cout << rang::fg::red << rang::style::bold << "Decreasing time step to " << dt
-                          << rang::style::reset << '\n';
+            Log::Info << rang::fg::red << rang::style::bold << "Decreasing time step to " << dt << rang::style::reset
+                      << '\n';
 
             if (dt < dtMin)
                 throw Exception(__PRETTY_FUNCTION__,
@@ -67,11 +63,5 @@ void AdaptiveSolve::Solve(double tEnd, double tStart)
             continue; // without updating the global time
         }
     }
-    if (mPrintOutput)
-        std::cout << "Sucessfully reached time t = " << tEnd << "!\n";
-}
-
-void AdaptiveSolve::SetQuiet()
-{
-    mPrintOutput = false;
+    Log::Info << "Sucessfully reached time t = " << tEnd << "!\n";
 }
