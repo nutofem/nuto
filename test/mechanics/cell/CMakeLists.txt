@@ -21,5 +21,3 @@ add_unit_test(Assembler)
 add_unit_test(SimpleAssembler)
 
 add_unit_test(Matrix)
-
-add_unit_test(CellIpData)

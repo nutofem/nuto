@@ -72,26 +72,20 @@ public:
         return B(dofType, b) * NodeValueVector(dofType, instance);
     }
 
-    //! Returns a memoized copy of the N matrix for a given dof type
+    //! Returns the N matrix for a given dof type
     //! @return N matrix
-    const Eigen::MatrixXd& N(DofType dofType) const
+    const Eigen::MatrixXd N(DofType dofType) const
     {
-        Eigen::MatrixXd& N = mNs[dofType];
-        if (N.size() == 0) // simplest memoization using a mutable mNs to keep it const
-            N = mCellData.Elements().DofElement(dofType).GetNMatrix(mIPCoords);
-        return N;
+        return mCellData.Elements().DofElement(dofType).GetNMatrix(mIPCoords);
     }
 
-    //! Returns a memoized copy of the B matrix for a given dof type
+    //! Returns the B matrix for a given dof type
     //! @param b gradient operator that determines how to calculate the derivative (e.g. B::Gradient() for scalars or
     //! B::Strain() for engineering strains)
     //! @return B matrix
-    const Eigen::MatrixXd& B(DofType dofType, const Nabla::Interface& b) const
+    const Eigen::MatrixXd B(DofType dofType, const Nabla::Interface& b) const
     {
-        Eigen::MatrixXd& B = mBs[dofType];
-        if (B.size() == 0) // simplest memoization using a mutable mBs to keep it const
-            B = b(CalculateDerivativeShapeFunctionsGlobal(dofType));
-        return B;
+        return b(CalculateDerivativeShapeFunctionsGlobal(dofType));
     }
 
     //! Returns memoized nodal values
@@ -107,8 +101,7 @@ private:
     //! coordinate system (dN_d(x,y,...))
     Eigen::MatrixXd CalculateDerivativeShapeFunctionsGlobal(DofType dofType) const
     {
-        Eigen::MatrixXd dShapeNatural =
-                mCellData.Elements().DofElement(dofType).GetDerivativeShapeFunctions(mIPCoords);
+        Eigen::MatrixXd dShapeNatural = mCellData.Elements().DofElement(dofType).GetDerivativeShapeFunctions(mIPCoords);
         return mJacobian.TransformDerivativeShapeFunctions(dShapeNatural);
     }
 
@@ -116,8 +109,5 @@ private:
     NuTo::Jacobian mJacobian;
     NaturalCoords mIPCoords;
     int mIpId;
-
-    mutable DofContainer<Eigen::MatrixXd> mBs;
-    mutable DofContainer<Eigen::MatrixXd> mNs;
 };
 } /* NuTo */
