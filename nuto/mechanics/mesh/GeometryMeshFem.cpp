@@ -13,9 +13,8 @@ InterpolationSimple& GeometryMeshFem::CreateInterpolation(const InterpolationSim
 
 CoordinateNode& GeometryMeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
 {
-    for (auto& element : this->Elements)
+    for (auto& coordinateElement : this->Elements)
     {
-        auto& coordinateElement = element.CoordinateElement();
         for (int iNode = 0; iNode < coordinateElement.Interpolation().GetNumNodes(); ++iNode)
         {
             Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetCoordinates();
@@ -33,9 +32,8 @@ Group<CoordinateNode> GeometryMeshFem::NodesAtAxis(eDirection direction, double 
 {
     Group<CoordinateNode> group;
     const int directionComponent = ToComponentIndex(direction);
-    for (auto& element : this->Elements)
+    for (auto& coordinateElement : this->Elements)
     {
-        auto& coordinateElement = element.CoordinateElement();
         for (int iNode = 0; iNode < coordinateElement.GetNumNodes(); ++iNode)
         {
             Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetCoordinates();
@@ -49,15 +47,15 @@ Group<CoordinateNode> GeometryMeshFem::NodesAtAxis(eDirection direction, double 
 Group<CoordinateNode> GeometryMeshFem::NodesTotal()
 {
     Group<CoordinateNode> group;
-    for (auto& element : this->Elements)
-        for (int iNode = 0; iNode < element.CoordinateElement().Interpolation().GetNumNodes(); ++iNode)
-            group.Add(element.CoordinateElement().GetNode(iNode));
+    for (auto& coordinateElement : this->Elements)
+        for (int iNode = 0; iNode < coordinateElement.Interpolation().GetNumNodes(); ++iNode)
+            group.Add(coordinateElement.GetNode(iNode));
     return group;
 }
 
-Group<ElementCollectionFem> GeometryMeshFem::ElementsTotal()
+Group<CoordinateElementFem> GeometryMeshFem::ElementsTotal()
 {
-    Group<ElementCollectionFem> elements;
+    Group<CoordinateElementFem> elements;
     for (auto& element : this->Elements)
         elements.Add(element);
     return elements;

@@ -48,12 +48,11 @@ public:
 
     //! @brief selects all element collections
     //! @return group containing all element collections
-    Group<ElementCollectionFem> ElementsTotal();
+    Group<CoordinateElementFem> ElementsTotal();
 
 public:
     ValueVector<CoordinateNode> CoordinateNodes;
-    ValueVector<DofNode> Nodes;
-    ValueVector<ElementCollectionFem> Elements;
+    ValueVector<CoordinateElementFem> Elements;
 
 private:
     std::vector<std::unique_ptr<InterpolationSimple>> mInterpolations;
