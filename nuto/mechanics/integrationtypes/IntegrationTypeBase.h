@@ -25,8 +25,6 @@ public:
     //! @brief destructor
     virtual ~IntegrationTypeBase() = default;
 
-    virtual int GetDimension() const = 0;
-
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return rCoordinates (result)

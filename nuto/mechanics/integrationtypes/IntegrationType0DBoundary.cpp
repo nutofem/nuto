@@ -28,9 +28,3 @@ double NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight(int rIpNum) co
         throw Exception("[NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight] Ip number out of range.");
     }
 }
-
-
-int IntegrationType0DBoundary::GetDimension() const
-{
-    return 0;
-}

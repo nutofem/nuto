@@ -35,11 +35,6 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int i) const override;
 
-    int GetDimension() const override
-    {
-        return 2;
-    }
-
     const Shape& GetShape() const override
     {
         return mShape;
