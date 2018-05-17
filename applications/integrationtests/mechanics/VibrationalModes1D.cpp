@@ -8,6 +8,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/constraints/Constraints.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/tools/CellStorage.h"
 
@@ -28,7 +29,8 @@ class VibratingTruss
 {
 public:
     VibratingTruss(int numElements, int order)
-        : mMesh(UnitMeshFem::CreateLines(numElements))
+        : mGeoMesh(UnitMeshFem::CreateLines(numElements))
+        , mMesh(mGeoMesh)
         , mOrder(order)
         , mDof("Dispacement", 1)
         , mLaw(Steel::E, Steel::nu)
@@ -66,6 +68,7 @@ public:
     }
 
 private:
+    GeometryMeshFem mGeoMesh;
     MeshFem mMesh;
     int mOrder;
 

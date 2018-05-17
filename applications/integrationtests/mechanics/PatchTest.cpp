@@ -10,6 +10,7 @@
 #include "nuto/mechanics/dofs/DofNumbering.h"
 
 #include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
@@ -55,7 +56,8 @@ MeshFem QuadPatchTestMesh()
      *   ///
      *              (c) ttitsche :)
      */
-    MeshFem mesh;
+    GeometryMeshFem geoMesh;
+    MeshFem mesh(geoMesh);
     CoordinateNode& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
     CoordinateNode& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
     CoordinateNode& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 10));

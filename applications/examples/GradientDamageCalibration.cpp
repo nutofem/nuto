@@ -7,6 +7,7 @@
 #include "nuto/mechanics/integrands/GradientDamage.h"
 #include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
@@ -38,8 +39,10 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     DofType d = gdm.mDisp;
     ScalarDofType eeq = gdm.mEeq;
 
-    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(nElements),
-                                          [&](Eigen::VectorXd x) { return Eigen::VectorXd::Constant(1, x[0] * L); });
+    GeometryMeshFem geoMesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(nElements), [&](Eigen::VectorXd x) {
+        return Eigen::VectorXd::Constant(1, x[0] * L);
+    });
+    MeshFem mesh(geoMesh);
 
     InterpolationTrussLobatto interpolationD(2);
     AddDofInterpolation(&mesh, d, interpolationD);

@@ -9,7 +9,7 @@ add_unit_test(GeometryMeshFem
     mechanics/elements/ElementShapeFunctions)
 
 add_unit_test(UnitMeshFem
-    mechanics/mesh/MeshFem
+    mechanics/mesh/GeometryMeshFem
     mechanics/interpolation/InterpolationTriangleLinear.cpp
     mechanics/interpolation/InterpolationTrussLinear.cpp
     mechanics/interpolation/InterpolationQuadLinear.cpp
@@ -19,7 +19,7 @@ add_unit_test(UnitMeshFem
 create_symlink("meshes")
 
 add_unit_test(MeshGmsh
-    mechanics/mesh/MeshFem
+    mechanics/mesh/GeometryMeshFem
     math/Legendre
     mechanics/interpolation/InterpolationTrussLinear.cpp
     mechanics/interpolation/InterpolationTrussLobatto.cpp
