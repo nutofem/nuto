@@ -1,5 +1,6 @@
 #include "BoostUnitTest.h"
 #include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
 #include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
@@ -13,7 +14,8 @@ void SetStuff(NuTo::MeshFem& m)
 
 NuTo::MeshFem DummyMesh(NuTo::DofType dofType)
 {
-    NuTo::MeshFem mesh;
+    NuTo::GeometryMeshFem geoMesh;
+    NuTo::MeshFem mesh(geoMesh);
     auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
 
     auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d({1, 0}));
@@ -131,7 +133,8 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
      * |    \|
      * 0-----1
      */
-    NuTo::MeshFem mesh;
+    NuTo::GeometryMeshFem geoMesh;
+    NuTo::MeshFem mesh(geoMesh);
     auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
     auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
     auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
@@ -190,7 +193,8 @@ BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
      * |    \|     |
      * 0-----1-----4
      */
-    NuTo::MeshFem mesh;
+    NuTo::GeometryMeshFem geoMesh;
+    NuTo::MeshFem mesh(geoMesh);
     auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
     auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
     auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
@@ -220,7 +224,8 @@ BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
 
 BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
 {
-    NuTo::MeshFem mesh;
+    NuTo::GeometryMeshFem geoMesh;
+    NuTo::MeshFem mesh(geoMesh);
     auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
     auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
     auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
@@ -247,7 +252,8 @@ BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
 
 BOOST_AUTO_TEST_CASE(PartialAddDofConvert)
 {
-    NuTo::MeshFem mesh;
+    NuTo::GeometryMeshFem geoMesh;
+    NuTo::MeshFem mesh(geoMesh);
     auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
     auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
     auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));

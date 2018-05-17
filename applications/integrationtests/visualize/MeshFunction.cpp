@@ -1,6 +1,8 @@
 #include <cmath>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
+#include "nuto/mechanics/mesh/MeshFem.h"
 #include "nuto/mechanics/cell/Cell.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/visualize/AverageHandler.h"
@@ -16,7 +18,8 @@ using namespace NuTo;
 int main()
 {
     auto meshTmp = UnitMeshFem::CreateQuads(50, 50);
-    auto mesh = UnitMeshFem::Transform(std::move(meshTmp), [](Eigen::VectorXd coords) { return 2 * pi() * coords; });
+    auto geoMesh = UnitMeshFem::Transform(std::move(meshTmp), [](Eigen::VectorXd coords) { return 2 * pi() * coords; });
+    MeshFem mesh(geoMesh);
     boost::ptr_vector<CellInterface> cells;
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
     int cellId = 0;

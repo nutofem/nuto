@@ -6,7 +6,7 @@ add_unit_test(GeometryMeshFem
     mechanics/elements/ElementShapeFunctions)
 
 add_unit_test(UnitMeshFem
-    mechanics/mesh/MeshFem
+    mechanics/mesh/GeometryMeshFem
     mechanics/elements/ElementShapeFunctions)
 
 foreach(inputFile
@@ -30,7 +30,7 @@ create_symlink("${inputFile}")
 endforeach()
 
 add_unit_test(MeshGmsh
-    mechanics/mesh/MeshFem
+    mechanics/mesh/GeometryMeshFem
     math/Legendre
     mechanics/elements/SpectralShapeFunctions.cpp
     mechanics/elements/ElementShapeFunctions)

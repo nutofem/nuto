@@ -10,13 +10,16 @@
 
 namespace NuTo
 {
+
+class GeometryMeshFem;
+
 //! @brief contains the nodes, elements and interpolations for a classic finite element mesh
 //! @remark Elements contain references to nodes. Thus, a copy of MeshFem is not trivially possible and only move is
 //! allowed
 class MeshFem
 {
 public:
-    MeshFem() = default;
+    MeshFem(const GeometryMeshFem& geometryMesh);
 
     MeshFem(const MeshFem&) = delete;
     MeshFem& operator=(const MeshFem&) = delete;
@@ -74,6 +77,7 @@ public:
     void AllocateDofInstances(DofType dofType, int numInstances);
 
 public:
+    const GeometryMeshFem& mGeometryMesh;
     ValueVector<CoordinateNode> CoordinateNodes;
     ValueVector<DofNode> Nodes;
     ValueVector<ElementCollectionFem> Elements;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/base/Group.h"
 #include <string>
 #include <map>
@@ -21,14 +21,14 @@ public:
     MeshGmsh() = delete;
 
     //! @brief copy ctor
-    //! @remark deleted: Member MeshFEM is not copyable
+    //! @remark deleted: Member GeometryMeshFem is not copyable
     MeshGmsh(const MeshGmsh&) = delete;
 
     //! @brief move ctor
     MeshGmsh(MeshGmsh&&) = default;
 
     //! @brief copy assignment operator
-    //! @remark deleted: Member MeshFEM is not copyable
+    //! @remark deleted: Member GeometryMeshFem is not copyable
     MeshGmsh& operator=(const MeshGmsh&) = delete;
 
     //! @brief move assignment operator
@@ -44,16 +44,16 @@ public:
     //! @brief Gets an element collection group associated to the physical name defined in gmsh
     //! @param physicalName Group name (defined in gmsh)
     //! @return Desired element collection group
-    const NuTo::Group<ElementCollectionFem>& GetPhysicalGroup(std::string physicalName) const;
+    const NuTo::Group<CoordinateElementFem>& GetPhysicalGroup(std::string physicalName) const;
 
 
     //! @brief Gets an element collection group associated to the physical ID defined in gmsh
     //! @param physicalGroupId gmsh ID
     //! @return Desired element collection group
-    const NuTo::Group<ElementCollectionFem>& GetPhysicalGroup(int physicalGroupId) const;
+    const NuTo::Group<CoordinateElementFem>& GetPhysicalGroup(int physicalGroupId) const;
 
     //! @brief Gets the MeshFem
-    MeshFem& GetMeshFEM()
+    GeometryMeshFem& GetMeshFEM()
     {
         return mMesh;
     }
@@ -64,7 +64,7 @@ private:
     //! @param fileContent Special structure (see MeshGmsh.cpp) that holds the read file content
     //! @param rElement Current element
     //! @param physicalGroupId Id of the elements physical group
-    void AddElementToPhysicalGroup(const GmshFileContent& fileContent, ElementCollectionFem& rElement,
+    void AddElementToPhysicalGroup(const GmshFileContent& fileContent, CoordinateElementFem& rElement,
                                    int physicalGroupId);
 
     //! @brief Creates all nodes defined in the gmsh file
@@ -81,7 +81,7 @@ private:
     //! @param nodePtrs Collection that holds pointers to all created elements. (See CreateNodes)
     void CreateElements(const GmshFileContent& fileContent, const std::unordered_map<int, CoordinateNode*>& nodePtrs);
 
-    //! @brief Fills the MeshFem member from gmsh file content
+    //! @brief Fills the GeometryMeshFem member from gmsh file content
     //! @param fileContent Special structure (see MeshGmsh.cpp) that holds the read file content
     void CreateMesh(const GmshFileContent& fileContent);
 
@@ -90,12 +90,12 @@ private:
     void ReadGmshFile(const std::string& fileName);
 
     //! @brief Internal mesh
-    MeshFem mMesh;
+    GeometryMeshFem mMesh;
 
     //! @brief Physical groups of the mesh
-    std::map<int, Group<ElementCollectionFem>> mPhysicalGroups;
+    std::map<int, Group<CoordinateElementFem>> mPhysicalGroups;
 
     //! @brief Named physical groups of the mesh
-    std::map<std::string, Group<ElementCollectionFem>*> mNamedPhysicalGroups;
+    std::map<std::string, Group<CoordinateElementFem>*> mNamedPhysicalGroups;
 };
 }

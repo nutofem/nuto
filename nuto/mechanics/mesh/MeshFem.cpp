@@ -1,9 +1,21 @@
 #include "nuto/mechanics/mesh/MeshFem.h"
 
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
+
 #include <sstream>
 #include "nuto/base/Exception.h"
 
+
 using namespace NuTo;
+
+MeshFem::MeshFem(const GeometryMeshFem& geometryMesh)
+    : mGeometryMesh(geometryMesh)
+{
+    for (auto cElm : geometryMesh.Elements)
+    {
+        Elements.Add(cElm);
+    }
+}
 
 InterpolationSimple& MeshFem::CreateInterpolation(const InterpolationSimple& interpolation)
 {

@@ -15,6 +15,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
 #include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
 #include "nuto/mechanics/nodes/DofNode.h"
@@ -220,7 +221,8 @@ using namespace std::placeholders;
 BOOST_AUTO_TEST_CASE(History_Data)
 {
     // Create mesh %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    MeshFem mesh = UnitMeshFem::CreateLines(numElements);
+    GeometryMeshFem geoMesh = UnitMeshFem::CreateLines(numElements);
+    MeshFem mesh(geoMesh);
 
     DofType displ("displacements", 1);
     const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear());

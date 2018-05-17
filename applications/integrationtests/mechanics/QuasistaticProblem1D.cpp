@@ -10,6 +10,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/constraints/ConstraintCompanion.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/tools/CellStorage.h"
 #include "nuto/mechanics/tools/QuasistaticSolver.h"
@@ -25,7 +26,8 @@ class LocalDamageTruss
 {
 public:
     LocalDamageTruss(int numElements, Material::Softening m)
-        : mMesh(UnitMeshFem::CreateLines(numElements))
+        : mGeoMesh(UnitMeshFem::CreateLines(numElements))
+        , mMesh(mGeoMesh)
         , mDof("Dispacement", 1)
         , mLaw(m)
         , mMomentumBalance(mDof, mLaw)
@@ -87,6 +89,7 @@ public:
     }
 
 private:
+    GeometryMeshFem mGeoMesh;
     MeshFem mMesh;
 
     DofType mDof;
