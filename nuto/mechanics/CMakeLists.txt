@@ -4,6 +4,7 @@ add_sources(cell/SimpleAssembler.cpp
     dofs/DofNumbering.cpp
 
     mesh/MeshFem.cpp
+    mesh/GeometryMeshFem.cpp
     mesh/MeshFemDofConvert.cpp
     mesh/MeshGmsh.cpp
     mesh/UnitMeshFem.cpp

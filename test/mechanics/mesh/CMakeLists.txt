@@ -5,6 +5,9 @@ add_unit_test(MeshFem
     mechanics/interpolation/InterpolationTriangleQuadratic.cpp
     mechanics/mesh/MeshFemDofConvert)
 
+add_unit_test(GeometryMeshFem
+    mechanics/elements/ElementShapeFunctions)
+
 add_unit_test(UnitMeshFem
     mechanics/mesh/MeshFem
     mechanics/interpolation/InterpolationTriangleLinear.cpp
