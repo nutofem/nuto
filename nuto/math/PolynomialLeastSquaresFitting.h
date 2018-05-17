@@ -20,10 +20,6 @@ public:
     //! @brief determine regression parameters
     void BuildDerived();
 
-    //! @brief Gets the degree of the polynomial
-    //! @return degree of the polynomial
-    double GetDegree() const;
-
     //! @brief Gets the calculated polynomial coefficients
     //! @return polynomial coefficients
     Eigen::VectorXd GetPolynomialCoefficients() const;

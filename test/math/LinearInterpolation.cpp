@@ -33,6 +33,7 @@ BOOST_AUTO_TEST_CASE(linear_interpolation)
 
     BOOST_CHECK_THROW(interpolation(-1.0), NuTo::Exception);
     BOOST_CHECK_THROW(interpolation(101.0), NuTo::Exception);
+    BOOST_CHECK_THROW(interpolation.derivative(101.0), NuTo::Exception);
 
     values = {{{0.0, 0.0}}};
     BOOST_CHECK_THROW(auto interpolation = NuTo::Math::LinearInterpolation(values), NuTo::Exception);

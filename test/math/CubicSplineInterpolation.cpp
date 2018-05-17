@@ -24,6 +24,10 @@ BOOST_AUTO_TEST_CASE(cubic_spline_interpolation)
     auto interpolation = NuTo::Math::CubicSplineInterpolation(values);
 
     BOOST_CHECK_CLOSE(interpolation(50.0), 0.5, 1e-10);
+    BOOST_CHECK_THROW(interpolation(120.0), NuTo::Exception);
+
+    BOOST_CHECK_CLOSE(interpolation.derivative(50.0), 1e-2, 1e-10);
+    BOOST_CHECK_THROW(interpolation.derivative(120.0), NuTo::Exception);
 
     std::vector<double> x = {1.0, 3.0, 5.0, 7.0, 9.0};
     std::vector<double> y = {1.0, 3.0, 5.0, 7.0, 9.0};
@@ -43,4 +47,5 @@ BOOST_AUTO_TEST_CASE(cubic_spline_interpolation)
         output[i] = interpolation2(x[i]);
     }
     CHECK_CLOSE_COLLECTION(output, y, 1e-10);
+
 }
