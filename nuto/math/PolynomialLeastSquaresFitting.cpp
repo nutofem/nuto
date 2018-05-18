@@ -67,11 +67,6 @@ void PolynomialLeastSquaresFitting::BuildDerived()
     mPolynomialCoeffs = solver.solve(rhs);
 }
 
-double PolynomialLeastSquaresFitting::GetDegree() const
-{
-    return mDegree;
-}
-
 Eigen::VectorXd PolynomialLeastSquaresFitting::GetPolynomialCoefficients() const
 {
     return mPolynomialCoeffs;
