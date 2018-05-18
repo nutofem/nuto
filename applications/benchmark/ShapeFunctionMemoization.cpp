@@ -1,6 +1,6 @@
 #include <benchmark/benchmark.h>
 
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/interpolation/InterpolationTetrahedronQuadratic.h"
 #include "nuto/math/NaturalCoordinateMemoizer.h"
 
 #include <memory>
@@ -109,7 +109,7 @@ struct Lobatto
     }
 };
 
-auto testFunction = NuTo::ShapeFunctions3D::DerivativeShapeFunctionsTetrahedronOrder2;
+auto testFunction = NuTo::InterpolationTetrahedronQuadratic::DerivativeShapeFunctions;
 
 template <typename TMemoizer>
 void Run(benchmark::State& state)

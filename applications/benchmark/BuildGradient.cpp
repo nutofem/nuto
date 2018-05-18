@@ -3,7 +3,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/elements/ElementFem.h"
 #include "nuto/mechanics/cell/Cell.h"
-#include "nuto/mechanics/interpolation/InterpolationQuadQuadratic.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadSerendipity.h"
 #include "nuto/mechanics/integrands/MomentumBalance.h"
 #include "nuto/mechanics/constitutive/LinearElastic.h"
 
@@ -59,7 +59,7 @@ public:
         for (int i = 0; i < it.GetNumIntegrationPoints(); ++i)
         {
             const Eigen::Vector2d ip = it.GetLocalIntegrationPointCoordinates(i);
-            mDerivativeShapeCache[i] = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder2(ip);
+            mDerivativeShapeCache[i] = NuTo::InterpolationQuadQuadratic::DerivativeShapeFunctions(ip);
         }
     }
 
