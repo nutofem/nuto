@@ -2,13 +2,19 @@
 
 #include <vector>
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/math/shapes/Line.h"
 #include "nuto/math/shapes/Quadrilateral.h"
 #include "nuto/math/shapes/Hexahedron.h"
 
 namespace NuTo
 {
+
+enum class eIntegrationMethod
+{
+    GAUSS,
+    LOBATTO
+};
+
 //! @author Philipp Müller, Peter Otto, BAM
 //! @date Jul 2017
 //! @brief integration types in 1,2,3D; tensor product of 1D Lobatto or Gauss
@@ -21,12 +27,6 @@ public:
     //! @param numIps number of integration points
     //! @param method integration method (currently either GAUSS or LOBATTO)
     IntegrationTypeTensorProduct(size_t numIps, NuTo::eIntegrationMethod method);
-
-    //! @brief returns the dimension
-    int GetDimension() const override
-    {
-        return TDim;
-    }
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)

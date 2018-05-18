@@ -40,10 +40,8 @@ add_sources(cell/SimpleAssembler.cpp
 
     integrationtypes/IntegrationCompanion.cpp    
     integrationtypes/IntegrationType0DBoundary.cpp
-    integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType3D6NGauss1Ip.cpp
     integrationtypes/IntegrationType3D6NGauss2x3Ip.cpp
-    integrationtypes/IntegrationTypeEnum.cpp
     integrationtypes/IntegrationTypeTensorProduct.cpp
     integrationtypes/IntegrationTypeTetrahedron.cpp
     integrationtypes/IntegrationTypeTriangle.cpp

@@ -1,5 +1,4 @@
 add_unit_test(Cell
-    mechanics/integrationtypes/IntegrationTypeEnum.cpp
     mechanics/interpolation/InterpolationQuadLinear.cpp
     )
 
