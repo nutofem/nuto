@@ -2,6 +2,7 @@
 #include <fakeit.hpp>
 
 #include "nuto/math/shapes/Triangle.h"
+#include "nuto/math/shapes/Line.h"
 
 #include "nuto/mechanics/cell/Cell.h"
 #include "nuto/mechanics/elements/ElementCollection.h"

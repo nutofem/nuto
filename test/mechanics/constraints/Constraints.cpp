@@ -54,6 +54,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
     DofNode node2(0);
     DofNode node3(0);
     DofNode node4(0);
+    DofNode node5(0);
 
     /*
      *     n0 ---- n1 ---- n2 ---- n3 --- n4 --- n5

@@ -103,7 +103,7 @@ private:
 };
 
 template <>
-inline NodeValues ElementFem<DofNode>::ExtractNodeValues(int instance) const
+inline Eigen::VectorXd ElementFem<DofNode>::ExtractNodeValues(int instance) const
 {
     const int dim = GetDofDimension();
     Eigen::VectorXd nodeValues(GetNumNodes() * dim);
@@ -113,7 +113,7 @@ inline NodeValues ElementFem<DofNode>::ExtractNodeValues(int instance) const
 }
 
 template <>
-inline NodeValues ElementFem<CoordinateNode>::ExtractNodeValues(int instance) const
+inline Eigen::VectorXd ElementFem<CoordinateNode>::ExtractNodeValues(int instance) const
 {
     // Solve this later, by using type traits
     assert(instance == 0 && "Coordinate nodes can have only 1 instance");

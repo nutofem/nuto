@@ -11,7 +11,7 @@ void CheckJacobians(NuTo::GeometryMeshFem& mesh)
     {
         auto d_dxi = element.GetDerivativeShapeFunctions(ip);
         auto x = element.ExtractNodeValues();
-        auto J = NuTo::Jacobian(x, d_dxi, dim);
+        auto J = NuTo::Jacobian(x, d_dxi);
         BOOST_CHECK_GT(J.Det(), 0.);
     }
 }

@@ -69,7 +69,6 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &TGdm::Update));
 
     QuasistaticSolver problem(equations, {d, eeq});
-    problem.SetQuiet();
     problem.mTolerance = 1.e-6;
     problem.SetConstraints(constraints);
 
@@ -81,7 +80,6 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     auto postProcessF = [&](double) { problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}); };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
-    adaptiveSolve.SetQuiet();
     adaptiveSolve.dt = 0.01;
     adaptiveSolve.dtMin = 1.e-10;
     adaptiveSolve.dtMax = 0.01;

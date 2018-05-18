@@ -328,19 +328,11 @@ BOOST_AUTO_TEST_CASE(History_Data)
             solution[displ] += deltaDisplacements;
 
             // Merge dof values %%%%%%%%%%%%%%%%%
-<<<<<<< HEAD
-<<<<<<< HEAD
-            for (NodeSimple& node : mesh.NodesTotal(displ))
-=======
-            int numUnconstrainedDofs = dofInfo.numIndependentDofs[displ];
-=======
->>>>>>> Merge current PDE reviewed
-                for (DofNode& node : mesh.NodesTotal(displ))
->>>>>>> Rename Nodes to DofNode and CoordinateNode
-                {
-                    int dofNumber = node.GetDofNumber(0);
-                    node.SetValue(0, solution[displ][dofNumber]);
-                }
+            for (DofNode& node : mesh.NodesTotal(displ))
+            {
+                int dofNumber = node.GetDofNumber(0);
+                node.SetValue(0, solution[displ][dofNumber]);
+            }
 
             // Calculate new residual %%%%%%%%%%%
             gradient = assembler.BuildVector(momentumBalanceCells, {displ}, MomentumGradientF);
