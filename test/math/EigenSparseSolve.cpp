@@ -68,3 +68,9 @@ BOOST_DATA_TEST_CASE(mumps, bdata::make(mumpsSolverNames), solver)
     BOOST_CHECK_THROW(EigenSparseSolve(sys.A, sys.b, solver), Exception);
 #endif
 }
+
+BOOST_AUTO_TEST_CASE(WrongSolverName)
+{
+    LinearSystem sys;
+    BOOST_CHECK_THROW(EigenSparseSolve(sys.A, sys.b, "Möööp"), NuTo::Exception);
+}
