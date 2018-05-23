@@ -279,7 +279,10 @@ void Footer2D(std::ostream& out, NuTo::GmshWriter::Options opt)
     out << "Physical Surface(\"" << opt.physicalGroupMatrix << "\") = {theMatrix};\n";
     out << "Physical Surface(\"" << opt.physicalGroupAggregates << "\") = {theAggregates[]};\n";
     if (opt.interfaceThickness != 0)
-        out << "Physical Surface(\"" << opt.physicalGroupInterfaces << "\") = {theInterfaces[]};\n";
+    {
+        // The minus sign is needed to correct the interface element orientation
+        out << "Physical Surface(\"" << opt.physicalGroupInterfaces << "\") = {-theInterfaces[]};\n";
+    }
 }
 
 void Aggregates3D(std::ostream& out, const Eigen::MatrixX4d& a, double thickness)
