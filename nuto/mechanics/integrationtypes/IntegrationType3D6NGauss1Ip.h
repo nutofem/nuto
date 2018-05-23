@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nuto/mechanics/integrationtypes/IntegrationType3D.h"
+#include "IntegrationTypeBase.h"
 #include "nuto/math/shapes/Prism.h"
 
 namespace NuTo
@@ -8,7 +8,7 @@ namespace NuTo
 //! @author Thomas Titscher, ISM
 //! @date January 2017
 //! @brief integration types in 3D with 1 Gauss point
-class IntegrationType3D6NGauss1Ip : public IntegrationType3D
+class IntegrationType3D6NGauss1Ip : public IntegrationTypeBase
 {
 
 public:
