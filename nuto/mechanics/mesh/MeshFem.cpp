@@ -8,7 +8,7 @@
 
 using namespace NuTo;
 
-MeshFem::MeshFem(const GeometryMeshFem& geometryMesh)
+MeshFem::MeshFem(GeometryMeshFem& geometryMesh)
     : mGeometryMesh(geometryMesh)
 {
     for (auto& cElm : geometryMesh.Elements)
@@ -48,19 +48,7 @@ DofNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, doub
 
 CoordinateNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
 {
-    for (auto& element : this->Elements)
-    {
-        auto& coordinateElement = element.CoordinateElement();
-        for (int iNode = 0; iNode < coordinateElement.Interpolation().GetNumNodes(); ++iNode)
-        {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetCoordinates();
-            if ((globalNodeCoords - coords).isMuchSmallerThan(tol, 1))
-                return coordinateElement.GetNode(iNode);
-        }
-    }
-    std::stringstream coordsString;
-    coordsString << coords.transpose();
-    throw NuTo::Exception(__PRETTY_FUNCTION__, "There is no coordinate node at " + coordsString.str());
+    return mGeometryMesh.NodeAtCoordinate(coords, tol);
 }
 
 Group<CoordinateNode> MeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/, double tol /* = 1.e-10 */)

@@ -19,7 +19,7 @@ class GeometryMeshFem;
 class MeshFem
 {
 public:
-    MeshFem(const GeometryMeshFem& geometryMesh);
+    MeshFem(GeometryMeshFem& geometryMesh);
 
     MeshFem(const MeshFem&) = delete;
     MeshFem& operator=(const MeshFem&) = delete;
@@ -77,7 +77,7 @@ public:
     void AllocateDofInstances(DofType dofType, int numInstances);
 
 public:
-    const GeometryMeshFem& mGeometryMesh;
+    GeometryMeshFem& mGeometryMesh;
     ValueVector<DofNode> Nodes;
     ValueVector<ElementCollectionFem> Elements;
 
