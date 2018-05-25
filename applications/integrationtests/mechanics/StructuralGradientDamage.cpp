@@ -166,89 +166,89 @@ BOOST_AUTO_TEST_CASE(Integrand)
 }
 
 
-// BOOST_AUTO_TEST_CASE(Integrand2D)
-//{
-//    boost::filesystem::path binaryPath = boost::unit_test::framework::master_test_suite().argv[0];
-//    binaryPath.remove_filename();
-//    std::string meshFile = binaryPath.string() + "/meshes/Holes.msh";
+BOOST_AUTO_TEST_CASE(Integrand2D)
+{
+    boost::filesystem::path binaryPath = boost::unit_test::framework::master_test_suite().argv[0];
+    binaryPath.remove_filename();
+    std::string meshFile = binaryPath.string() + "/meshes/Holes.msh";
 
-//    auto material = Material::DefaultConcrete();
-//    material.c = 2;
+    auto material = Material::DefaultConcrete();
+    material.c = 2;
 
-//    DofType d("Displacements", 2);
-//    ScalarDofType eeq("NonlocalEquivalentStrains");
+    DofType d("Displacements", 2);
+    ScalarDofType eeq("NonlocalEquivalentStrains");
 
-//    using Gdm = Integrands::GradientDamage<2>;
-//    using Neumann = Integrands::NeumannBc<2>;
+    using Gdm = Integrands::GradientDamage<2>;
+    using Neumann = Integrands::NeumannBc<2>;
 
-//    Gdm gdm(d, eeq, material);
-//    Neumann neumann(d, Eigen::Vector2d(.42, .12));
+    Gdm gdm(d, eeq, material);
+    Neumann neumann(d, Eigen::Vector2d(.42, .12));
 
-//    MeshGmsh gmsh(meshFile);
+    MeshGmsh gmsh(meshFile);
 
-//    auto& mesh = gmsh.GetMeshFEM();
-//    auto& matrixElements = gmsh.GetPhysicalGroup("matrix");
-//    auto& leftElements = gmsh.GetPhysicalGroup("left");
-//    AddDofInterpolation(&mesh, d, matrixElements);
-//    AddDofInterpolation(&mesh, d, leftElements);
-//    AddDofInterpolation(&mesh, eeq, matrixElements);
-//    AddDofInterpolation(&mesh, eeq, leftElements);
+    auto& mesh = gmsh.GetMeshFEM();
+    auto& matrixElements = gmsh.GetPhysicalGroup("matrix");
+    auto& leftElements = gmsh.GetPhysicalGroup("left");
+    AddDofInterpolation(&mesh, d, matrixElements);
+    AddDofInterpolation(&mesh, d, leftElements);
+    AddDofInterpolation(&mesh, eeq, matrixElements);
+    AddDofInterpolation(&mesh, eeq, leftElements);
 
-//    IntegrationTypeTriangle triangleIntegration(4);
-//    IntegrationTypeTensorProduct<1> lineIntegration(2, eIntegrationMethod::GAUSS);
-//    CellStorage cellStorage;
-//    auto cells = cellStorage.AddCells(matrixElements, triangleIntegration);
-//    auto cellsLeft = cellStorage.AddCells(leftElements, lineIntegration);
-//    gdm.mKappas.setZero(cells.Size(), triangleIntegration.GetNumIntegrationPoints());
+    IntegrationTypeTriangle triangleIntegration(4);
+    IntegrationTypeTensorProduct<1> lineIntegration(2, eIntegrationMethod::GAUSS);
+    CellStorage cellStorage;
+    auto cells = cellStorage.AddCells(matrixElements, triangleIntegration);
+    auto cellsLeft = cellStorage.AddCells(leftElements, lineIntegration);
+    gdm.mKappas.setZero(cells.Size(), triangleIntegration.GetNumIntegrationPoints());
 
-//    TimeDependentProblem equations(&mesh);
+    TimeDependentProblem equations(&mesh);
 
-//    equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &Gdm::Hessian0));
-//    equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
-//    equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Update));
-//    equations.AddGradientFunction(cellsLeft, TimeDependentProblem::Bind(neumann, &Neumann::ExternalLoad));
+    equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &Gdm::Hessian0));
+    equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Gradient));
+    equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &Gdm::Update));
+    equations.AddGradientFunction(cellsLeft, TimeDependentProblem::Bind(neumann, &Neumann::ExternalLoad));
 
-//    using namespace Constraint;
-//    Constraints constraints;
-//    constraints.Add(d, Component(mesh.NodeAtCoordinate(Eigen::Vector2d::Zero(), d), {eDirection::X}));
-//    constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d), {eDirection::Y}));
-//    auto topNodes = mesh.NodesAtAxis(eDirection::Y, d, 16);
-//    constraints.Add(d, Component(topNodes, {eDirection::Y}, RhsRamp(1, 0.01)));
+    using namespace Constraint;
+    Constraints constraints;
+    constraints.Add(d, Component(mesh.NodeAtCoordinate(Eigen::Vector2d::Zero(), d), {eDirection::X}));
+    constraints.Add(d, Component(mesh.NodesAtAxis(eDirection::Y, d), {eDirection::Y}));
+    auto topNodes = mesh.NodesAtAxis(eDirection::Y, d, 16);
+    constraints.Add(d, Component(topNodes, {eDirection::Y}, RhsRamp(1, 0.01)));
 
-//    std::vector<DofType> dofTypes;
-//    dofTypes.push_back(d);
-//    dofTypes.push_back(eeq);
+    std::vector<DofType> dofTypes;
+    dofTypes.push_back(d);
+    dofTypes.push_back(eeq);
 
-//    DofVector<double> X = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
-//    QuasistaticSolver problem(X);
+    DofVector<double> X = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
+    QuasistaticSolver problem(X);
 
-//    DofContainer<int> numTotalDofs;
-//    DofInfo dofInfoDisp = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
-//    DofInfo dofInfoEeq = DofNumbering::Build(mesh.NodesTotal(eeq), eeq, constraints);
-//    numTotalDofs.Insert(d, dofInfoDisp.numDependentDofs[d] + dofInfoDisp.numIndependentDofs[d]);
-//    numTotalDofs.Insert(eeq, dofInfoEeq.numDependentDofs[eeq] + dofInfoEeq.numIndependentDofs[eeq]);
+    DofContainer<int> numTotalDofs;
+    DofInfo dofInfoDisp = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
+    DofInfo dofInfoEeq = DofNumbering::Build(mesh.NodesTotal(eeq), eeq, constraints);
+    numTotalDofs.Insert(d, dofInfoDisp.numDependentDofs[d] + dofInfoDisp.numIndependentDofs[d]);
+    numTotalDofs.Insert(eeq, dofInfoEeq.numDependentDofs[eeq] + dofInfoEeq.numIndependentDofs[eeq]);
 
-//    ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
+    ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
-//    using namespace NuTo::Visualize;
-//    PostProcess visu("./GradientDamageOut2D");
-//    visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(triangleIntegration)));
-//    visu.Add("GDM", d);
-//    visu.Add("GDM", eeq);
-//    visu.Add("GDM", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");
+    using namespace NuTo::Visualize;
+    PostProcess visu("./GradientDamageOut2D");
+    visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(triangleIntegration)));
+    visu.Add("GDM", d);
+    visu.Add("GDM", eeq);
+    visu.Add("GDM", [&](const NuTo::CellIpData& data) { return gdm.mDamageLaw.Damage(gdm.Kappa(data)); }, "Damage");
 
-//    std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
+    std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
 
-//    auto doStep = [&](double t) {
-//        return problem.DoStep(equations, reducedSolutionSpaceOperator, t, "EigenSparseLU", 1.e-6);
-//    };
-//    auto postProcess = [&](double t) {
-//        visu.Plot(t, true);
-//        problem.WriteTimeDofResidual(loadDisp, d, DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)),
-//                                     equations);
-//    };
+    auto doStep = [&](double t) {
+        return problem.DoStep(equations, reducedSolutionSpaceOperator, t, "EigenSparseLU", 1.e-6);
+    };
+    auto postProcess = [&](double t) {
+        visu.Plot(t, true);
+        problem.WriteTimeDofResidual(loadDisp, d, DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)),
+                                     equations);
+    };
 
-//    NuTo::AdaptiveSolve adaptive(doStep, postProcess);
-//    adaptive.dt = 0.01;
-//    adaptive.Solve(adaptive.dt); // Only one step for this test. Increase to 1., if you want to see magic happen.
-//}
+    NuTo::AdaptiveSolve adaptive(doStep, postProcess);
+    adaptive.dt = 0.01;
+    adaptive.Solve(adaptive.dt); // Only one step for this test. Increase to 1., if you want to see magic happen.
+}
