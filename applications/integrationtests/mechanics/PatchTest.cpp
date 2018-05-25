@@ -38,7 +38,7 @@
 
 using namespace NuTo;
 
-MeshFem QuadPatchTestMesh()
+MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
 {
     /* Something like this:
      *
@@ -56,7 +56,6 @@ MeshFem QuadPatchTestMesh()
      *   ///
      *              (c) ttitsche :)
      */
-    GeometryMeshFem geoMesh;
     MeshFem mesh(geoMesh);
     CoordinateNode& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
     CoordinateNode& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
@@ -70,11 +69,17 @@ MeshFem QuadPatchTestMesh()
 
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
-    mesh.Elements.Add({{{n0, n1, n5, n4}, interpolation}});
-    mesh.Elements.Add({{{n1, n2, n6, n5}, interpolation}});
-    mesh.Elements.Add({{{n7, n6, n2, n3}, interpolation}});
-    mesh.Elements.Add({{{n4, n5, n6, n7}, interpolation}});
-    mesh.Elements.Add({{{n0, n4, n7, n3}, interpolation}});
+    auto& cElm0 = geoMesh.Elements.Add({{n0, n1, n5, n4}, interpolation});
+    auto& cElm1 = geoMesh.Elements.Add({{n1, n2, n6, n5}, interpolation});
+    auto& cElm2 = geoMesh.Elements.Add({{n7, n6, n2, n3}, interpolation});
+    auto& cElm3 = geoMesh.Elements.Add({{n4, n5, n6, n7}, interpolation});
+    auto& cElm4 = geoMesh.Elements.Add({{n0, n4, n7, n3}, interpolation});
+
+    mesh.Elements.Add(cElm0);
+    mesh.Elements.Add(cElm1);
+    mesh.Elements.Add(cElm2);
+    mesh.Elements.Add(cElm3);
+    mesh.Elements.Add(cElm4);
 
     return mesh;
 }
@@ -94,7 +99,8 @@ Constraint::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
 
 BOOST_AUTO_TEST_CASE(PatchTestForce)
 {
-    MeshFem mesh = QuadPatchTestMesh();
+    GeometryMeshFem geoMesh;
+    MeshFem mesh = QuadPatchTestMesh(geoMesh);
     DofType displ("displacements", 2);
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
@@ -141,7 +147,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     DofNode& nd2 = *(boundaryDisplNodes.begin() + 1);
 
     // add the boundary element
-    ElementCollectionFem& boundaryElement = mesh.Elements.Add({{{nc1, nc2}, interpolationBc}});
+    auto& cElmB = geoMesh.Elements.Add({{nc1, nc2}, interpolationBc});
+    ElementCollectionFem& boundaryElement = mesh.Elements.Add(cElmB);
     boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
 
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
@@ -211,7 +218,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
 BOOST_AUTO_TEST_CASE(PatchTestDispl)
 {
-    MeshFem mesh = QuadPatchTestMesh();
+    GeometryMeshFem geoMesh;
+    MeshFem mesh = QuadPatchTestMesh(geoMesh);
     DofType displ("displacements", 2);
     const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 

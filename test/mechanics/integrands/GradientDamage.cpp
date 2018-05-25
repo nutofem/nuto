@@ -84,7 +84,8 @@ BOOST_AUTO_TEST_CASE(GradientDamage1D)
     CoordinateNode n2(2);
 
     InterpolationTrussLobatto interpolation(2);
-    ElementCollectionFem element({{n0, n1, n2}, interpolation});
+    CoordinateElementFem cElm{{n0, n1, n2}, interpolation};
+    ElementCollectionFem element(cElm);
 
     // displacement element nodes
     DofNode nd0(0);

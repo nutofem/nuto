@@ -180,12 +180,12 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     auto& leftElementsGeo = gmsh.GetPhysicalGroup("left");
 
     Group<ElementCollectionFem> matrixElements;
-    for (auto cElm : matrixElementsGeo)
+    for (auto& cElm : matrixElementsGeo)
     {
         matrixElements.Add(mesh.Elements.Add(ElementCollectionFem(cElm)));
     }
     Group<ElementCollectionFem> leftElements;
-    for (auto cElm : leftElementsGeo)
+    for (auto& cElm : leftElementsGeo)
     {
         leftElements.Add(mesh.Elements.Add(ElementCollectionFem(cElm)));
     }

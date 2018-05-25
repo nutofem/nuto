@@ -46,32 +46,33 @@ public:
         return nodeValues;
     }
 
-    Eigen::MatrixXd GetNMatrix(NaturalCoords ipCoords) const override
+    virtual Eigen::MatrixXd GetNMatrix(NaturalCoords ipCoords) const override
     {
         return Matrix::N(Interpolation().GetShapeFunctions(ipCoords), Interpolation().GetNumNodes(), GetDofDimension());
     }
 
-    Eigen::VectorXd GetShapeFunctions(NaturalCoords ipCoords) const override
+    virtual Eigen::VectorXd GetShapeFunctions(NaturalCoords ipCoords) const override
     {
         return Interpolation().GetShapeFunctions(ipCoords);
     }
 
-    Eigen::MatrixXd GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
+    virtual Eigen::MatrixXd GetDerivativeShapeFunctions(NaturalCoords ipCoords) const override
     {
         return Interpolation().GetDerivativeShapeFunctions(ipCoords);
     }
 
-    int GetDofDimension() const override
+    virtual int GetDofDimension() const override
     {
         return GetNode(0).GetNumValues();
     }
 
     Eigen::VectorXi GetDofNumbering() const override;
 
-    int GetNumNodes() const override
+    virtual int GetNumNodes() const override
     {
         return mNodes.size();
     }
+
 
     const InterpolationSimple& Interpolation() const
     {

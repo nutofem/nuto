@@ -20,7 +20,8 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
     CoordinateNode nc0(Eigen::Vector2d(0, 0));
     CoordinateNode nc1(Eigen::Vector2d(2, 2));
     InterpolationTrussLinear coordinateInterpolation;
-    ElementCollectionFem element({{nc0, nc1}, coordinateInterpolation});
+    CoordinateElementFem cElm{{nc0, nc1}, coordinateInterpolation};
+    ElementCollectionFem element(cElm);
 
     // displacement nodes
     DofType dof("displacements", 2);
@@ -100,7 +101,8 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
 
     // coordinate element
     InterpolationTriangleLinear coordinateInterpolation;
-    ElementCollectionFem element({nodePtrs, coordinateInterpolation});
+    CoordinateElementFem cElm{nodePtrs, coordinateInterpolation};
+    ElementCollectionFem element(cElm);
 
     // displacement nodes
     DofType dof("displacements", 3);

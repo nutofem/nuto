@@ -11,9 +11,9 @@ using namespace NuTo;
 MeshFem::MeshFem(const GeometryMeshFem& geometryMesh)
     : mGeometryMesh(geometryMesh)
 {
-    for (auto cElm : geometryMesh.Elements)
+    for (auto& cElm : geometryMesh.Elements)
     {
-        Elements.Add(cElm);
+        Elements.Add(ElementCollectionFem(cElm));
     }
 }
 

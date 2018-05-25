@@ -124,7 +124,7 @@ public:
     static_assert(std::is_base_of<ElementInterface, DofElementFem>::value,
                   "TElement must be a descendant of ElementInterface");
 
-    ElementCollectionFem(CoordinateElementFem coordinateElement)
+    ElementCollectionFem(CoordinateElementFem& coordinateElement)
         : mCoordinateElement(coordinateElement)
         , mShape(coordinateElement.GetShape())
     {
@@ -189,7 +189,7 @@ public:
     }
 
 private:
-    CoordinateElementFem mCoordinateElement;
+    CoordinateElementFem& mCoordinateElement;
     DofContainer<DofElementFem> mDofElements;
     const Shape& mShape;
 };

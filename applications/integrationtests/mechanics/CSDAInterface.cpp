@@ -55,7 +55,8 @@ void CheckFractureEnergy2D(int angleDegree, double interfaceThickness)
     NuTo::DofNode nd3(Eigen::Vector2d::Zero());
     NuTo::InterpolationQuadLinear interpolation;
 
-    NuTo::ElementCollectionFem element({{n0, n1, n2, n3}, interpolation});
+    NuTo::CoordinateElementFem cElm{{n0, n1, n2, n3}, interpolation};
+    NuTo::ElementCollectionFem element(cElm);
     NuTo::DofType d("Displ", 2);
     element.AddDofElement(d, {{nd0, nd1, nd2, nd3}, interpolation});
 
