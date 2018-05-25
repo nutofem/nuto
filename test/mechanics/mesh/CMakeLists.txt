@@ -1,4 +1,5 @@
 add_unit_test(MeshFem
+    mechanics/mesh/GeometryMeshFem
     mechanics/interpolation/InterpolationTrussLinear.cpp
     mechanics/interpolation/InterpolationTriangleLinear.cpp
     mechanics/interpolation/InterpolationQuadLinear.cpp
