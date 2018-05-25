@@ -53,19 +53,7 @@ CoordinateNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* 
 
 Group<CoordinateNode> MeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/, double tol /* = 1.e-10 */)
 {
-    Group<CoordinateNode> group;
-    const int directionComponent = ToComponentIndex(direction);
-    for (auto& element : this->Elements)
-    {
-        auto& coordinateElement = element.CoordinateElement();
-        for (int iNode = 0; iNode < coordinateElement.GetNumNodes(); ++iNode)
-        {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetCoordinates();
-            if (std::abs(globalNodeCoords[directionComponent] - axisOffset) < tol)
-                group.Add(coordinateElement.GetNode(iNode));
-        }
-    }
-    return group;
+    return mGeometryMesh.NodesAtAxis(direction, axisOffset, tol);
 }
 
 Group<DofNode> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, double axisOffset /* = 0.*/,
@@ -94,11 +82,7 @@ Group<DofNode> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, doubl
 
 Group<CoordinateNode> MeshFem::NodesTotal()
 {
-    Group<CoordinateNode> group;
-    for (auto& element : this->Elements)
-        for (int iNode = 0; iNode < element.CoordinateElement().Interpolation().GetNumNodes(); ++iNode)
-            group.Add(element.CoordinateElement().GetNode(iNode));
-    return group;
+    return mGeometryMesh.NodesTotal();
 }
 
 Group<DofNode> MeshFem::NodesTotal(DofType d)
