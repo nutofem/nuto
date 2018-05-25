@@ -43,7 +43,7 @@ public:
                 cells, TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<3>::Gradient));
         mFunctions.AddHessian0Function(
                 cells, TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<3>::Hessian0));
-        mSolver.SetQuiet();
+        // mSolver.SetQuiet();
         mSolver.SetConstraints(constraints);
     }
 
