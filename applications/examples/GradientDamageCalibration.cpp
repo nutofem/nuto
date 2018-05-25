@@ -60,24 +60,25 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     gdm.mKappas.row(cells.Size() / 2) = Eigen::VectorXd::Constant(nIp, 3 * k0);
     gdm.mKappas.row(cells.Size() / 2 + 1) = Eigen::VectorXd::Constant(nIp, 3 * k0);
 
+    std::vector<DofType> dofTypes;
+    dofTypes.push_back(d);
+    dofTypes.push_back(eeq);
+
     TimeDependentProblem equations(&mesh);
     equations.AddGradientFunction(cells, TimeDependentProblem::Bind(gdm, &TGdm::Gradient));
     equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &TGdm::Hessian0));
     equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &TGdm::Update));
+    DofVector<double> X = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
 
-    std::vector<DofType> dofTypes;
-    dofTypes.push_back(d);
-    dofTypes.push_back(eeq);
 
     DofContainer<int> numTotalDofs;
     DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
     numTotalDofs.Insert(d, dofInfo.numDependentDofs[d] + dofInfo.numIndependentDofs[d]);
     numTotalDofs.Insert(eeq, dofInfo.numDependentDofs[eeq] + dofInfo.numIndependentDofs[eeq]);
-
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
-    QuasistaticSolver problem;
-    problem.SetQuiet();
+    QuasistaticSolver problem(X);
+    //    problem.SetQuiet();
     // problem.mTolerance = 1.e-6;
     // problem.SetConstraints(constraints);
 
@@ -85,11 +86,11 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
 
     auto loadDispFileName = "CalibrationLD.dat";
     std::ofstream loadDisplacement(loadDispFileName);
-    auto doStep = [&](double t) { return problem.DoStep(t, "MumpsLU"); };
-    auto postProcessF = [&](double) { problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}); };
+    auto doStep = [&](double t) { return problem.DoStep(equations, reducedSolutionSpaceOperator, t, "MumpsLU"); };
+    auto postProcessF = [&](double) { problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}, equations); };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
-    adaptiveSolve.SetQuiet();
+    //    adaptiveSolve.SetQuiet();
     adaptiveSolve.dt = 0.01;
     adaptiveSolve.dtMin = 1.e-10;
     adaptiveSolve.dtMax = 0.01;

@@ -22,21 +22,22 @@ NewtonCallBack::NewtonCallBack(TimeDependentProblem& s, ReducedSolutionSpace& re
 {
 }
 
-DofVector<double> NewtonCallBack::Residual(double globalTime, double timeStep)
+DofVector<double> NewtonCallBack::Residual(const DofVector<double>& u, double globalTime, double timeStep)
 {
-    return mProblem.Gradient(mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
+    return mProblem.Gradient(u, mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
 }
 
 
-DofMatrixSparse<double> NewtonCallBack::Derivative(double globalTime, double timeStep)
+DofMatrixSparse<double> NewtonCallBack::Derivative(const DofVector<double>& u, double globalTime, double timeStep)
 {
-    return mProblem.Hessian0(mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
+    return mProblem.Hessian0(u, mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
 }
 
-void NewtonCallBack::Update(const DofVector<double>& state, double globalTime, double timeStep)
+void NewtonCallBack::UpdateHistory(const DofVector<double>& u, double globalTime, double timeStep)
 {
-    mProblem.Update(state, mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
+    mProblem.UpdateHistory(u, mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
 }
+
 
 double NewtonCallBack::Norm(const DofVector<double>& residual) const
 {
@@ -68,9 +69,9 @@ void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType,
      * constraints for t + dt + dt.
      * keep in mind that the gradient is not the residual, since constraint dofs do not have a non-vanishing gradient
 */
-    auto residual = problem.Gradient(problem.GetDofState(), {dofType}, mGlobalTime - mTimeStep, mTimeStep);
+    auto residual = problem.Gradient(mX, {dofType}, mGlobalTime - mTimeStep, mTimeStep);
 
-    double dofMean = boost::accumulate(problem.GetDofState()(dofType, dofNumbers), 0.) / dofNumbers.size();
+    double dofMean = boost::accumulate(mX(dofType, dofNumbers), 0.) / dofNumbers.size();
     double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
 
     out << mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';
@@ -81,13 +82,13 @@ void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType,
 DofVector<double> QuasistaticSolver::TrialState(double newGlobalTime, NewtonCallBack& problem, std::string solverType)
 {
     // compute hessian for last converged time step
-    auto hessian0 = problem.Derivative(mGlobalTime, mTimeStep);
+    auto hessian0 = problem.Derivative(mX, mGlobalTime, mTimeStep);
 
     // update time step
     double newTimeStep = newGlobalTime - mGlobalTime;
 
     // compute residual for new time step (in particular, these are changing external forces)
-    auto gradient = problem.Residual(newGlobalTime, newTimeStep);
+    auto gradient = problem.Residual(mX, newGlobalTime, newTimeStep);
 
     Eigen::SparseMatrix<double> K_full = ToEigen(hessian0, problem.GetReducedSolutionSpaceOperator().GetDofTypes());
     Eigen::VectorXd f_full = ToEigen(gradient, problem.GetReducedSolutionSpaceOperator().GetDofTypes());
@@ -105,7 +106,7 @@ DofVector<double> QuasistaticSolver::TrialState(double newGlobalTime, NewtonCall
     DofVector<double> result = gradient;
     FromEigen(u, gradient.DofTypes(), &result);
 
-    DofVector<double> trialU = problem.GetProblem().GetDofState() - result;
+    DofVector<double> trialU = mX - result;
 
     return trialU;
 }
@@ -137,8 +138,9 @@ int QuasistaticSolver::DoStep(TimeDependentProblem& problem, ReducedSolutionSpac
     if (newtonCallBack.Norm(tmpX) > 1.e10)
         throw NewtonRaphson::NoConvergence("", "floating point exception");
 
-    newtonCallBack.Update(tmpX, mGlobalTime + mTimeStep, mTimeStep);
+    newtonCallBack.UpdateHistory(tmpX, mGlobalTime + mTimeStep, mTimeStep);
     mGlobalTime = newGlobalTime;
+    mX = tmpX;
 
     return numIterations;
 }

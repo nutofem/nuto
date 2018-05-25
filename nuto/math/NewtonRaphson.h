@@ -66,8 +66,7 @@ auto Solve(TNonlinearProblem&& problem, TX&& x0, double globalTime, double timeS
            TLineSearchAlgorithm&& lineSearch = NoLineSearch(), int* numIterations = nullptr)
 {
     auto x = x0;
-    auto r = problem.Residual(globalTime, timeStep);
-
+    auto r = problem.Residual(x, globalTime, timeStep);
     int iteration = 0;
     problem.Info(iteration, x, r);
 
@@ -76,7 +75,7 @@ auto Solve(TNonlinearProblem&& problem, TX&& x0, double globalTime, double timeS
 
     while (iteration < maxIterations)
     {
-        auto dr = problem.Derivative(globalTime, timeStep);
+        auto dr = problem.Derivative(x, globalTime, timeStep);
 
         auto K_full = ToEigen(dr, problem.GetReducedSolutionSpaceOperator().GetDofTypes());
         auto f_full = ToEigen(r, problem.GetReducedSolutionSpaceOperator().GetDofTypes());

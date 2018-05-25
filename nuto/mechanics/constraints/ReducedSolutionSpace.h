@@ -55,7 +55,7 @@ public:
     //! @param dofVector ... actual state of the system
     //! @param time ... in order to verify consistent initial conditions (constraint equations are fulfilled)
     //! @return vector ... with only the independent dofs
-    Eigen::VectorXd ToReducedBasis(const DofVector<double>& dofVector, double time) const;
+    Eigen::VectorXd ToReducedBasis(const DofVector<double>& dofVector) const;
 
     const std::vector<DofType>& GetDofTypes() const
     {

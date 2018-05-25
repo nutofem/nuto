@@ -11,12 +11,6 @@ ReducedSolutionSpace::ReducedSolutionSpace(const std::vector<DofType>& dofTypes,
     , mNumTotalDofs(numTotalDofs)
     , mConstraints(constraints)
 {
-    //        mConstraints = constraints;
-    //        if (mX[mDofs.front()].rows() == 0)
-    //          mX = mProblem.RenumberDofs(constraints, mDofs, DofVector<double>());
-    //        else
-    //            mX = mProblem.RenumberDofs(constraints, mDofs, mX);
-
     DofMatrixSparse<double> mCmatUnit;
 
     for (auto dofI : mDofTypes)
@@ -58,6 +52,8 @@ DofVector<double> ReducedSolutionSpace::ToDofVector(const Eigen::VectorXd& full,
 {
     DofVector<double> dofVectorNew(dofVector);
     dofVectorNew[mDofTypes[0]] = full;
+
+    return dofVectorNew;
 }
 
 Eigen::VectorXd ReducedSolutionSpace::DeltaFull(const Eigen::VectorXd& independent,
@@ -79,7 +75,7 @@ Eigen::VectorXd ReducedSolutionSpace::DeltaFullRhs(double timeOld, double timeNe
     return ToEigen(deltaBrhs, mDofTypes);
 }
 
-Eigen::VectorXd ReducedSolutionSpace::ToReducedBasis(const DofVector<double>& dofVector, double time) const
+Eigen::VectorXd ReducedSolutionSpace::ToReducedBasis(const DofVector<double>& dofVector) const
 {
     return mCmatUnitSparse * dofVector[mDofTypes[0]];
 }

@@ -25,8 +25,8 @@ public:
 
     TimeDependentProblem(MeshFem* rMesh);
 
-    void RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
-                      DofVector<double> oldDofValues);
+    DofVector<double> RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
+                                   DofVector<double> oldDofValues);
 
     void AddGradientFunction(Group<CellInterface> group, GradientFunction f);
     void AddHessian0Function(Group<CellInterface> group, HessianFunction f);
@@ -36,20 +36,7 @@ public:
     DofMatrixSparse<double> Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
                                      double dt);
 
-    DofVector<double> Gradient(std::vector<DofType> dofs, double t, double dt);
-    DofMatrixSparse<double> Hessian0(std::vector<DofType> dofs, double t, double dt);
-
-    void Update(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
-
-    const DofVector<double>& GetDofState() const
-    {
-        return mX;
-    }
-
-    void SetDofState(const DofVector<double>& dofVector)
-    {
-        mX = dofVector;
-    }
+    void UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt);
 
 private:
     SimpleAssembler mAssembler;

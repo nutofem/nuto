@@ -53,7 +53,9 @@ public:
         mEquations.AddGradientFunction(mCellGroup, Gradient);
         mEquations.AddHessian0Function(mCellGroup, Hessian0);
         mEquations.AddUpdateFunction(mCellGroup, UpdateHistory);
-        mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
+        DofVector<double> X = mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
+
+        mProblem = QuasistaticSolver(X);
 
         DofContainer<int> numTotalDofs;
         DofInfo dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, constraints);

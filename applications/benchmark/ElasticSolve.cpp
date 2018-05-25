@@ -50,7 +50,9 @@ public:
         numTotalDofs.Insert(mDof, dofInfo.numDependentDofs[mDof] + dofInfo.numIndependentDofs[mDof]);
         mReducedSolutionSpaceOperator = ReducedSolutionSpace(dofTypes, numTotalDofs, constraints);
 
-        mSolver.SetQuiet();
+        DofVector<double> X = mFunctions.RenumberDofs(constraints, dofTypes, DofVector<double>());
+        mSolver = QuasistaticSolver(X);
+        //        mSolver.SetQuiet();
     }
 
     void Solve(std::string solverString)

@@ -17,11 +17,11 @@ public:
 
     //! evaluates the residual R(u), part of NuTo::NewtonRaphson::Problem
     //! @param u independent dof values
-    DofVector<double> Residual(double globalTime, double timeStep);
+    DofVector<double> Residual(const DofVector<double>& u, double globalTime, double timeStep);
 
     //! evaluates the derivative dR/dx, part of NuTo::NewtonRaphson::Problem
     //! @param u independent dof values
-    DofMatrixSparse<double> Derivative(double globalTime, double timeStep);
+    DofMatrixSparse<double> Derivative(const DofVector<double>& u, double globalTime, double timeStep);
 
     //! evaluates the norm of R, part of NuTo::NewtonRaphson::Problem
     //! @param residual residual vector
@@ -29,7 +29,7 @@ public:
 
     //! calculates and stores the history variables for the state x
     //! @param x independent dof values
-    void Update(const DofVector<double>& state, double globalTime, double timeStep);
+    void UpdateHistory(const DofVector<double>& u, double globalTime, double timeStep);
 
     //! prints values during the newton iterations, part of NuTo::NewtonRaphson::Problem
     //! @param r residual residual vector
@@ -59,10 +59,13 @@ private:
 class QuasistaticSolver
 {
 public:
-    //! Ctor
-    //! @param equations system of equations including Gradient(), Hessian0() and UpdateHistory()
-    //! @param dof dof type
     QuasistaticSolver()
+        : mX(DofVector<double>())
+    {
+    }
+
+    QuasistaticSolver(const DofVector<double>& X)
+        : mX(X)
     {
     }
 
@@ -91,6 +94,9 @@ public:
                               TimeDependentProblem& problem);
 
 private:
+    //! @var mX last updated dof state
+    DofVector<double> mX;
+
     double mGlobalTime = 0;
     double mTimeStep = 0;
 };

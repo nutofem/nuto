@@ -41,11 +41,11 @@ public:
         double alpha = 1.;
         int lineSearchStep = 0;
         const auto x0 = *x;
-        const auto previousNorm = problem.Norm(problem.Residual(globalTime, timeStep));
+        const auto previousNorm = problem.Norm(problem.Residual(*x, globalTime, timeStep));
         while (lineSearchStep < mMaxNumLineSearchStep)
         {
             *x = x0 - alpha * dx;
-            *r = problem.Residual(globalTime, timeStep);
+            *r = problem.Residual(*x, globalTime, timeStep);
             const auto trialNorm = problem.Norm(*r);
 
             mInfo(lineSearchStep, alpha, trialNorm);
