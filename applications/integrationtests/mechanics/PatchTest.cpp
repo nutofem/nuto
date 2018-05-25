@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     const InterpolationSimple& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear());
 
     // extract existing nodes
-    Group<CoordinateNode> boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
+    Group<CoordinateNode> boundaryCoordNodes = geoMesh.NodesAtAxis(eDirection::X, 10);
     CoordinateNode& nc1 = *boundaryCoordNodes.begin();
     CoordinateNode& nc2 = *(boundaryCoordNodes.begin() + 1);
 
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
         return Eigen::Vector2d(pressureBC[0] / E * coord[0], -nu * pressureBC[0] / E * coord[1]);
     };
 
-    for (CoordinateNode& node : mesh.NodesTotal())
+    for (CoordinateNode& node : geoMesh.NodesTotal())
     {
         Eigen::VectorXd coord = node.GetCoordinates();
         DofNode& displNode = mesh.NodeAtCoordinate(coord, displ);
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     // ************************************************************************
     auto analyticDisplacementField = [=](Eigen::Vector2d coord) { return Eigen::Vector2d(coord[0] * 0.1, 0); };
 
-    for (auto& node : mesh.NodesTotal())
+    for (auto& node : geoMesh.NodesTotal())
     {
         auto coord = node.GetCoordinates();
         auto& displNode = mesh.NodeAtCoordinate(coord, displ);

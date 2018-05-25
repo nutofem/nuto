@@ -60,10 +60,10 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionCoords)
 
     // selection of coordinate nodes
     {
-        const auto& n = mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3));
+        const auto& n = geoMesh.NodeAtCoordinate(Eigen::Vector2d(0, 3));
         BoostUnitTest::CheckEigenMatrix(n.GetCoordinates(), Eigen::Vector2d(0, 3));
-        BOOST_CHECK_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001)), NuTo::Exception);
-        BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001), 1e-4));
+        BOOST_CHECK_THROW(geoMesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001)), NuTo::Exception);
+        BOOST_CHECK_NO_THROW(geoMesh.NodeAtCoordinate(Eigen::Vector2d(0, 3.00001), 1e-4));
     }
 
 
@@ -95,15 +95,15 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionAxis)
         BOOST_CHECK(group1.Empty());
     }
     {
-        auto& nd0 = mesh.NodeAtCoordinate(Eigen::Vector2d(1, 0));
-        auto& nd1 = mesh.NodeAtCoordinate(Eigen::Vector2d(2, 0));
+        auto& nd0 = geoMesh.NodeAtCoordinate(Eigen::Vector2d(1, 0));
+        auto& nd1 = geoMesh.NodeAtCoordinate(Eigen::Vector2d(2, 0));
 
-        auto group0 = mesh.NodesAtAxis(NuTo::eDirection::Y);
+        auto group0 = geoMesh.NodesAtAxis(NuTo::eDirection::Y);
         BOOST_CHECK_EQUAL(group0.Size(), 2);
         BOOST_CHECK(group0.Contains(nd0));
         BOOST_CHECK(group0.Contains(nd1));
 
-        auto group1 = mesh.NodesAtAxis(NuTo::eDirection::Y, 2.);
+        auto group1 = geoMesh.NodesAtAxis(NuTo::eDirection::Y, 2.);
         BOOST_CHECK(group1.Empty());
     }
 }

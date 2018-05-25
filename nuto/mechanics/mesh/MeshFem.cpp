@@ -46,16 +46,6 @@ DofNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, doub
                           "There is no node for dof type " + dofType.GetName() + " at " + coordsString.str());
 }
 
-CoordinateNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
-{
-    return mGeometryMesh.NodeAtCoordinate(coords, tol);
-}
-
-Group<CoordinateNode> MeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/, double tol /* = 1.e-10 */)
-{
-    return mGeometryMesh.NodesAtAxis(direction, axisOffset, tol);
-}
-
 Group<DofNode> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, double axisOffset /* = 0.*/,
                                     double tol /* = 1.e-10 */)
 {
@@ -78,11 +68,6 @@ Group<DofNode> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, doubl
         }
     }
     return group;
-}
-
-Group<CoordinateNode> MeshFem::NodesTotal()
-{
-    return mGeometryMesh.NodesTotal();
 }
 
 Group<DofNode> MeshFem::NodesTotal(DofType d)
