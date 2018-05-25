@@ -57,15 +57,15 @@ MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
      *              (c) ttitsche :)
      */
     MeshFem mesh(geoMesh);
-    CoordinateNode& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
-    CoordinateNode& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
-    CoordinateNode& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d(10, 10));
-    CoordinateNode& n3 = mesh.CoordinateNodes.Add(Eigen::Vector2d(0, 10));
+    CoordinateNode& n0 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
+    CoordinateNode& n1 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
+    CoordinateNode& n2 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(10, 10));
+    CoordinateNode& n3 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 10));
 
-    CoordinateNode& n4 = mesh.CoordinateNodes.Add(Eigen::Vector2d(2, 2));
-    CoordinateNode& n5 = mesh.CoordinateNodes.Add(Eigen::Vector2d(8, 3));
-    CoordinateNode& n6 = mesh.CoordinateNodes.Add(Eigen::Vector2d(8, 7));
-    CoordinateNode& n7 = mesh.CoordinateNodes.Add(Eigen::Vector2d(4, 7));
+    CoordinateNode& n4 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(2, 2));
+    CoordinateNode& n5 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(8, 3));
+    CoordinateNode& n6 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(8, 7));
+    CoordinateNode& n7 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(4, 7));
 
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 

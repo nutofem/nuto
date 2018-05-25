@@ -78,7 +78,6 @@ public:
 
 public:
     const GeometryMeshFem& mGeometryMesh;
-    ValueVector<CoordinateNode> CoordinateNodes;
     ValueVector<DofNode> Nodes;
     ValueVector<ElementCollectionFem> Elements;
 
