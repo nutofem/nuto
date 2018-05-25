@@ -65,10 +65,21 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     equations.AddHessian0Function(cells, TimeDependentProblem::Bind(gdm, &TGdm::Hessian0));
     equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &TGdm::Update));
 
-    QuasistaticSolver problem(equations, {d, eeq});
+    std::vector<DofType> dofTypes;
+    dofTypes.push_back(d);
+    dofTypes.push_back(eeq);
+
+    DofContainer<int> numTotalDofs;
+    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
+    numTotalDofs.Insert(d, dofInfo.numDependentDofs[d] + dofInfo.numIndependentDofs[d]);
+    numTotalDofs.Insert(eeq, dofInfo.numDependentDofs[eeq] + dofInfo.numIndependentDofs[eeq]);
+
+    ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
+
+    QuasistaticSolver problem;
     problem.SetQuiet();
-    problem.mTolerance = 1.e-6;
-    problem.SetConstraints(constraints);
+    // problem.mTolerance = 1.e-6;
+    // problem.SetConstraints(constraints);
 
     int dofLeft = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L), d).GetDofNumber(0);
 

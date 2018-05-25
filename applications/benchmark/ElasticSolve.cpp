@@ -28,7 +28,6 @@ public:
         , mMomentumBalance(mDof, mElasticLaw)
         , mIntegration(2, eIntegrationMethod::GAUSS)
         , mFunctions(&mMesh)
-        , mSolver(mFunctions, mDof)
     {
         AddDofInterpolation(&mMesh, mDof);
         Group<CellInterface> cells = mCells.AddCells(mMesh.ElementsTotal(), mIntegration);
@@ -43,13 +42,20 @@ public:
                 cells, TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<3>::Gradient));
         mFunctions.AddHessian0Function(
                 cells, TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<3>::Hessian0));
+
+        std::vector<DofType> dofTypes;
+        dofTypes.push_back(mDof);
+        DofContainer<int> numTotalDofs;
+        DofInfo dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, constraints);
+        numTotalDofs.Insert(mDof, dofInfo.numDependentDofs[mDof] + dofInfo.numIndependentDofs[mDof]);
+        mReducedSolutionSpaceOperator = ReducedSolutionSpace(dofTypes, numTotalDofs, constraints);
+
         mSolver.SetQuiet();
-        mSolver.SetConstraints(constraints);
     }
 
     void Solve(std::string solverString)
     {
-        mSolver.DoStep(0, solverString);
+        mSolver.DoStep(mFunctions, mReducedSolutionSpaceOperator, 0, solverString);
     }
 
 private:
@@ -65,6 +71,7 @@ private:
 
     TimeDependentProblem mFunctions;
     QuasistaticSolver mSolver;
+    ReducedSolutionSpace mReducedSolutionSpaceOperator;
 };
 
 static void ElasticSolveMumps(benchmark::State& state)

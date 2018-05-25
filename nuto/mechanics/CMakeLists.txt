@@ -1,6 +1,7 @@
 add_sources(cell/SimpleAssembler.cpp
     constraints/ConstraintCompanion.cpp
     constraints/Constraints.cpp
+    constraints/ReducedSolutionSpace.cpp
     dofs/DofNumbering.cpp
 
     mesh/MeshFem.cpp

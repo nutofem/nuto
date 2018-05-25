@@ -4,11 +4,13 @@
 #include "nuto/math/EigenCompanion.h"
 
 #include "nuto/mechanics/dofs/DofNumbering.h"
+#include "nuto/mechanics/dofs/DofContainer.h"
 
 #include "nuto/mechanics/integrands/MomentumBalance.h"
 #include "nuto/mechanics/integrands/Bind.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/constraints/ConstraintCompanion.h"
+#include "nuto/mechanics/constraints/ReducedSolutionSpace.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/tools/CellStorage.h"
@@ -30,7 +32,6 @@ public:
         , mLaw(m)
         , mMomentumBalance(mDof, mLaw)
         , mEquations(&mMesh)
-        , mProblem(mEquations, mDof)
         , mIntegrationType(2, eIntegrationMethod::GAUSS)
     {
         AddDofInterpolation(&mMesh, mDof);
@@ -38,21 +39,26 @@ public:
         mCellGroup = mCells.AddCells(mMesh.ElementsTotal(), mIntegrationType);
         mLaw.mEvolution.ResizeHistoryData(mCellGroup.Size(), mIntegrationType.GetNumIntegrationPoints());
 
-
         auto Gradient = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Gradient);
         auto Hessian0 = TimeDependentProblem::Bind_dt(mMomentumBalance, &Integrands::MomentumBalance<1>::Hessian0);
         TimeDependentProblem::UpdateFunction UpdateHistory = [&](const CellIpData& cellIpData, double, double dt) {
             mLaw.Update(cellIpData.Apply(mDof, Nabla::Strain()), dt, cellIpData.Ids());
         };
 
+        auto constraints = DefineConstraints(mMesh, mDof);
+
+        std::vector<DofType> dofTypes;
+        dofTypes.push_back(mDof);
+
         mEquations.AddGradientFunction(mCellGroup, Gradient);
         mEquations.AddHessian0Function(mCellGroup, Hessian0);
         mEquations.AddUpdateFunction(mCellGroup, UpdateHistory);
+        mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
 
-        auto constraints = DefineConstraints(mMesh, mDof);
-
-        mProblem.SetConstraints(constraints);
-        mProblem.mTolerance = 1.e-12;
+        DofContainer<int> numTotalDofs;
+        DofInfo dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, constraints);
+        numTotalDofs.Insert(mDof, dofInfo.numDependentDofs[mDof] + dofInfo.numIndependentDofs[mDof]);
+        mReducedSolutionSpaceOperator = ReducedSolutionSpace(dofTypes, numTotalDofs, constraints);
     }
 
     void SetImperfection(double kappaImperfection)
@@ -63,7 +69,9 @@ public:
 
     void Solve(double tEnd)
     {
-        auto doStep = [&](double t) { return mProblem.DoStep(t, "EigenSparseLU"); };
+        auto doStep = [&](double t) {
+            return mProblem.DoStep(mEquations, mReducedSolutionSpaceOperator, t, "EigenSparseLU", 1.e-12);
+        };
         AdaptiveSolve adaptive(doStep);
         adaptive.dt = 0.01;
         adaptive.Solve(tEnd);
@@ -95,6 +103,8 @@ private:
 
     TimeDependentProblem mEquations;
     QuasistaticSolver mProblem;
+
+    ReducedSolutionSpace mReducedSolutionSpaceOperator;
 
     IntegrationTypeTensorProduct<1> mIntegrationType;
     CellStorage mCells;

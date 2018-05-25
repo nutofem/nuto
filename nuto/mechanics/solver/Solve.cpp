@@ -1,5 +1,6 @@
 #include "Solve.h"
 #include "nuto/math/EigenSparseSolve.h"
+#include <Eigen/Eigenvalues>
 #include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
 #include "nuto/mechanics/dofs/DofMatrixSparseConvertEigen.h"
 

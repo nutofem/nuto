@@ -64,10 +64,9 @@ JKNumbering Constraints::GetJKNumbering(DofType dof, int numDofs) const
             throw Exception(__PRETTY_FUNCTION__,
                             "There is no dof numbering for a node in equation" + std::to_string(i) + ".");
         if (globalDofNumber >= numDofs)
-            throw Exception(__PRETTY_FUNCTION__,
-                            "The provided dof number of the dependent term exceeds "
-                            "the total number of dofs in equation " +
-                                    std::to_string(i) + ".");
+            throw Exception(__PRETTY_FUNCTION__, "The provided dof number of the dependent term exceeds "
+                                                 "the total number of dofs in equation " +
+                                                         std::to_string(i) + ".");
         isDofConstrained[globalDofNumber] = true;
         dependentGlobalNumbering(i) = globalDofNumber;
     }

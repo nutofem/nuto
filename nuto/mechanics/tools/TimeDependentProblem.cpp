@@ -8,12 +8,10 @@ TimeDependentProblem::TimeDependentProblem(MeshFem* rMesh)
 {
 }
 
-DofVector<double> TimeDependentProblem::RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
-                                                   DofVector<double> oldDofValues)
+void TimeDependentProblem::RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
+                                        DofVector<double> oldDofValues)
 {
     DofInfo dofInfos;
-
-    DofVector<double> renumberedValues;
 
     for (auto dofType : dofTypes)
     {
@@ -23,12 +21,11 @@ DofVector<double> TimeDependentProblem::RenumberDofs(Constraint::Constraints con
         auto dofInfo = DofNumbering::Build(mMerger.Nodes(dofType), dofType, constraints);
         dofInfos.Merge(dofType, dofInfo);
 
-        renumberedValues[dofType].resize(dofInfo.numIndependentDofs[dofType] + dofInfo.numDependentDofs[dofType]);
+        mX[dofType].resize(dofInfo.numIndependentDofs[dofType] + dofInfo.numDependentDofs[dofType]);
 
-        mMerger.Extract(&renumberedValues, {dofType});
+        mMerger.Extract(&mX, {dofType});
     }
     mAssembler.SetDofInfo(dofInfos);
-    return renumberedValues;
 }
 
 void TimeDependentProblem::AddGradientFunction(Group<CellInterface> group, GradientFunction f)
@@ -53,8 +50,8 @@ TCellInterfaceFunction Apply(TTimeDepFunction& f, double t, double dt)
     return std::bind(f, _1, t, dt);
 }
 
-DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
-                                               double dt)
+DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs,
+                                                 double t, double dt)
 {
     mMerger.Merge(dofValues, dofs);
     DofVector<double> gradient;
@@ -65,7 +62,7 @@ DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofVal
 }
 
 DofMatrixSparse<double> TimeDependentProblem::Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs,
-                                                     double t, double dt)
+                                                       double t, double dt)
 {
     mMerger.Merge(dofValues, dofs);
     DofMatrixSparse<double> hessian0;
@@ -75,10 +72,28 @@ DofMatrixSparse<double> TimeDependentProblem::Hessian0(const DofVector<double>& 
     return hessian0;
 }
 
-void TimeDependentProblem::UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
-                                         double dt)
+DofVector<double> TimeDependentProblem::Gradient(std::vector<DofType> dofs, double t, double dt)
 {
-    mMerger.Merge(dofValues, dofs);
+    DofVector<double> gradient;
+    for (auto& gradientFunction : mGradientFunctions)
+        gradient += mAssembler.BuildVector(gradientFunction.first, dofs,
+                                           Apply<CellInterface::VectorFunction>(gradientFunction.second, t, dt));
+    return gradient;
+}
+
+DofMatrixSparse<double> TimeDependentProblem::Hessian0(std::vector<DofType> dofs, double t, double dt)
+{
+    DofMatrixSparse<double> hessian0;
+    for (auto& hessian0Function : mHessian0Functions)
+        hessian0 += mAssembler.BuildMatrix(hessian0Function.first, dofs,
+                                           Apply<CellInterface::MatrixFunction>(hessian0Function.second, t, dt));
+    return hessian0;
+}
+
+void TimeDependentProblem::Update(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t, double dt)
+{
+    mX = dofValues;
+    mMerger.Merge(mX, dofs);
     for (auto& updateFunction : mUpdateFunctions)
         for (auto& cell : updateFunction.first)
             cell.Apply(Apply<CellInterface::VoidFunction>(updateFunction.second, t, dt));

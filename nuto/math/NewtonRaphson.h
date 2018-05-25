@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Eigen/Sparse>
+#include "nuto/math/EigenSparseSolve.h"
 #include "nuto/base/Exception.h"
 #include "nuto/math/LineSearch.h"
-
+#include "nuto/mechanics/dofs/DofVector.h"
 namespace NuTo
 {
 namespace NewtonRaphson
@@ -59,12 +60,13 @@ auto DefineProblem(TR residual, TDR derivative, TNorm norm, TTol tolerance, TInf
 //! @param maxIterations default = 20
 //! @param lineSearch line search algorithm, default = NoLineSearch, alternatively use NuTo::LineSearch()
 //! @param numIterations optionally returns the number of iterations required
-template <typename TNonlinearProblem, typename TX, typename TSolver, typename TLineSearchAlgorithm = NoLineSearch>
-auto Solve(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterations = 20,
+template <typename TNonlinearProblem, typename TX, typename TLineSearchAlgorithm = NoLineSearch>
+auto Solve(TNonlinearProblem&& problem, TX&& x0, double globalTime, double timeStep,
+           std::string solverType = "EigenSparseLU", int maxIterations = 20,
            TLineSearchAlgorithm&& lineSearch = NoLineSearch(), int* numIterations = nullptr)
 {
     auto x = x0;
-    auto r = problem.Residual(x);
+    auto r = problem.Residual(globalTime, timeStep);
 
     int iteration = 0;
     problem.Info(iteration, x, r);
@@ -74,12 +76,24 @@ auto Solve(TNonlinearProblem&& problem, TX&& x0, TSolver&& solver, int maxIterat
 
     while (iteration < maxIterations)
     {
-        auto dr = problem.Derivative(x);
-        auto dx = solver.Solve(dr, r);
+        auto dr = problem.Derivative(globalTime, timeStep);
+
+        auto K_full = ToEigen(dr, problem.GetReducedSolutionSpaceOperator().GetDofTypes());
+        auto f_full = ToEigen(r, problem.GetReducedSolutionSpaceOperator().GetDofTypes());
+
+        Eigen::SparseMatrix<double> Kmod = problem.GetReducedSolutionSpaceOperator().HessianToReducedBasis(K_full);
+        Eigen::VectorXd fmod = problem.GetReducedSolutionSpaceOperator().GradientToReducedBasis(f_full);
+
+        Eigen::VectorXd u = EigenSparseSolve(Kmod, fmod, solverType);
+        u = problem.GetReducedSolutionSpaceOperator().ToFull(u);
+
+        // TODO: for correct size
+        DofVector<double> dx = r;
+        FromEigen(u, r.DofTypes(), &dx);
 
         ++iteration;
 
-        if (lineSearch(problem, &r, &x, dx))
+        if (lineSearch(problem, &r, &x, dx, globalTime, timeStep))
         {
             if (numIterations)
                 *numIterations = iteration;

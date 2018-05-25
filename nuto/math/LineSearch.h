@@ -36,16 +36,16 @@ public:
     //! @param x value of the argument x, return argument, see remark
     //! @param dx dx from the solver
     template <typename TProblem, typename TX>
-    bool operator()(TProblem&& problem, TX* r, TX* x, TX dx) const
+    bool operator()(TProblem&& problem, TX* r, TX* x, TX dx, double globalTime, double timeStep) const
     {
         double alpha = 1.;
         int lineSearchStep = 0;
         const auto x0 = *x;
-        const auto previousNorm = problem.Norm(problem.Residual(*x));
+        const auto previousNorm = problem.Norm(problem.Residual(globalTime, timeStep));
         while (lineSearchStep < mMaxNumLineSearchStep)
         {
             *x = x0 - alpha * dx;
-            *r = problem.Residual(*x);
+            *r = problem.Residual(globalTime, timeStep);
             const auto trialNorm = problem.Norm(*r);
 
             mInfo(lineSearchStep, alpha, trialNorm);
