@@ -13,14 +13,11 @@ InterpolationSimple& GeometryMeshFem::CreateInterpolation(const InterpolationSim
 
 CoordinateNode& GeometryMeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
 {
-    for (auto& coordinateElement : this->Elements)
+    for (auto& node : this->CoordinateNodes)
     {
-        for (int iNode = 0; iNode < coordinateElement.Interpolation().GetNumNodes(); ++iNode)
-        {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetCoordinates();
-            if ((globalNodeCoords - coords).isMuchSmallerThan(tol, 1))
-                return coordinateElement.GetNode(iNode);
-        }
+        Eigen::VectorXd globalNodeCoords = node.GetCoordinates();
+        if ((globalNodeCoords - coords).isMuchSmallerThan(tol, 1))
+            return node;
     }
     std::stringstream coordsString;
     coordsString << coords.transpose();
@@ -32,14 +29,11 @@ Group<CoordinateNode> GeometryMeshFem::NodesAtAxis(eDirection direction, double 
 {
     Group<CoordinateNode> group;
     const int directionComponent = ToComponentIndex(direction);
-    for (auto& coordinateElement : this->Elements)
+    for (auto& node : this->CoordinateNodes)
     {
-        for (int iNode = 0; iNode < coordinateElement.GetNumNodes(); ++iNode)
-        {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetCoordinates();
-            if (std::abs(globalNodeCoords[directionComponent] - axisOffset) < tol)
-                group.Add(coordinateElement.GetNode(iNode));
-        }
+        Eigen::VectorXd globalNodeCoords = node.GetCoordinates();
+        if (std::abs(globalNodeCoords[directionComponent] - axisOffset) < tol)
+            group.Add(node);
     }
     return group;
 }
@@ -47,9 +41,8 @@ Group<CoordinateNode> GeometryMeshFem::NodesAtAxis(eDirection direction, double 
 Group<CoordinateNode> GeometryMeshFem::NodesTotal()
 {
     Group<CoordinateNode> group;
-    for (auto& coordinateElement : this->Elements)
-        for (int iNode = 0; iNode < coordinateElement.Interpolation().GetNumNodes(); ++iNode)
-            group.Add(coordinateElement.GetNode(iNode));
+    for (auto& node : this->CoordinateNodes)
+        group.Add(node);
     return group;
 }
 
