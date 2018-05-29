@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "nuto/base/Exception.h"
 #include "nuto/mechanics/nodes/CoordinateNode.h"
 #include "nuto/mechanics/elements/ElementInterface.h"
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
@@ -20,7 +21,8 @@ public:
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
-    CoordinateElementFem(std::initializer_list<std::reference_wrapper<CoordinateNode>> nodes, const InterpolationSimple& interpolation)
+    CoordinateElementFem(std::initializer_list<std::reference_wrapper<CoordinateNode>> nodes,
+                         const InterpolationSimple& interpolation)
         : mNodes(nodes)
         , mInterpolation(interpolation)
         , mShape(interpolation.GetShape())
@@ -62,7 +64,7 @@ public:
 
     Eigen::VectorXi GetDofNumbering() const override
     {
-        assert(false && "Coordinate nodes have no dof numbering");
+        throw Exception(__PRETTY_FUNCTION__, "Coordinate nodes have no dof numbering");
     }
 
     virtual int GetNumNodes() const override
