@@ -1,5 +1,8 @@
 add_unit_test(ElementIga)
-add_unit_test(ElementFem
+add_unit_test(DofElementFem
+    mechanics/interpolation/InterpolationTriangleLinear.cpp
+    )
+add_unit_test(CoordinateElementFem
     mechanics/interpolation/InterpolationTriangleLinear.cpp
     )
 add_unit_test(ElementCollection

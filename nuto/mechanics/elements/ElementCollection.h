@@ -1,7 +1,8 @@
 #pragma once
 #include "nuto/mechanics/elements/ElementInterface.h"
 #include "nuto/mechanics/dofs/DofContainer.h"
-#include "nuto/mechanics/elements/ElementFem.h"
+#include "nuto/mechanics/elements/CoordinateElementFem.h"
+#include "nuto/mechanics/elements/DofElementFem.h"
 #include "nuto/mechanics/elements/ElementIga.h"
 
 namespace NuTo
@@ -119,11 +120,6 @@ using ElementCollectionIga = ElementCollectionImpl<NuTo::ElementIga<TDimParamete
 class ElementCollectionFem : public ElementCollection
 {
 public:
-    static_assert(std::is_base_of<ElementInterface, CoordinateElementFem>::value,
-                  "TElement must be a descendant of ElementInterface");
-    static_assert(std::is_base_of<ElementInterface, DofElementFem>::value,
-                  "TElement must be a descendant of ElementInterface");
-
     ElementCollectionFem(CoordinateElementFem& coordinateElement)
         : mCoordinateElement(coordinateElement)
         , mShape(coordinateElement.GetShape())

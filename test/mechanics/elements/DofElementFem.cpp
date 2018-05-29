@@ -1,7 +1,7 @@
 #include "BoostUnitTest.h"
 #include <type_traits>
 
-#include "nuto/mechanics/elements/ElementFem.h"
+#include "nuto/mechanics/elements/DofElementFem.h"
 #include "nuto/mechanics/interpolation/InterpolationTriangleLinear.h"
 
 
