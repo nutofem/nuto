@@ -16,8 +16,8 @@ class ElementCollection
 {
 public:
     virtual ~ElementCollection() = default;
-    virtual const ElementInterface& CoordinateElement() const = 0;
-    virtual const ElementInterface& DofElement(DofType) const = 0;
+    virtual const CoordinateElementInterface& CoordinateElement() const = 0;
+    virtual const DofElementInterface& DofElement(DofType) const = 0;
     virtual const Shape& GetShape() const = 0;
 };
 
@@ -28,14 +28,17 @@ public:
 //! semantics. Additionally, the compiler is free to eliminate all the copies (whenever that is the right thing to do).
 //! The access to the underlying elements is provided via const-reference. This reference is implicitly casted to the
 //! base class ElementInterface.
-template <typename TElement>
+template <typename TCoordinateElement, typename TDofElement>
 class ElementCollectionImpl : public ElementCollection
 {
 public:
-    static_assert(std::is_base_of<ElementInterface, TElement>::value,
-                  "TElement must be a descendant of ElementInterface");
+    static_assert(std::is_base_of<DofElementInterface, TDofElement>::value,
+                  "TElement must be a descendant of DofElementInterface");
 
-    ElementCollectionImpl(TElement coordinateElement)
+    static_assert(std::is_base_of<DofElementInterface, TDofElement>::value,
+                  "TElement must be a descendant of CoordinateElementInterface");
+
+    ElementCollectionImpl(TCoordinateElement coordinateElement)
         : mCoordinateElement(coordinateElement)
         , mShape(coordinateElement.GetShape())
     {
@@ -44,7 +47,7 @@ public:
     //! @brief adds a dof element to the collection
     //! @param dofType dof type
     //! @param dofElement element to add
-    void AddDofElement(DofType dofType, TElement dofElement)
+    void AddDofElement(DofType dofType, TDofElement dofElement)
     {
         mDofElements.Insert(dofType, dofElement);
         // The alternative implementation with
@@ -58,7 +61,7 @@ public:
     //! @brief Getter for CoordinateElement
     //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
     //! ElementCollection
-    const TElement& CoordinateElement() const override
+    const TCoordinateElement& CoordinateElement() const override
     {
         return mCoordinateElement;
     }
@@ -66,7 +69,7 @@ public:
     //! @brief nonconst Getter for CoordinateElement
     //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
     //! ElementCollection
-    TElement& CoordinateElement()
+    TCoordinateElement& CoordinateElement()
     {
         return mCoordinateElement;
     }
@@ -75,7 +78,7 @@ public:
     //! @param dofType dof type
     //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
     //! ElementCollection
-    const TElement& DofElement(DofType dofType) const override
+    const TDofElement& DofElement(DofType dofType) const override
     {
         return mDofElements[dofType];
     }
@@ -84,7 +87,7 @@ public:
     //! @param dofType dof type
     //! @return reference to TElement. This is implicitly casted to a reference ElementInterface when accessed via
     //! ElementCollection
-    TElement& DofElement(DofType dofType)
+    TDofElement& DofElement(DofType dofType)
     {
         return mDofElements.At(dofType);
     }
@@ -100,15 +103,15 @@ public:
     }
 
 private:
-    TElement mCoordinateElement;
-    DofContainer<TElement> mDofElements;
+    TCoordinateElement mCoordinateElement;
+    DofContainer<TDofElement> mDofElements;
     const Shape& mShape;
 };
 
 // using ElementCollectionFem = ElementCollectionImpl<NuTo::DofElementFem>;
 
 template <int TDimParameter>
-using ElementCollectionIga = ElementCollectionImpl<NuTo::ElementIga<TDimParameter>>;
+using ElementCollectionIga = ElementCollectionImpl<NuTo::ElementIga<TDimParameter>, NuTo::ElementIga<TDimParameter>>;
 
 
 //! @brief implementation of the interface ElementCollection for ElementFem (uses different element types for dofs and

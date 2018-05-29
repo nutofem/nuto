@@ -2,13 +2,13 @@
 
 #include <vector>
 #include "nuto/mechanics/nodes/DofNode.h"
-#include "nuto/mechanics/elements/ElementInterface.h"
+#include "nuto/mechanics/elements/DofElementInterface.h"
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "nuto/mechanics/cell/Matrix.h"
 
 namespace NuTo
 {
-class DofElementFem : public ElementInterface
+class DofElementFem : public DofElementInterface
 {
 public:
     DofElementFem(std::vector<DofNode*> nodes, const InterpolationSimple& interpolation)
@@ -20,7 +20,8 @@ public:
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
-    DofElementFem(std::initializer_list<std::reference_wrapper<DofNode>> nodes, const InterpolationSimple& interpolation)
+    DofElementFem(std::initializer_list<std::reference_wrapper<DofNode>> nodes,
+                  const InterpolationSimple& interpolation)
         : mNodes(nodes)
         , mInterpolation(interpolation)
         , mShape(interpolation.GetShape())

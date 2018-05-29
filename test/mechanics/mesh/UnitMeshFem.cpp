@@ -10,7 +10,7 @@ void CheckJacobians(NuTo::GeometryMeshFem& mesh)
     for (auto& element : mesh.Elements)
     {
         auto d_dxi = element.GetDerivativeShapeFunctions(ip);
-        auto x = element.ExtractNodeValues();
+        auto x = element.ExtractCoordinates();
         auto J = NuTo::Jacobian(x, d_dxi);
         BOOST_CHECK_GT(J.Det(), 0.);
     }
@@ -98,18 +98,18 @@ BOOST_AUTO_TEST_CASE(MeshValidAfterTransform)
     expected << 0, 0, 1, 0, 1, 1, 0, 1;
 
     auto& coordinateElement = mesh.Elements[0];
-    BoostUnitTest::CheckEigenMatrix(coordinateElement.ExtractNodeValues(), expected);
+    BoostUnitTest::CheckEigenMatrix(coordinateElement.ExtractCoordinates(), expected);
 
     auto f = [](Eigen::VectorXd coords) { return Eigen::Vector2d(coords[0] * 4, coords[1] * 42); };
 
     NuTo::GeometryMeshFem transformedMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
     auto& transformedCoordinateElement = transformedMesh.Elements[0];
     expected << 0, 0, 4, 0, 4, 42, 0, 42;
-    BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
+    BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractCoordinates(), expected);
 
     transformedMesh.CoordinateNodes[0].SetCoordinate(0, 6174);
     expected << 6174, 0, 4, 0, 4, 42, 0, 42;
-    BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
+    BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractCoordinates(), expected);
 }
 
 // This test is related to our github issue #148. Visit github to read about the details

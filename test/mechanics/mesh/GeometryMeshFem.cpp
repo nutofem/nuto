@@ -24,15 +24,15 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
     NuTo::GeometryMeshFem mesh = DummyMesh();
 
     auto& e0 = mesh.Elements[0];
-    BoostUnitTest::CheckVector(e0.ExtractNodeValues(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
+    BoostUnitTest::CheckVector(e0.ExtractCoordinates(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
 
     mesh.CoordinateNodes[0].SetCoordinate(0, 4);
-    BoostUnitTest::CheckVector(e0.ExtractNodeValues(), std::vector<double>({4, 0, 2, 0, 0, 3}), 6);
+    BoostUnitTest::CheckVector(e0.ExtractCoordinates(), std::vector<double>({4, 0, 2, 0, 0, 3}), 6);
 
     NuTo::GeometryMeshFem meshMoved = std::move(mesh);
     meshMoved.CoordinateNodes[0].SetCoordinate(0, 42);
     auto& e0FromMove = meshMoved.Elements[0];
-    BoostUnitTest::CheckVector(e0FromMove.ExtractNodeValues(), std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
+    BoostUnitTest::CheckVector(e0FromMove.ExtractCoordinates(), std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
 }
 
 BOOST_AUTO_TEST_CASE(MeshNodeSelectionCoords)

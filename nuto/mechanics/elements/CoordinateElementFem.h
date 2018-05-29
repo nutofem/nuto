@@ -3,13 +3,13 @@
 #include <vector>
 #include "nuto/base/Exception.h"
 #include "nuto/mechanics/nodes/CoordinateNode.h"
-#include "nuto/mechanics/elements/ElementInterface.h"
+#include "nuto/mechanics/elements/CoordinateElementInterface.h"
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "nuto/mechanics/cell/Matrix.h"
 
 namespace NuTo
 {
-class CoordinateElementFem : public ElementInterface
+class CoordinateElementFem : public CoordinateElementInterface
 {
 public:
     CoordinateElementFem(std::vector<CoordinateNode*> nodes, const InterpolationSimple& interpolation)
@@ -30,11 +30,8 @@ public:
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
-    virtual Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
+    virtual Eigen::VectorXd ExtractCoordinates() const override
     {
-        // Solve this later, by using type traits
-        assert(instance == 0 && "Coordinate nodes can have only 1 instance");
-
         const int dim = GetDofDimension();
         Eigen::VectorXd nodeValues(GetNumNodes() * dim);
         for (int i = 0; i < GetNumNodes(); ++i)
@@ -60,11 +57,6 @@ public:
     virtual int GetDofDimension() const override
     {
         return GetNode(0).GetNumValues();
-    }
-
-    Eigen::VectorXi GetDofNumbering() const override
-    {
-        throw Exception(__PRETTY_FUNCTION__, "Coordinate nodes have no dof numbering");
     }
 
     virtual int GetNumNodes() const override

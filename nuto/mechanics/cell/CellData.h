@@ -27,7 +27,7 @@ public:
 
     Eigen::VectorXd GetCoordinates() const
     {
-        return mElements.CoordinateElement().ExtractNodeValues();
+        return mElements.CoordinateElement().ExtractCoordinates();
     }
 
     const Eigen::VectorXd& GetNodeValues(DofType dofType, int instance = 0) const

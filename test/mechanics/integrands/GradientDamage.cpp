@@ -20,7 +20,7 @@ void CheckHessian0(ElementCollectionFem& element, Integrands::GradientDamage<1>&
 
     CellData cellData(element, 0);
     Eigen::VectorXd ip = Eigen::Vector2d::Ones() * 0.67124;
-    Jacobian jac(element.CoordinateElement().ExtractNodeValues(),
+    Jacobian jac(element.CoordinateElement().ExtractCoordinates(),
                  element.CoordinateElement().GetDerivativeShapeFunctions(ip));
 
     CellIpData cipd(cellData, jac, ip, 0);

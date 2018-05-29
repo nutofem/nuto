@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc1Din2D)
     Integrands::NeumannBc<2> neumannIntegrand(dof, p);
 
     CellData cellData(element, cellID);
-    Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
+    Jacobian dummyJac(element.CoordinateElement().ExtractCoordinates(), // jacobian not needed for N.
                       element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(1, 0.)));
 
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(NeumannBc2Din3D)
     Integrands::NeumannBc<3> neumannIntegrand(dof, p);
 
     CellData cellData(element, cellID);
-    Jacobian dummyJac(element.CoordinateElement().ExtractNodeValues(), // jacobian not needed for N.
+    Jacobian dummyJac(element.CoordinateElement().ExtractCoordinates(), // jacobian not needed for N.
                       element.CoordinateElement().GetDerivativeShapeFunctions(Eigen::VectorXd::Constant(2, 1, 0.)));
 
     std::vector<Eigen::Vector2d> points;
