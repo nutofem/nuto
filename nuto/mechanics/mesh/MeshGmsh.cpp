@@ -85,7 +85,7 @@ void ExpectNextLineToBe(std::ifstream& rFile, std::string expected)
 // Helper functions (cpp only)
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-void CheckJacobian(NuTo::ElementFem& elm)
+void CheckJacobian(NuTo::CoordinateElementFem& elm)
 {
     int n = elm.GetDofDimension();
     NuTo::Jacobian jac(elm.ExtractNodeValues(), elm.GetDerivativeShapeFunctions(Eigen::VectorXd::Zero(n)));
@@ -494,7 +494,7 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
         auto elementNodes = GetElementNodes(nodePtrs, gmshElement);
 
         NuTo::CoordinateElementFem& element = mMesh.Elements.Add({elementNodes, *(interpolationIter->second)});
-        CheckJacobian(element.CoordinateElement());
+        CheckJacobian(element);
         AddElementToPhysicalGroup(fileContent, element, gmshElement.tags[0]);
     }
 }
