@@ -33,11 +33,11 @@ template <typename TCoordinateElement, typename TDofElement>
 class ElementCollectionImpl : public ElementCollection
 {
 public:
-    static_assert(std::is_base_of<DofElementInterface, TDofElement>::value,
-                  "TElement must be a descendant of DofElementInterface");
+    static_assert(std::is_base_of<CoordinateElementInterface, TCoordinateElement>::value,
+                  "TCoordinateElement must be a descendant of CoordinateElementInterface");
 
     static_assert(std::is_base_of<DofElementInterface, TDofElement>::value,
-                  "TElement must be a descendant of CoordinateElementInterface");
+                  "TDofElement must be a descendant of DofElementInterface");
 
     ElementCollectionImpl(TCoordinateElement coordinateElement)
         : mCoordinateElement(coordinateElement)
