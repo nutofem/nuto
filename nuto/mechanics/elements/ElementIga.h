@@ -31,8 +31,7 @@ public:
     }
 
     //! @brief extracts all node values of this element
-    //! @remark virtual to make it testable
-    virtual Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
+    Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
     {
         return NurbsGeometry().GetControlPointsElement(mKnotIDs, instance);
     }
