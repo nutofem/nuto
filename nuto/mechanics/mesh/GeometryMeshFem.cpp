@@ -19,9 +19,9 @@ CoordinateNode& GeometryMeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double
         if ((globalNodeCoords - coords).isMuchSmallerThan(tol, 1))
             return node;
     }
-    std::stringstream coordsString;
-    coordsString << coords.transpose();
-    throw NuTo::Exception(__PRETTY_FUNCTION__, "There is no coordinate node at " + coordsString.str());
+    std::stringstream message;
+    message << "There is no coordinate node at " << coords.transpose();
+    throw NuTo::Exception(__PRETTY_FUNCTION__, message.str());
 }
 
 Group<CoordinateNode> GeometryMeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/,

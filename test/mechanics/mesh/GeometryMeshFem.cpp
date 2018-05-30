@@ -65,3 +65,12 @@ BOOST_AUTO_TEST_CASE(MeshNodeSelectionAxis)
         BOOST_CHECK(group1.Empty());
     }
 }
+
+BOOST_AUTO_TEST_CASE(MeshSelectTotal)
+{
+    NuTo::GeometryMeshFem mesh = DummyMesh();
+    auto nodes = mesh.NodesTotal();
+    BOOST_CHECK_EQUAL(nodes.Size(), 3);
+    auto elements = mesh.ElementsTotal();
+    BOOST_CHECK_EQUAL(elements.Size(), 1);
+}
