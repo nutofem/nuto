@@ -139,6 +139,13 @@ Group<T> Unite(const Group<T>& one, const Group<T>& two)
     return newGroup;
 }
 
+//! @brief Unite multiple groups
+template <typename T, typename... TArgs>
+Group<T> Unite(const Group<T>& one, const TArgs&... args)
+{
+    return Unite(one, Unite(args...));
+}
+
 //! @brief Returns group with elements of group one that are not in group two
 template <typename T>
 Group<T> Difference(const Group<T>& one, const Group<T>& two)
@@ -160,6 +167,7 @@ Group<T> Intersection(const Group<T>& one, const Group<T>& two)
             newGroup.Add(t);
     return newGroup;
 }
+
 
 //! @brief Returns group with elements that are only in one group not in both
 template <typename T>

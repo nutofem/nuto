@@ -74,6 +74,35 @@ BOOST_FIXTURE_TEST_CASE(unionTest, GroupTestFixture)
     BOOST_CHECK(*it == d);
 }
 
+BOOST_FIXTURE_TEST_CASE(multipleGroupsUnionTest, GroupTestFixture)
+{
+    Group<Foo> groups[5];
+    groups[0].Add(c);
+    groups[1].Add(e);
+    groups[2].Add(e);
+    groups[2].Add(d);
+    groups[3].Add(a);
+    groups[3].Add(e);
+    groups[4].Add(b);
+
+    auto unionGroup = Unite(groups[0], groups[1], groups[2], groups[3], groups[4]);
+    BOOST_CHECK_EQUAL(unionGroup.Size(), 5);
+    auto it = unionGroup.begin();
+    BOOST_CHECK(*it == c);
+
+    std::advance(it, 1);
+    BOOST_CHECK(*it == e);
+
+    std::advance(it, 1);
+    BOOST_CHECK(*it == d);
+
+    std::advance(it, 1);
+    BOOST_CHECK(*it == a);
+
+    std::advance(it, 1);
+    BOOST_CHECK(*it == b);
+}
+
 
 BOOST_FIXTURE_TEST_CASE(differenceTest, GroupTestFixture)
 {
