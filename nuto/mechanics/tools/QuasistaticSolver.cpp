@@ -52,7 +52,7 @@ DofVector<double> QuasistaticSolver::TrialState(double newGlobalTime, const Cons
 {
     // compute hessian for last converged time step
     auto hessian0 = mProblem.Hessian0(mX, mDofs, mGlobalTime, mTimeStep);
-    Eigen::MatrixXd hessian0Eigen(ToEigen(hessian0, mDofs));
+    Eigen::SparseMatrix<double> hessian0Eigen(ToEigen(hessian0, mDofs));
 
     // update time step
     double newTimeStep = newGlobalTime - mGlobalTime;
