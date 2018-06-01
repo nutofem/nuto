@@ -70,6 +70,16 @@ public:
             Add(element);
     }
 
+    T& operator[](size_t index)
+    {
+        return *mData[index];
+    }
+
+    const T& operator[](size_t index) const
+    {
+        return *mData[index];
+    }
+
     //! @brief Add element to group
     //! @param element single element to add
     void Add(T& element)

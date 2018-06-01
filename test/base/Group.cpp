@@ -54,53 +54,45 @@ struct GroupTestFixture
     Group<Foo> groupTwo;
 };
 
+
+BOOST_FIXTURE_TEST_CASE(directAccessOperator, GroupTestFixture)
+{
+    std::vector<Foo*> expectedOne = {&a, &b, &c};
+    for (unsigned int i = 0; i < groupOne.Size(); ++i)
+        BOOST_CHECK(groupOne[i] == *expectedOne[i]);
+
+    std::vector<Foo*> expectedTwo = {&e, &d, &c};
+    for (unsigned int i = 0; i < groupTwo.Size(); ++i)
+        BOOST_CHECK(groupTwo[i] == *expectedTwo[i]);
+}
+
 BOOST_FIXTURE_TEST_CASE(unionTest, GroupTestFixture)
 {
     auto unionGroup = Unite(groupOne, groupTwo);
     BOOST_CHECK_EQUAL(unionGroup.Size(), 5);
-    auto it = unionGroup.begin();
-    BOOST_CHECK(*it == a);
 
-    std::advance(it, 1);
-    BOOST_CHECK(*it == b);
-
-    std::advance(it, 1);
-    BOOST_CHECK(*it == c);
-
-    std::advance(it, 1);
-    BOOST_CHECK(*it == e);
-
-    std::advance(it, 1);
-    BOOST_CHECK(*it == d);
+    std::vector<Foo*> expected = {&a, &b, &c, &e, &d};
+    for (unsigned int i = 0; i < unionGroup.Size(); ++i)
+        BOOST_CHECK(unionGroup[i] == *expected[i]);
 }
 
 BOOST_FIXTURE_TEST_CASE(multipleGroupsUnionTest, GroupTestFixture)
 {
-    Group<Foo> groups[5];
-    groups[0].Add(c);
-    groups[1].Add(e);
-    groups[2].Add(e);
-    groups[2].Add(d);
-    groups[3].Add(a);
-    groups[3].Add(e);
-    groups[4].Add(b);
+    Group<Foo> group1, group2, group3, group4, group5;
+    group1.Add(c);
+    group2.Add(e);
+    group3.Add(e);
+    group3.Add(d);
+    group4.Add(a);
+    group4.Add(e);
+    group5.Add(b);
 
-    auto unionGroup = Unite(groups[0], groups[1], groups[2], groups[3], groups[4]);
+    auto unionGroup = Unite(group1, group2, group3, group4, group5);
     BOOST_CHECK_EQUAL(unionGroup.Size(), 5);
-    auto it = unionGroup.begin();
-    BOOST_CHECK(*it == c);
 
-    std::advance(it, 1);
-    BOOST_CHECK(*it == e);
-
-    std::advance(it, 1);
-    BOOST_CHECK(*it == d);
-
-    std::advance(it, 1);
-    BOOST_CHECK(*it == a);
-
-    std::advance(it, 1);
-    BOOST_CHECK(*it == b);
+    std::vector<Foo*> expected = {&c, &e, &d, &a, &b};
+    for (unsigned int i = 0; i < unionGroup.Size(); ++i)
+        BOOST_CHECK(unionGroup[i] == *expected[i]);
 }
 
 
