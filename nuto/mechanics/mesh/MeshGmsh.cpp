@@ -16,6 +16,8 @@
 #include "nuto/mechanics/interpolation/InterpolationPrismQuadratic.h"
 #include "nuto/mechanics/interpolation/InterpolationPyramidLinear.h"
 
+#include "nuto/mechanics/cell/Jacobian.h"
+
 #include <array>
 #include <fstream>
 #include <unordered_map>
@@ -82,6 +84,14 @@ void ExpectNextLineToBe(std::ifstream& rFile, std::string expected)
 
 // Helper functions (cpp only)
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+void CheckJacobian(NuTo::ElementFem& elm)
+{
+    int n = elm.GetDofDimension();
+    NuTo::Jacobian jac(elm.ExtractNodeValues(), elm.GetDerivativeShapeFunctions(Eigen::VectorXd::Zero(n)));
+    if (jac.Det() <= 0)
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Negative Jacobian not allowed");
+}
 
 GmshHeader ReadGmshHeader(std::ifstream& rFile)
 {
@@ -484,6 +494,7 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
         auto elementNodes = GetElementNodes(nodePtrs, gmshElement);
 
         NuTo::ElementCollectionFem& element = mMesh.Elements.Add({{elementNodes, *(interpolationIter->second)}});
+        CheckJacobian(element.CoordinateElement());
         AddElementToPhysicalGroup(fileContent, element, gmshElement.tags[0]);
     }
 }

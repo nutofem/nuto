@@ -6,7 +6,7 @@ using namespace NuTo;
 
 BOOST_AUTO_TEST_CASE(PhysicalGroups)
 {
-    MeshGmsh gmsh("quad.msh");
+    MeshGmsh gmsh("meshes/quad.msh");
 
     BOOST_CHECK_NO_THROW(gmsh.GetPhysicalGroup(1));
     BOOST_CHECK_THROW(gmsh.GetPhysicalGroup(-42), Exception);
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(PhysicalGroups)
 
 BOOST_AUTO_TEST_CASE(NonContiguousNodeNumbering)
 {
-    BOOST_CHECK_NO_THROW(MeshGmsh("quadNoncontiguous.msh"));
+    BOOST_CHECK_NO_THROW(MeshGmsh("meshes/quadNoncontiguous.msh"));
 }
 
 void CheckMesh(std::string meshFile, int numNodesExpected)
@@ -46,7 +46,7 @@ void CheckMesh(std::string meshFile, int numNodesExpected)
 
 BOOST_AUTO_TEST_CASE(BinaryImport)
 {
-    MeshGmsh m("binary.msh");
+    MeshGmsh m("meshes/binary.msh");
     auto& meshFem = m.GetMeshFEM();
     BOOST_CHECK_EQUAL(meshFem.Nodes.Size(), 8);
     BOOST_CHECK_EQUAL(meshFem.Elements.Size(), 7);
@@ -55,61 +55,67 @@ BOOST_AUTO_TEST_CASE(BinaryImport)
 
 BOOST_AUTO_TEST_CASE(QuadLinear)
 {
-    CheckMesh("quad1.msh", 4);
+    CheckMesh("meshes/quad1.msh", 4);
 }
 
 
 BOOST_AUTO_TEST_CASE(QuadSerendipity)
 {
-    CheckMesh("quadSerendipity2.msh", 8);
+    CheckMesh("meshes/quadSerendipity2.msh", 8);
 }
 
 BOOST_AUTO_TEST_CASE(TriangleLinear)
 {
-    CheckMesh("triangle1.msh", 3);
+    CheckMesh("meshes/triangle1.msh", 3);
 }
 
 BOOST_AUTO_TEST_CASE(TriangleQuadratic)
 {
-    CheckMesh("triangle2.msh", 6);
+    CheckMesh("meshes/triangle2.msh", 6);
 }
 
 BOOST_AUTO_TEST_CASE(LineLinear)
 {
-    CheckMesh("line1.msh", 2);
+    CheckMesh("meshes/line1.msh", 2);
 }
 
 BOOST_AUTO_TEST_CASE(LineQuadratic)
 {
-    CheckMesh("line2.msh", 3);
+    CheckMesh("meshes/line2.msh", 3);
 }
 
 BOOST_AUTO_TEST_CASE(TetrahedronLinear)
 {
-    CheckMesh("tet1.msh", 4);
+    CheckMesh("meshes/tet1.msh", 4);
 }
 
 BOOST_AUTO_TEST_CASE(BrickLinear)
 {
-    CheckMesh("hex1.msh", 8);
+    CheckMesh("meshes/hex1.msh", 8);
 }
 
 BOOST_AUTO_TEST_CASE(PrismLinear)
 {
-    CheckMesh("prism1.msh", 6);
+    CheckMesh("meshes/prism1.msh", 6);
 }
 
 BOOST_AUTO_TEST_CASE(PyramidLinear)
 {
-    CheckMesh("pyramid1.msh", 5);
+    CheckMesh("meshes/pyramid1.msh", 5);
 }
 
 BOOST_AUTO_TEST_CASE(QuadLobatto2)
 {
-    CheckMesh("quadL2.msh", 9);
+    CheckMesh("meshes/quadL2.msh", 9);
 }
 
 BOOST_AUTO_TEST_CASE(BrickLobatto2)
 {
-    CheckMesh("brickL2.msh", 27);
+    CheckMesh("meshes/brickL2.msh", 27);
+}
+
+BOOST_AUTO_TEST_CASE(InvertedTriangle)
+{
+    // triangle mesh with negative Jacobian determinant
+    BOOST_CHECK_THROW(MeshGmsh("meshes/invertedTriangle.msh"), Exception);
 }

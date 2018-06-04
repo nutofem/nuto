@@ -15,13 +15,16 @@ matrix:
           env: BUILD_TYPE=Release WERROR=-Werror
         - compiler: g++
           env: BUILD_TYPE=Release WERROR=-Werror
+        - compiler: g++
+          env: BUILD_TYPE=Release DOCKER_IMAGE=dev_ubuntu
     allow_failures:
         - env: BUILD_TYPE=Release WERROR=-Werror
 
 before_install:
     - CI_ENV=`bash <(curl -s https://codecov.io/env)`
-    - travis_retry timeout 120 docker pull nuto/nuto_docker:dev
-    - docker run $CI_ENV -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:dev
+    - IMAGE=${DOCKER_IMAGE:-dev} # if `DOCKER_IMAGE` is not defined, use `dev`
+    - travis_retry timeout 120 docker pull nuto/nuto_docker:${IMAGE}
+    - docker run $CI_ENV -itd --user nuto --name dock -v $(pwd):/home/nuto/source nuto/nuto_docker:${IMAGE}
 
 script:
     # - We log in /home/nuto (set as WORKDIR in Dockerfile). This will be our build directory avoid changing directories.

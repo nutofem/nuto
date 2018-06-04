@@ -70,6 +70,16 @@ public:
             Add(element);
     }
 
+    T& operator[](size_t index)
+    {
+        return *mData[index];
+    }
+
+    const T& operator[](size_t index) const
+    {
+        return *mData[index];
+    }
+
     //! @brief Add element to group
     //! @param element single element to add
     void Add(T& element)
@@ -139,6 +149,13 @@ Group<T> Unite(const Group<T>& one, const Group<T>& two)
     return newGroup;
 }
 
+//! @brief Unite multiple groups
+template <typename T, typename... TArgs>
+Group<T> Unite(const Group<T>& one, const TArgs&... args)
+{
+    return Unite(one, Unite(args...));
+}
+
 //! @brief Returns group with elements of group one that are not in group two
 template <typename T>
 Group<T> Difference(const Group<T>& one, const Group<T>& two)
@@ -160,6 +177,7 @@ Group<T> Intersection(const Group<T>& one, const Group<T>& two)
             newGroup.Add(t);
     return newGroup;
 }
+
 
 //! @brief Returns group with elements that are only in one group not in both
 template <typename T>
