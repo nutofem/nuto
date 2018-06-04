@@ -110,15 +110,15 @@ private:
     TimeDependentProblem mEquations;
     QuasistaticSolver mProblem;
 
+    IntegrationTypeTensorProduct<1> mIntegrationType;
+    CellStorage mCells;
+    Group<CellInterface> mCellGroup;
+
     ReducedSolutionSpace mReducedSolutionSpaceOperator;
 
     ImplicitCallBack mImplicitCallBack;
 
     Eigen::VectorXd mSolutionVector;
-
-    IntegrationTypeTensorProduct<1> mIntegrationType;
-    CellStorage mCells;
-    Group<CellInterface> mCellGroup;
 
     Constraint::Constraints DefineConstraints(MeshFem& mesh, DofType disp)
     {
