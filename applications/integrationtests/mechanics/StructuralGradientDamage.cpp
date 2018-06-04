@@ -87,6 +87,8 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
+    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator);
+
     QuasistaticSolver problem(X);
 
     int dofLeft = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L), d).GetDofNumber(0);
@@ -110,12 +112,10 @@ BOOST_AUTO_TEST_CASE(Integrand)
     std::ofstream loadDisplacement(visu.ResultDirectory() + "/LD.dat");
 
     /* solve adaptively */
-    auto doStep = [&](double t) {
-        return problem.DoStep(equations, reducedSolutionSpaceOperator, t, "MumpsLU", 1.e-6);
-    };
+    auto doStep = [&](double t) { return problem.DoStep(implicitCallBack, t, "MumpsLU", 1.e-6); };
     auto postProcessF = [&](double t) {
         visu.Plot(t, true);
-        problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}, equations);
+        problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}, implicitCallBack);
     };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
@@ -230,6 +230,8 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
+    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator);
+
     using namespace NuTo::Visualize;
     PostProcess visu("./GradientDamageOut2D");
     visu.DefineVisualizer("GDM", cells, VoronoiHandler(VoronoiGeometryTriangle(triangleIntegration)));
@@ -239,13 +241,11 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
 
-    auto doStep = [&](double t) {
-        return problem.DoStep(equations, reducedSolutionSpaceOperator, t, "EigenSparseLU", 1.e-6);
-    };
+    auto doStep = [&](double t) { return problem.DoStep(implicitCallBack, t, "EigenSparseLU", 1.e-6); };
     auto postProcess = [&](double t) {
         visu.Plot(t, true);
         problem.WriteTimeDofResidual(loadDisp, d, DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)),
-                                     equations);
+                                     implicitCallBack);
     };
 
     NuTo::AdaptiveSolve adaptive(doStep, postProcess);

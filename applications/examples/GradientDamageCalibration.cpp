@@ -72,9 +72,11 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
 
 
     DofContainer<int> numTotalDofs;
-    DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
-    numTotalDofs.Insert(d, dofInfo.numDependentDofs[d] + dofInfo.numIndependentDofs[d]);
-    numTotalDofs.Insert(eeq, dofInfo.numDependentDofs[eeq] + dofInfo.numIndependentDofs[eeq]);
+    DofInfo dofInfoDisp = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
+    DofInfo dofInfoEeq = DofNumbering::Build(mesh.NodesTotal(eeq), eeq, constraints);
+    numTotalDofs.Insert(d, dofInfoDisp.numDependentDofs[d] + dofInfoDisp.numIndependentDofs[d]);
+    numTotalDofs.Insert(eeq, dofInfoEeq.numDependentDofs[eeq] + dofInfoEeq.numIndependentDofs[eeq]);
+
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
     QuasistaticSolver problem(X);

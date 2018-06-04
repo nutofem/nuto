@@ -11,8 +11,6 @@ ReducedSolutionSpace::ReducedSolutionSpace(const std::vector<DofType>& dofTypes,
     , mNumTotalDofs(numTotalDofs)
     , mConstraints(constraints)
 {
-    DofMatrixSparse<double> mCmatUnit;
-
     for (auto dofI : mDofTypes)
     {
         int numDofs = mNumTotalDofs.At(dofI); // throws if no dof
@@ -20,7 +18,8 @@ ReducedSolutionSpace::ReducedSolutionSpace(const std::vector<DofType>& dofTypes,
             if (dofI.Id() == dofJ.Id())
                 mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix(dofI, numDofs);
             else
-                mCmatUnit(dofI, dofJ).setZero();
+                mCmatUnit(dofI, dofJ) =
+                        Eigen::SparseMatrix<double>(mCmatUnit(dofI, dofI).rows(), mCmatUnit(dofJ, dofJ).cols());
     }
 
     mCmatUnitSparse = ToEigen(mCmatUnit, mDofTypes);
@@ -31,7 +30,7 @@ Eigen::SparseMatrix<double> ReducedSolutionSpace::HessianToReducedBasis(const Ei
     return mCmatUnitSparse.transpose() * matrix * mCmatUnitSparse;
 }
 
-Eigen::VectorXd ReducedSolutionSpace::GradientToReducedBasis(Eigen::VectorXd& gradient) const
+Eigen::VectorXd ReducedSolutionSpace::GradientToReducedBasis(const Eigen::VectorXd& gradient) const
 {
     return mCmatUnitSparse.transpose() * gradient;
 }
@@ -47,13 +46,12 @@ Eigen::VectorXd ReducedSolutionSpace::ToFullWithRhs(const Eigen::VectorXd& indep
     return mCmatUnitSparse * independent + mConstraints.GetRhs(dof, time);
 }
 
-DofVector<double> ReducedSolutionSpace::ToDofVector(const Eigen::VectorXd& full,
-                                                    const DofVector<double>& dofVector) const
+void ReducedSolutionSpace::ToDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const
 {
-    DofVector<double> dofVectorNew(dofVector);
-    dofVectorNew[mDofTypes[0]] = full;
+    for (auto dof : mDofTypes)
+        destination[dof].setZero(mNumTotalDofs[dof]);
 
-    return dofVectorNew;
+    FromEigen(source, mDofTypes, &destination);
 }
 
 Eigen::VectorXd ReducedSolutionSpace::DeltaFull(const Eigen::VectorXd& independent,
@@ -75,7 +73,17 @@ Eigen::VectorXd ReducedSolutionSpace::DeltaFullRhs(double timeOld, double timeNe
     return ToEigen(deltaBrhs, mDofTypes);
 }
 
+void ReducedSolutionSpace::FillDofVector(DofVector<double>& destination, const Eigen::VectorXd& source) const
+{
+    for (auto dof : mDofTypes)
+        destination[dof].setZero(mNumTotalDofs[dof]);
+
+    FromEigen(source, mDofTypes, &destination);
+}
+
+
 Eigen::VectorXd ReducedSolutionSpace::ToReducedBasis(const DofVector<double>& dofVector) const
 {
-    return mCmatUnitSparse * dofVector[mDofTypes[0]];
+    Eigen::VectorXd full = ToEigen(dofVector, mDofTypes);
+    return mCmatUnitSparse.transpose() * full;
 }

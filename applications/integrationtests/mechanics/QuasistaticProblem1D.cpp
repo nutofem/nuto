@@ -21,6 +21,8 @@
 #include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "nuto/mechanics/constitutive/ModifiedMisesStrainNorm.h"
 
+#include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
+
 using namespace NuTo;
 
 class LocalDamageTruss
@@ -33,6 +35,8 @@ public:
         , mMomentumBalance(mDof, mLaw)
         , mEquations(&mMesh)
         , mIntegrationType(2, eIntegrationMethod::GAUSS)
+        , mReducedSolutionSpaceOperator()
+        , mImplicitCallBack(mEquations, mReducedSolutionSpaceOperator)
     {
         AddDofInterpolation(&mMesh, mDof);
 
@@ -55,12 +59,17 @@ public:
         mEquations.AddUpdateFunction(mCellGroup, UpdateHistory);
         DofVector<double> X = mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
 
-        mProblem = QuasistaticSolver(X);
+
+        mProblem = QuasistaticSolver();
 
         DofContainer<int> numTotalDofs;
         DofInfo dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, constraints);
         numTotalDofs.Insert(mDof, dofInfo.numDependentDofs[mDof] + dofInfo.numIndependentDofs[mDof]);
         mReducedSolutionSpaceOperator = ReducedSolutionSpace(dofTypes, numTotalDofs, constraints);
+
+        mImplicitCallBack.SetReducedSolutionSpaceOperator(mReducedSolutionSpaceOperator);
+
+        mSolutionVector = ToEigen(X, dofTypes);
     }
 
     void SetImperfection(double kappaImperfection)
@@ -72,7 +81,7 @@ public:
     void Solve(double tEnd)
     {
         auto doStep = [&](double t) {
-            return mProblem.DoStep(mEquations, mReducedSolutionSpaceOperator, t, "EigenSparseLU", 1.e-12);
+            return mProblem.DoStep(mSolutionVector, mImplicitCallBack, t, "EigenSparseLU", 1.e-12);
         };
         AdaptiveSolve adaptive(doStep);
         adaptive.dt = 0.01;
@@ -107,6 +116,10 @@ private:
     QuasistaticSolver mProblem;
 
     ReducedSolutionSpace mReducedSolutionSpaceOperator;
+
+    ImplicitCallBack mImplicitCallBack;
+
+    Eigen::VectorXd mSolutionVector;
 
     IntegrationTypeTensorProduct<1> mIntegrationType;
     CellStorage mCells;

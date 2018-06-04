@@ -2,6 +2,7 @@
 #include <eigen3/Eigen/Sparse>
 #include "nuto/mechanics/dofs/DofContainer.h"
 #include "nuto/mechanics/dofs/DofVector.h"
+#include "nuto/mechanics/dofs/DofMatrixSparse.h"
 #include "Constraints.h"
 
 namespace NuTo
@@ -26,7 +27,7 @@ public:
     //! @brief transforms a gradient from the full system by computing C^T v to the reduced system
     //! @param gradient ... vector in the original space
     //! @return C^T * gradient
-    Eigen::VectorXd GradientToReducedBasis(Eigen::VectorXd& gradient) const;
+    Eigen::VectorXd GradientToReducedBasis(const Eigen::VectorXd& gradient) const;
 
     //! @brief transforms a reduced solution vector back to the full system
     //! @param independent ... vector of independent dofs
@@ -42,7 +43,7 @@ public:
     //! @brief transforms a full solution vector back to a dofVector and replaces the corresponding entries
     //! @param full ... vector of all active dofs
     //! @param dofVector ... dof vector of all dofs
-    DofVector<double> ToDofVector(const Eigen::VectorXd& full, const DofVector<double>& dofVector) const;
+    void ToDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const;
 
     //! @brief transforms a delta of the reduced solution vector back to the full system (assuming t=const)
     //! @param independent ... vector of independent dofs
@@ -50,6 +51,8 @@ public:
     Eigen::VectorXd DeltaFull(const Eigen::VectorXd& independent, const Eigen::VectorXd& deltaBrhsEigen) const;
 
     Eigen::VectorXd DeltaFullRhs(double timeOld, double timeNew) const;
+
+    void FillDofVector(DofVector<double>& destination, const Eigen::VectorXd& source) const;
 
     //! @brief reduces the dof solution vector to the vector of independent dofs
     //! @param dofVector ... actual state of the system
@@ -67,22 +70,6 @@ public:
         return mCmatUnitSparse;
     }
 
-    //    void QuasistaticSolver::SetConstraints(Constraint::Constraints constraints)
-    //    {
-    //        mConstraints = constraints;
-    //        if (mX[mDofs.front()].rows() == 0)
-    //            mX = mProblem.RenumberDofs(constraints, mDofs, DofVector<double>());
-    //        else
-    //            mX = mProblem.RenumberDofs(constraints, mDofs, mX);
-
-    //        for (auto dofI : mDofs)
-    //            for (auto dofJ : mDofs)
-    //                if (dofI.Id() == dofJ.Id())
-    //                    mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix(dofI, mX[dofI].rows());
-    //                else
-    //                    mCmatUnit(dofI, dofJ).setZero();
-    //    }
-
 private:
     // these mdofTypes and the mNumTotalDofs are only tmp, there should be a reference to the function space that is
     // constraint by the ReducedSolutionSpace
@@ -95,6 +82,8 @@ private:
 
     //! @brief the linear transformation matrix to map the reduced space to the full space d_tot = C d_red + b(t)
     Eigen::SparseMatrix<double> mCmatUnitSparse;
+
+    DofMatrixSparse<double> mCmatUnit;
 
     //! @brief constraints
     Constraints mConstraints;

@@ -50,10 +50,6 @@ private:
     std::vector<Hessian0Pair> mHessian0Functions;
     std::vector<UpdatePair> mUpdateFunctions;
 
-    //! @var the recent dof values
-    DofVector<double> mX;
-
-
     /*
      *
      *

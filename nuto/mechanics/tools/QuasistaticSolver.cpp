@@ -13,134 +13,175 @@
 
 using namespace NuTo;
 
-// --------------------- NewtonCallBack ---------------------//
-NewtonCallBack::NewtonCallBack(TimeDependentProblem& s, ReducedSolutionSpace& reducedSolutionSpaceOperator,
-                               double tolerance)
+// --------------------- ImplicitCallBack ---------------------//
+ImplicitCallBack::ImplicitCallBack(TimeDependentProblem& s, ReducedSolutionSpace& reducedSolutionSpaceOperator,
+                                   double tolerance)
     : mTolerance(tolerance)
     , mProblem(s)
     , mReducedSolutionSpaceOperator(reducedSolutionSpaceOperator)
 {
 }
 
-DofVector<double> NewtonCallBack::Residual(const DofVector<double>& u, double globalTime, double timeStep)
+Eigen::VectorXd ImplicitCallBack::Residual(const Eigen::VectorXd& u)
 {
-    return mProblem.Gradient(u, mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
+    DofVector<double> uDof;
+    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+
+    DofVector<double> gradient =
+            mProblem.Gradient(uDof, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime + mTimeStep, mTimeStep);
+    auto f_full = ToEigen(gradient, mReducedSolutionSpaceOperator.GetDofTypes());
+    return mReducedSolutionSpaceOperator.GradientToReducedBasis(f_full);
 }
 
-
-DofMatrixSparse<double> NewtonCallBack::Derivative(const DofVector<double>& u, double globalTime, double timeStep)
+Eigen::SparseMatrix<double> ImplicitCallBack::Derivative(const Eigen::VectorXd& u)
 {
-    return mProblem.Hessian0(u, mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
+    DofVector<double> uDof;
+    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    DofMatrixSparse<double> D_dof =
+            mProblem.Hessian0(uDof, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime + mTimeStep, mTimeStep);
+    auto D_full = ToEigen(D_dof, mReducedSolutionSpaceOperator.GetDofTypes());
+    return mReducedSolutionSpaceOperator.HessianToReducedBasis(D_full);
 }
 
-void NewtonCallBack::UpdateHistory(const DofVector<double>& u, double globalTime, double timeStep)
+void ImplicitCallBack::UpdateHistory(const Eigen::VectorXd& u)
 {
-    mProblem.UpdateHistory(u, mReducedSolutionSpaceOperator.GetDofTypes(), globalTime + timeStep, timeStep);
+    DofVector<double> uDof;
+    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    mProblem.UpdateHistory(uDof, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime + mTimeStep, mTimeStep);
 }
 
-
-double NewtonCallBack::Norm(const DofVector<double>& residual) const
+double ImplicitCallBack::Norm(const Eigen::VectorXd& residual) const
 {
     // all these conversions should be removed at some point, workaround to remove JK
-    Eigen::VectorXd tmp = ToEigen(residual, mReducedSolutionSpaceOperator.GetDofTypes());
-    auto C = mReducedSolutionSpaceOperator.GetConstraintMatrix();
-    return (C.transpose() * tmp).norm();
+    return residual.norm();
 }
 
-void NewtonCallBack::Info(int i, const DofVector<double>& x, const DofVector<double>& r) const
+void ImplicitCallBack::Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const
 {
-    Log::Info << "Iteration " << i << ": |R| = " << Norm(r) << " |x| = " << Norm(x) << '\n';
+    Log::Info << "Iteration " << i << ": |R| = " << r.norm()
+              << " |x| = " << mReducedSolutionSpaceOperator.GradientToReducedBasis(x).norm() << '\n';
 }
 
-// --------------------- Quasistatic problem --------------------- //
-void QuasistaticSolver::SetGlobalTime(double globalTime)
+void ImplicitCallBack::SetGlobalTime(double globalTime)
 {
     mTimeStep = globalTime - mGlobalTime;
     mGlobalTime = globalTime;
 }
 
-void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers,
-                                             TimeDependentProblem& problem)
+void ImplicitCallBack::SetReducedSolutionSpaceOperator(ReducedSolutionSpace& reducedSolutionSpaceOperator)
+{
+    mReducedSolutionSpaceOperator = reducedSolutionSpaceOperator;
+}
+
+Eigen::VectorXd ImplicitCallBack::Residual(const Eigen::VectorXd& u, double t, double dt)
+{
+    DofVector<double> uDof;
+    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    const std::vector<DofType>& dofTypes = mReducedSolutionSpaceOperator.GetDofTypes();
+    auto gradient = mProblem.Gradient(uDof, dofTypes, t, dt);
+    return ToEigen(gradient, dofTypes);
+}
+
+Eigen::SparseMatrix<double> ImplicitCallBack::Derivative(const Eigen::VectorXd& u, double t, double dt)
+{
+    DofVector<double> uDof;
+    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    const std::vector<DofType>& dofTypes = mReducedSolutionSpaceOperator.GetDofTypes();
+    return ToEigen(mProblem.Hessian0(uDof, dofTypes, t, dt), dofTypes);
+}
+
+Eigen::VectorXd ImplicitCallBack::TrialStateRHS(const Eigen::VectorXd& u, const Eigen::SparseMatrix<double>& K_full,
+                                                Eigen::VectorXd& deltaBrhsEigen, double t, double dt)
+{
+    DofVector<double> uDof;
+    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    Eigen::VectorXd f_full = Residual(u, t, dt);
+    deltaBrhsEigen = mReducedSolutionSpaceOperator.DeltaFullRhs(mGlobalTime, t);
+    return mReducedSolutionSpaceOperator.GetConstraintMatrix().transpose() * (f_full + K_full * deltaBrhsEigen);
+}
+
+// void ImplicitCallBack::FillDofVector(DofVector<double>& destination, const Eigen::VectorXd& source) const
+//{
+//    mReducedSolutionSpaceOperator.FillDofVector(destination, source);
+//}
+
+// --------------------- Quasistatic problem --------------------- //
+void QuasistaticSolver::WriteTimeDofResidual(Eigen::VectorXd& u, std::ostream& out, DofType dofType,
+                                             std::vector<int> dofNumbers, ImplicitCallBack& callBack)
 {
     /* Each call to ToDofVector<double> assumes that we solve for the step t + dt. But we are in postprocess right
      * now.
      * This we are already updated to t + dt. Keeping mGlobalTime as it is, will cause the ToDofVector<double> to
      * apply
      * constraints for t + dt + dt.
-     * keep in mind that the gradient is not the residual, since constraint dofs do not have a non-vanishing gradient
-*/
-    auto residual = problem.Gradient(mX, {dofType}, mGlobalTime - mTimeStep, mTimeStep);
+     * keep in mind that the gradient is not the residual, since constraint dofs do not have a non-vanishing gradient */
 
-    double dofMean = boost::accumulate(mX(dofType, dofNumbers), 0.) / dofNumbers.size();
+    DofVector<double> uDof;
+    callBack.mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+
+    auto residual =
+            callBack.mProblem.Gradient(uDof, {dofType}, callBack.mGlobalTime - callBack.mTimeStep, callBack.mTimeStep);
+
+    double dofMean = boost::accumulate(uDof(dofType, dofNumbers), 0.) / dofNumbers.size();
     double residualSum = boost::accumulate(residual(dofType, dofNumbers), 0.);
 
-    out << mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';
+    out << callBack.mGlobalTime << '\t' << dofMean << '\t' << residualSum << '\n';
     out << std::flush; // We really want to flush the output in case the program is interupted by CTRL-C or
     // something.
 }
 
-DofVector<double> QuasistaticSolver::TrialState(double newGlobalTime, NewtonCallBack& problem, std::string solverType)
+Eigen::VectorXd QuasistaticSolver::TrialState(Eigen::VectorXd& start, double newGlobalTime, ImplicitCallBack& callBack,
+                                              std::string solverType)
 {
-    // compute hessian for last converged time step
-    auto hessian0 = problem.Derivative(mX, mGlobalTime, mTimeStep);
-
     // update time step
-    double newTimeStep = newGlobalTime - mGlobalTime;
+    double newTimeStep = newGlobalTime - callBack.mGlobalTime;
 
-    // compute residual for new time step (in particular, these are changing external forces)
-    auto gradient = problem.Residual(mX, newGlobalTime, newTimeStep);
+    Eigen::VectorXd deltaBrhsEigen;
 
-    Eigen::SparseMatrix<double> K_full = ToEigen(hessian0, problem.GetReducedSolutionSpaceOperator().GetDofTypes());
-    Eigen::VectorXd f_full = ToEigen(gradient, problem.GetReducedSolutionSpaceOperator().GetDofTypes());
-
-    Eigen::SparseMatrix<double> Kmod = problem.GetReducedSolutionSpaceOperator().HessianToReducedBasis(K_full);
-    Eigen::VectorXd deltaBrhsEigen = problem.GetReducedSolutionSpaceOperator().DeltaFullRhs(mGlobalTime, newGlobalTime);
-    Eigen::VectorXd fmod = problem.GetReducedSolutionSpaceOperator().GetConstraintMatrix().transpose() *
-                           (f_full + K_full * deltaBrhsEigen);
+    Eigen::SparseMatrix<double> K_full = callBack.Derivative(start, callBack.mGlobalTime, callBack.mTimeStep);
+    Eigen::SparseMatrix<double> Kmod = callBack.mReducedSolutionSpaceOperator.HessianToReducedBasis(K_full);
+    Eigen::VectorXd fmod = callBack.TrialStateRHS(start, K_full, deltaBrhsEigen, newGlobalTime, newTimeStep);
 
     Eigen::VectorXd u = EigenSparseSolve(Kmod, fmod, solverType);
 
-    u = problem.GetReducedSolutionSpaceOperator().DeltaFull(u, deltaBrhsEigen);
+    u = callBack.mReducedSolutionSpaceOperator.DeltaFull(u, deltaBrhsEigen); // full
 
-    // TODO: for correct size
-    DofVector<double> result = gradient;
-    FromEigen(u, gradient.DofTypes(), &result);
-
-    DofVector<double> trialU = mX - result;
-
-    return trialU;
+    return start - u;
 }
 
-int QuasistaticSolver::DoStep(TimeDependentProblem& problem, ReducedSolutionSpace& reducedSolutionSpaceOperator,
-                              double newGlobalTime, std::string solverType, double tolerance)
+int QuasistaticSolver::DoStep(Eigen::VectorXd& start, ImplicitCallBack& callBack, double newGlobalTime,
+                              std::string solverType, double tolerance)
 {
-    NewtonCallBack newtonCallBack(problem, reducedSolutionSpaceOperator, tolerance);
+    callBack.mTolerance = tolerance; // todo: remove
 
     // compute trial solution (includes update of the constraint dofs, no line search)
-    DofVector<double> trialU = TrialState(newGlobalTime, newtonCallBack, solverType);
+    // trialU is with constrains
+    Eigen::VectorXd trialU = TrialState(start, newGlobalTime, callBack, solverType);
 
     int numIterations = 0;
 
     // update time step
-    mTimeStep = newGlobalTime - mGlobalTime;
+    callBack.mTimeStep = newGlobalTime - callBack.mGlobalTime;
 
-    DofVector<double> tmpX;
+    Eigen::VectorXd tmpX;
     try
     {
-        tmpX = NewtonRaphson::Solve(newtonCallBack, trialU, mGlobalTime + mTimeStep, mTimeStep, solverType, 6,
-                                    NewtonRaphson::LineSearch(), &numIterations);
+        tmpX = NewtonRaphson::Solve(
+                callBack, trialU,
+                NuTo::CallBackSolver(solverType, callBack.mReducedSolutionSpaceOperator.GetConstraintMatrix()), 6,
+                NewtonRaphson::LineSearch(), &numIterations);
     }
     catch (std::exception& e)
     {
         throw NewtonRaphson::NoConvergence(e.what());
     }
 
-    if (newtonCallBack.Norm(tmpX) > 1.e10)
+    if (callBack.Norm(tmpX) > 1.e10)
         throw NewtonRaphson::NoConvergence("", "floating point exception");
 
-    newtonCallBack.UpdateHistory(tmpX, mGlobalTime + mTimeStep, mTimeStep);
-    mGlobalTime = newGlobalTime;
-    mX = tmpX;
+    callBack.UpdateHistory(tmpX);
+    callBack.mGlobalTime = newGlobalTime;
+    start = tmpX;
 
     return numIterations;
 }
