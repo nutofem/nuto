@@ -11,6 +11,7 @@ ReducedSolutionSpace::ReducedSolutionSpace(const std::vector<DofType>& dofTypes,
     , mNumTotalDofs(numTotalDofs)
     , mConstraints(constraints)
 {
+    DofMatrixSparse<double> mCmatUnit;
     for (auto dofI : mDofTypes)
     {
         int numDofs = mNumTotalDofs.At(dofI); // throws if no dof

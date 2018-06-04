@@ -36,7 +36,7 @@ public:
         , mEquations(&mMesh)
         , mIntegrationType(2, eIntegrationMethod::GAUSS)
         , mReducedSolutionSpaceOperator()
-        , mImplicitCallBack(mEquations, mReducedSolutionSpaceOperator)
+        , mImplicitCallBack(mEquations, mReducedSolutionSpaceOperator, 1.e-12)
     {
         AddDofInterpolation(&mMesh, mDof);
 
@@ -59,9 +59,6 @@ public:
         mEquations.AddUpdateFunction(mCellGroup, UpdateHistory);
         DofVector<double> X = mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
 
-
-        mProblem = QuasistaticSolver();
-
         DofContainer<int> numTotalDofs;
         DofInfo dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, constraints);
         numTotalDofs.Insert(mDof, dofInfo.numDependentDofs[mDof] + dofInfo.numIndependentDofs[mDof]);
@@ -80,9 +77,7 @@ public:
 
     void Solve(double tEnd)
     {
-        auto doStep = [&](double t) {
-            return mProblem.DoStep(mSolutionVector, mImplicitCallBack, t, "EigenSparseLU", 1.e-12);
-        };
+        auto doStep = [&](double t) { return mProblem.DoStep(mSolutionVector, mImplicitCallBack, t, "EigenSparseLU"); };
         AdaptiveSolve adaptive(doStep);
         adaptive.dt = 0.01;
         adaptive.Solve(tEnd);

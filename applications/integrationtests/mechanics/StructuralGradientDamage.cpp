@@ -87,9 +87,11 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
-    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator);
+    Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
 
-    QuasistaticSolver problem(X);
+    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator, 1.e-6);
+
+    QuasistaticSolver problem;
 
     int dofLeft = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L), d).GetDofNumber(0);
 
@@ -112,10 +114,10 @@ BOOST_AUTO_TEST_CASE(Integrand)
     std::ofstream loadDisplacement(visu.ResultDirectory() + "/LD.dat");
 
     /* solve adaptively */
-    auto doStep = [&](double t) { return problem.DoStep(implicitCallBack, t, "MumpsLU", 1.e-6); };
+    auto doStep = [&](double t) { return problem.DoStep(solutionVector, implicitCallBack, t, "MumpsLU"); };
     auto postProcessF = [&](double t) {
         visu.Plot(t, true);
-        problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}, implicitCallBack);
+        problem.WriteTimeDofResidual(solutionVector, loadDisplacement, d, {dofLeft}, implicitCallBack);
     };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
@@ -220,7 +222,9 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     dofTypes.push_back(eeq);
 
     DofVector<double> X = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
-    QuasistaticSolver problem(X);
+    Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
+
+    QuasistaticSolver problem;
 
     DofContainer<int> numTotalDofs;
     DofInfo dofInfoDisp = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
@@ -230,7 +234,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
-    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator);
+    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator, 1.e-6);
 
     using namespace NuTo::Visualize;
     PostProcess visu("./GradientDamageOut2D");
@@ -241,11 +245,11 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
 
-    auto doStep = [&](double t) { return problem.DoStep(implicitCallBack, t, "EigenSparseLU", 1.e-6); };
+    auto doStep = [&](double t) { return problem.DoStep(solutionVector, implicitCallBack, t, "EigenSparseLU"); };
     auto postProcess = [&](double t) {
         visu.Plot(t, true);
-        problem.WriteTimeDofResidual(loadDisp, d, DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)),
-                                     implicitCallBack);
+        problem.WriteTimeDofResidual(solutionVector, loadDisp, d,
+                                     DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)), implicitCallBack);
     };
 
     NuTo::AdaptiveSolve adaptive(doStep, postProcess);

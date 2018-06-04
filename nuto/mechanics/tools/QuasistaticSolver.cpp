@@ -150,10 +150,8 @@ Eigen::VectorXd QuasistaticSolver::TrialState(Eigen::VectorXd& start, double new
 }
 
 int QuasistaticSolver::DoStep(Eigen::VectorXd& start, ImplicitCallBack& callBack, double newGlobalTime,
-                              std::string solverType, double tolerance)
+                              std::string solverType)
 {
-    callBack.mTolerance = tolerance; // todo: remove
-
     // compute trial solution (includes update of the constraint dofs, no line search)
     // trialU is with constrains
     Eigen::VectorXd trialU = TrialState(start, newGlobalTime, callBack, solverType);

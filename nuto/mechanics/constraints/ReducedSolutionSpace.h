@@ -41,8 +41,8 @@ public:
     Eigen::VectorXd ToFullWithRhs(const Eigen::VectorXd& independent, double time) const;
 
     //! @brief transforms a full solution vector back to a dofVector and replaces the corresponding entries
-    //! @param full ... vector of all active dofs
-    //! @param dofVector ... dof vector of all dofs
+    //! @param source ... vector of all dofs
+    //! @param destination ... dof vector of all dofs
     void ToDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const;
 
     //! @brief transforms a delta of the reduced solution vector back to the full system (assuming t=const)
@@ -56,7 +56,6 @@ public:
 
     //! @brief reduces the dof solution vector to the vector of independent dofs
     //! @param dofVector ... actual state of the system
-    //! @param time ... in order to verify consistent initial conditions (constraint equations are fulfilled)
     //! @return vector ... with only the independent dofs
     Eigen::VectorXd ToReducedBasis(const DofVector<double>& dofVector) const;
 
@@ -82,8 +81,6 @@ private:
 
     //! @brief the linear transformation matrix to map the reduced space to the full space d_tot = C d_red + b(t)
     Eigen::SparseMatrix<double> mCmatUnitSparse;
-
-    DofMatrixSparse<double> mCmatUnit;
 
     //! @brief constraints
     Constraints mConstraints;

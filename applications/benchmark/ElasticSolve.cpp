@@ -16,6 +16,8 @@
 #include "nuto/mechanics/tools/QuasistaticSolver.h"
 #include "nuto/mechanics/constraints/ConstraintCompanion.h"
 
+#include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
+
 using namespace NuTo;
 
 class TestStructure
@@ -28,6 +30,7 @@ public:
         , mMomentumBalance(mDof, mElasticLaw)
         , mIntegration(2, eIntegrationMethod::GAUSS)
         , mFunctions(&mMesh)
+        , mImplicitCallBack(mFunctions, mReducedSolutionSpaceOperator)
     {
         AddDofInterpolation(&mMesh, mDof);
         Group<CellInterface> cells = mCells.AddCells(mMesh.ElementsTotal(), mIntegration);
@@ -51,13 +54,14 @@ public:
         mReducedSolutionSpaceOperator = ReducedSolutionSpace(dofTypes, numTotalDofs, constraints);
 
         DofVector<double> X = mFunctions.RenumberDofs(constraints, dofTypes, DofVector<double>());
-        mSolver = QuasistaticSolver(X);
-        //        mSolver.SetQuiet();
+
+        mSolutionVector = ToEigen(X, dofTypes);
+        mImplicitCallBack.SetReducedSolutionSpaceOperator(mReducedSolutionSpaceOperator);
     }
 
     void Solve(std::string solverString)
     {
-        mSolver.DoStep(mFunctions, mReducedSolutionSpaceOperator, 0, solverString);
+        mSolver.DoStep(mSolutionVector, mImplicitCallBack, 0, solverString);
     }
 
 private:
@@ -74,6 +78,9 @@ private:
     TimeDependentProblem mFunctions;
     QuasistaticSolver mSolver;
     ReducedSolutionSpace mReducedSolutionSpaceOperator;
+    ImplicitCallBack mImplicitCallBack;
+
+    Eigen::VectorXd mSolutionVector;
 };
 
 static void ElasticSolveMumps(benchmark::State& state)

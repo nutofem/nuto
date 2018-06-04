@@ -114,7 +114,7 @@ public:
     //! @param solverType solver type from NuTo::EigenSparseSolve(...)
     //! @return number of iterations required by the newton algorithm, throws upon failure to converge
     int DoStep(Eigen::VectorXd& start, ImplicitCallBack& callBack, double newGlobalTime,
-               std::string solverType = "EigenSparseLU", double tolerance = 1.e-10);
+               std::string solverType = "EigenSparseLU");
 
     //! Writes the current time, the mean dof values and the sum of the residual into out, only for the given dof type
     //! and given dof numbers

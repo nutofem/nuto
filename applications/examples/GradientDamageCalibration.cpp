@@ -2,6 +2,8 @@
 #include <fstream>
 #include <boost/math/tools/roots.hpp>
 
+#include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
+
 #include "nuto/math/EigenIO.h"
 #include "nuto/math/EigenCompanion.h"
 #include "nuto/mechanics/integrands/GradientDamage.h"
@@ -79,17 +81,20 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
 
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
-    QuasistaticSolver problem(X);
-    //    problem.SetQuiet();
-    // problem.mTolerance = 1.e-6;
-    // problem.SetConstraints(constraints);
+    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator, 1.e-6);
+
+    QuasistaticSolver problem;
+
+    Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
 
     int dofLeft = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L), d).GetDofNumber(0);
 
     auto loadDispFileName = "CalibrationLD.dat";
     std::ofstream loadDisplacement(loadDispFileName);
-    auto doStep = [&](double t) { return problem.DoStep(equations, reducedSolutionSpaceOperator, t, "MumpsLU"); };
-    auto postProcessF = [&](double) { problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}, equations); };
+    auto doStep = [&](double t) { return problem.DoStep(solutionVector, implicitCallBack, t, "MumpsLU"); };
+    auto postProcessF = [&](double) {
+        problem.WriteTimeDofResidual(solutionVector, loadDisplacement, d, {dofLeft}, implicitCallBack);
+    };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
     //    adaptiveSolve.SetQuiet();
