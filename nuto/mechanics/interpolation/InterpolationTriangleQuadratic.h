@@ -2,6 +2,7 @@
 #include <eigen3/Eigen/Core>
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "nuto/math/shapes/Triangle.h"
+#include <vector>
 
 namespace NuTo
 {
@@ -25,6 +26,15 @@ public:
     int GetNumNodes() const override;
 
     const Shape& GetShape() const override;
+
+    std::vector<int> EdgeNodeIds(int edgeIndex);
+
+    std::unique_ptr<InterpolationSimple> EdgeInterpolation(int edgeIndex);
+
+    int NumEdges()
+    {
+        return 3;
+    }
 
 private:
     Triangle mShape;

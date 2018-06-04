@@ -1,5 +1,6 @@
 #include "nuto/base/Exception.h"
 #include "InterpolationTriangleQuadratic.h"
+#include "InterpolationTrussQuadratic.h"
 
 using namespace NuTo;
 
@@ -13,8 +14,7 @@ Eigen::VectorXd InterpolationTriangleQuadratic::GetShapeFunctions(const NaturalC
     return ShapeFunctions(naturalIpCoords);
 }
 
-Eigen::MatrixXd
-InterpolationTriangleQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::MatrixXd InterpolationTriangleQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);
 }
@@ -97,4 +97,22 @@ InterpolationTriangleQuadratic::DerivativeShapeFunctions(const Eigen::VectorXd& 
     return derivativeShapeFunctions;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::vector<int> InterpolationTriangleQuadratic::EdgeNodeIds(int edgeIndex)
+{
+    switch (edgeIndex)
+    {
+    case 0:
+        return {0, 3, 1};
+    case 1:
+        return {1, 4, 2};
+    case 2:
+        return {2, 5, 0};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0..2)");
+    }
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTriangleQuadratic::EdgeInterpolation(int /* edgeIndex */)
+{
+    return std::make_unique<InterpolationTrussQuadratic>();
+}
