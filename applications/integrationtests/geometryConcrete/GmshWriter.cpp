@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(Gmsh3D)
     m.row(0) = Eigen::Vector4d(5, 5, 5, 3);
     m.row(1) = Eigen::Vector4d(15, 15, 15, 3);
 
-    GmshWriter::Options opts(3, 3);
+    GmshWriter::Options opts(1.25, 1.25);
     Check(FileName("3DBoxNormal"), GmshWriter::Box3D{Eigen::Vector3d::Zero(), Eigen::Vector3d::Constant(20)}, m, opts);
 
 
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(Gmsh3DCylinder)
     m.row(0) = Eigen::Vector4d(0, 0, 5, 3);
     m.row(1) = Eigen::Vector4d(0, 0, -5, 3);
 
-    GmshWriter::Options opts(2, 2);
+    GmshWriter::Options opts(1.3, 1.3);
     Check(FileName("3DCylinderNormal"), GmshWriter::Cylinder{5, 10}, m, opts);
 
 

@@ -1,6 +1,10 @@
 macro(check_for_dependencies)
     include(CheckBoost)
 
+    if(ENABLE_OPENMP)
+        find_package(OpenMP REQUIRED)
+    endif()
+
     find_package(MUMPS QUIET)
     if(MUMPS_FOUND)
         message(STATUS "MUMPS solver found.")

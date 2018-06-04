@@ -36,84 +36,114 @@ std::vector<DofType> DofIntersection(std::vector<DofType> one, std::vector<DofTy
 }
 
 DofVector<double> SimpleAssembler::BuildVector(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                             CellInterface::VectorFunction f) const
+                                               CellInterface::VectorFunction f) const
 {
     ThrowOnZeroDofNumbering(dofTypes);
 
     DofVector<double> gradient = ProperlyResizedVector(dofTypes);
-    for (NuTo::CellInterface& cell : cells)
-    {
-        const DofVector<double> cellGradient = cell.Integrate(f);
 
-        for (DofType dof : DofIntersection(cellGradient.DofTypes(), dofTypes))
+#pragma omp parallel
+    {
+        DofVector<double> threadlocalgradient = ProperlyResizedVector(dofTypes);
+#pragma omp for nowait
+        for (auto cellit = cells.begin(); cellit < cells.end(); cellit++)
         {
-            Eigen::VectorXi numberingDof = cell.DofNumbering(dof);
-            const Eigen::VectorXd& cellGradientDof = cellGradient[dof];
-            for (int i = 0; i < numberingDof.rows(); ++i)
-                gradient[dof](numberingDof[i]) += cellGradientDof[i];
+            const DofVector<double> cellGradient = cellit->Integrate(f);
+
+            for (DofType dof : DofIntersection(cellGradient.DofTypes(), dofTypes))
+            {
+                Eigen::VectorXi numberingDof = cellit->DofNumbering(dof);
+                const Eigen::VectorXd& cellGradientDof = cellGradient[dof];
+                for (int i = 0; i < numberingDof.rows(); ++i)
+                    threadlocalgradient[dof](numberingDof[i]) += cellGradientDof[i];
+            }
         }
+#pragma omp critical
+        gradient += threadlocalgradient;
     }
     return gradient;
 }
 
 DofVector<double> SimpleAssembler::BuildDiagonallyLumpedMatrix(const Group<CellInterface>& cells,
-                                                             std::vector<DofType> dofTypes,
-                                                             CellInterface::MatrixFunction f) const
+                                                               std::vector<DofType> dofTypes,
+                                                               CellInterface::MatrixFunction f) const
 {
     DofVector<double> lumpedMatrix = ProperlyResizedVector(dofTypes);
-    for (NuTo::CellInterface& cell : cells)
+
+#pragma omp parallel
     {
-        const DofMatrix<double> localMatrix = cell.Integrate(f);
-
-        for (DofType dof : DofIntersection(localMatrix.DofTypes(), dofTypes))
+        DofVector<double> threadlocallumpedMatrix = ProperlyResizedVector(dofTypes);
+#pragma omp for nowait
+        for (auto cellit = cells.begin(); cellit < cells.end(); cellit++)
         {
-            Eigen::VectorXd localDiagonalDof = localMatrix(dof, dof).diagonal();
-            double diagonalSum = localDiagonalDof.sum();
-            double fullSum = localMatrix(dof, dof).sum();
-            localDiagonalDof *= (fullSum / diagonalSum) / dof.GetNum();
+            const DofMatrix<double> localMatrix = cellit->Integrate(f);
 
-            Eigen::VectorXi numberingDof = cell.DofNumbering(dof);
+            for (DofType dof : DofIntersection(localMatrix.DofTypes(), dofTypes))
+            {
+                Eigen::VectorXd localDiagonalDof = localMatrix(dof, dof).diagonal();
+                double diagonalSum = localDiagonalDof.sum();
+                double fullSum = localMatrix(dof, dof).sum();
+                localDiagonalDof *= (fullSum / diagonalSum) / dof.GetNum();
 
-            for (int i = 0; i < numberingDof.rows(); ++i)
-                lumpedMatrix[dof](numberingDof[i]) += localDiagonalDof[i];
+                Eigen::VectorXi numberingDof = cellit->DofNumbering(dof);
+
+                for (int i = 0; i < numberingDof.rows(); ++i)
+                    threadlocallumpedMatrix[dof](numberingDof[i]) += localDiagonalDof[i];
+            }
         }
+#pragma omp critical
+        lumpedMatrix += threadlocallumpedMatrix;
     }
     return lumpedMatrix;
 }
 
 DofMatrixSparse<double> SimpleAssembler::BuildMatrix(const Group<CellInterface>& cells, std::vector<DofType> dofTypes,
-                                                   CellInterface::MatrixFunction f) const
+                                                     CellInterface::MatrixFunction f) const
 {
     ThrowOnZeroDofNumbering(dofTypes);
 
-    using TripletList = std::vector<Eigen::Triplet<double>>;
+    using TripletList = std::list<Eigen::Triplet<double>>;
     DofMatrixContainer<TripletList> triplets;
 
-    for (NuTo::CellInterface& cell : cells)
+#pragma omp parallel
     {
-        const DofMatrix<double> cellHessian = cell.Integrate(f);
-        auto dofTypesToAssemble = DofIntersection(cellHessian.DofTypes(), dofTypes);
+        DofMatrixContainer<TripletList> localtriplets;
 
-        for (DofType dofI : dofTypesToAssemble)
+#pragma omp for nowait
+        for (auto cellit = cells.begin(); cellit < cells.end(); cellit++)
         {
-            Eigen::VectorXi numberingDofI = cell.DofNumbering(dofI);
-            for (DofType dofJ : dofTypesToAssemble)
+            const DofMatrix<double> cellHessian = cellit->Integrate(f);
+            auto dofTypesToAssemble = DofIntersection(cellHessian.DofTypes(), dofTypes);
+
+            for (DofType dofI : dofTypesToAssemble)
             {
-                Eigen::VectorXi numberingDofJ = cell.DofNumbering(dofJ);
-                const Eigen::MatrixXd& cellHessianDof = cellHessian(dofI, dofJ);
-
-                for (int i = 0; i < numberingDofI.rows(); ++i)
+                Eigen::VectorXi numberingDofI = cellit->DofNumbering(dofI);
+                for (DofType dofJ : dofTypesToAssemble)
                 {
-                    for (int j = 0; j < numberingDofJ.rows(); ++j)
-                    {
-                        const int globalDofNumberI = numberingDofI[i];
-                        const int globalDofNumberJ = numberingDofJ[j];
-                        const double globalDofValue = cellHessianDof(i, j);
+                    Eigen::VectorXi numberingDofJ = cellit->DofNumbering(dofJ);
+                    const Eigen::MatrixXd& cellHessianDof = cellHessian(dofI, dofJ);
 
-                        triplets(dofI, dofJ).push_back({globalDofNumberI, globalDofNumberJ, globalDofValue});
+                    for (int i = 0; i < numberingDofI.rows(); ++i)
+                    {
+                        for (int j = 0; j < numberingDofJ.rows(); ++j)
+                        {
+                            const int globalDofNumberI = numberingDofI[i];
+                            const int globalDofNumberJ = numberingDofJ[j];
+                            const double globalDofValue = cellHessianDof(i, j);
+
+                            localtriplets(dofI, dofJ).push_back({globalDofNumberI, globalDofNumberJ, globalDofValue});
+                        }
                     }
                 }
             }
+        }
+#pragma omp critical
+        {
+            for (DofType dofI : dofTypes)
+                for (DofType dofJ : dofTypes)
+                {
+                    triplets(dofI, dofJ).splice(triplets(dofI, dofJ).end(), localtriplets(dofI, dofJ));
+                }
         }
     }
     DofMatrixSparse<double> hessian = ProperlyResizedMatrix(dofTypes);
@@ -141,8 +171,9 @@ DofMatrixSparse<double> SimpleAssembler::ProperlyResizedMatrix(std::vector<DofTy
     for (auto dofI : dofTypes)
         for (auto dofJ : dofTypes)
         {
-            m(dofI, dofJ).resize(mDofInfo.numIndependentDofs[dofI] + mDofInfo.numDependentDofs[dofI],
-                                 mDofInfo.numIndependentDofs[dofJ] + mDofInfo.numDependentDofs[dofJ]);
+            m(dofI, dofJ)
+                    .resize(mDofInfo.numIndependentDofs[dofI] + mDofInfo.numDependentDofs[dofI],
+                            mDofInfo.numIndependentDofs[dofJ] + mDofInfo.numDependentDofs[dofJ]);
         }
     return m;
 }
