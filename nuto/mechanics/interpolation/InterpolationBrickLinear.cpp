@@ -1,5 +1,7 @@
 #include "nuto/base/Exception.h"
 #include "InterpolationBrickLinear.h"
+#include "InterpolationQuadLinear.h"
+#include "InterpolationTrussLinear.h"
 
 using namespace NuTo;
 
@@ -13,8 +15,7 @@ Eigen::VectorXd InterpolationBrickLinear::GetShapeFunctions(const NaturalCoords&
     return ShapeFunctions(naturalIpCoords);
 }
 
-Eigen::MatrixXd
-InterpolationBrickLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::MatrixXd InterpolationBrickLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);
 }
@@ -129,4 +130,68 @@ Eigen::Matrix<double, 8, 3> InterpolationBrickLinear::DerivativeShapeFunctions(c
     derivativeShapeFunctions(7, 2) = 0.125 * minus_r * plus_s;
 
     return derivativeShapeFunctions;
+}
+
+std::vector<int> InterpolationBrickLinear::EdgeNodeIds(int edgeIndex) const
+{
+    switch (edgeIndex)
+    {
+    case 0:
+        return {0, 1};
+    case 1:
+        return {1, 2};
+    case 2:
+        return {2, 3};
+    case 3:
+        return {3, 0};
+    case 4:
+        return {4, 5};
+    case 5:
+        return {5, 6};
+    case 6:
+        return {6, 7};
+    case 7:
+        return {7, 4};
+    case 8:
+        return {0, 4};
+    case 9:
+        return {1, 5};
+    case 10:
+        return {2, 6};
+    case 11:
+        return {3, 7};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0..11)");
+    }
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationBrickLinear::EdgeInterpolation(int /* faceIndex */) const
+{
+    return std::make_unique<InterpolationTrussLinear>();
+}
+
+std::vector<int> InterpolationBrickLinear::FaceNodeIds(int faceIndex) const
+{
+    switch (faceIndex)
+    {
+    case 0:
+        return {0, 3, 2, 1};
+    case 1:
+        return {0, 1, 5, 4};
+    case 2:
+        return {4, 5, 6, 7};
+    case 3:
+        return {0, 4, 7, 3};
+    case 4:
+        return {2, 3, 7, 6};
+    case 5:
+        return {1, 2, 6, 5};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "face index out of range (0..5)");
+    }
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationBrickLinear::FaceInterpolation(int /* faceIndex */) const
+{
+    return std::make_unique<InterpolationQuadLinear>();
 }

@@ -3,11 +3,12 @@
 #include "nuto/mechanics/mesh/MeshCompanion.h"
 #include "nuto/mechanics/nodes/NodeSimple.h"
 #include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/UnitMeshFem.h"
 #include "nuto/mechanics/interpolation/InterpolationTriangleQuadratic.h"
 
 using namespace NuTo;
 
-int main(int, char* argv[])
+void Triangle2ndOrder()
 {
     std::cout << "Create a test mesh" << std::endl;
 
@@ -32,8 +33,35 @@ int main(int, char* argv[])
     Group<ElementCollectionFem> allElements = mesh.ElementsTotal();
 
     auto edges0 = AddEdgeElements(&mesh, mesh.Elements[0]);
-    std::cout << "Added edges of element 0   : " << edges0.Size() << std::endl;
+    std::cout << "Added edges of element 0 (3)  : " << edges0.Size() << std::endl;
 
     auto edgesAll = AddEdgeElements(&mesh, allElements);
-    std::cout << "Added edges of all elements: " << edgesAll.Size() << std::endl;
+    std::cout << "Added edges of all elements (5): " << edgesAll.Size() << std::endl;
+}
+
+void QuadLinear()
+{
+    std::cout << "Create a test mesh" << std::endl;
+
+    MeshFem mesh = UnitMeshFem::CreateBricks(2, 1, 1);
+
+    Group<ElementCollectionFem> allElements = mesh.ElementsTotal();
+
+    auto edges0 = AddEdgeElements(&mesh, mesh.Elements[0]);
+    std::cout << "Added edges of element 0 (12)  : " << edges0.Size() << std::endl;
+
+    auto edgesAll = AddEdgeElements(&mesh, allElements);
+    std::cout << "Added edges of all elements (20): " << edgesAll.Size() << std::endl;
+
+    auto faces0 = AddFaceElements(&mesh, mesh.Elements[0]);
+    std::cout << "Added faces of element 0 (6)  : " << faces0.Size() << std::endl;
+
+    auto facesAll = AddFaceElements(&mesh, allElements);
+    std::cout << "Added faces of all elements (11)  : " << facesAll.Size() << std::endl;
+}
+
+int main(int, char* argv[])
+{
+    // Triangle2ndOrder();
+    QuadLinear();
 }

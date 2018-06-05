@@ -54,6 +54,21 @@ public:
     {
         throw Exception(__PRETTY_FUNCTION__, "Not implemented");
     }
+
+    virtual std::vector<int> FaceNodeIds(int /* faceIndex */) const
+    {
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    }
+
+    virtual std::unique_ptr<InterpolationSimple> FaceInterpolation(int /* faceIndex*/) const
+    {
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    }
+
+    virtual int NumFaces() const
+    {
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    }
 };
 
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself
