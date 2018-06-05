@@ -40,7 +40,7 @@ public:
 
     virtual const Shape& GetShape() const = 0;
 
-    virtual std::vector<int> EdgeNodeIds(int edgeIndex) const
+    virtual std::vector<int> EdgeNodeIds(int /* edgeIndex */) const
     {
         throw Exception(__PRETTY_FUNCTION__, "Not implemented");
     }

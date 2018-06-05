@@ -26,10 +26,14 @@ int main(int, char* argv[])
 
     InterpolationTriangleQuadratic ipol;
 
-    auto& e0 = mesh.Elements.Add({{{nd0, nd1, nd2, ndA1, ndA2, ndA5}, ipol}});
-    auto& e1 = mesh.Elements.Add({{{nd2, nd3, nd0, ndA3, ndA4, ndA5}, ipol}});
+    mesh.Elements.Add({{{nd0, nd1, nd2, ndA1, ndA2, ndA5}, ipol}});
+    mesh.Elements.Add({{{nd2, nd3, nd0, ndA3, ndA4, ndA5}, ipol}});
 
-    std::cout << "Add edges of element 0" << std::endl;
+    Group<ElementCollectionFem> allElements = mesh.ElementsTotal();
 
-    auto edges0 = AddEdgeElements(&mesh, e0);
+    auto edges0 = AddEdgeElements(&mesh, mesh.Elements[0]);
+    std::cout << "Added edges of element 0   : " << edges0.Size() << std::endl;
+
+    auto edgesAll = AddEdgeElements(&mesh, allElements);
+    std::cout << "Added edges of all elements: " << edgesAll.Size() << std::endl;
 }
