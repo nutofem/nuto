@@ -3,6 +3,8 @@
 #include "nuto/mechanics/interpolation/TypeDefs.h"
 #include <memory>
 #include "nuto/math/shapes/Shape.h"
+#include "nuto/base/Exception.h"
+#include <vector>
 
 namespace NuTo
 {
@@ -37,6 +39,21 @@ public:
     virtual int GetNumNodes() const = 0;
 
     virtual const Shape& GetShape() const = 0;
+
+    virtual std::vector<int> EdgeNodeIds(int edgeIndex) const
+    {
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    }
+
+    virtual std::unique_ptr<InterpolationSimple> EdgeInterpolation(int /* edgeIndex*/) const
+    {
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    }
+
+    virtual int NumEdges() const
+    {
+        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    }
 };
 
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself

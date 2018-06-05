@@ -27,11 +27,11 @@ public:
 
     const Shape& GetShape() const override;
 
-    std::vector<int> EdgeNodeIds(int edgeIndex);
+    std::vector<int> EdgeNodeIds(int edgeIndex) const override;
 
-    std::unique_ptr<InterpolationSimple> EdgeInterpolation(int edgeIndex);
+    std::unique_ptr<InterpolationSimple> EdgeInterpolation(int edgeIndex) const override;
 
-    int NumEdges()
+    int NumEdges() const override
     {
         return 3;
     }

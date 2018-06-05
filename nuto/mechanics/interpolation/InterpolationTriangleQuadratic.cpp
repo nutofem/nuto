@@ -97,7 +97,7 @@ InterpolationTriangleQuadratic::DerivativeShapeFunctions(const Eigen::VectorXd& 
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTriangleQuadratic::EdgeNodeIds(int edgeIndex)
+std::vector<int> InterpolationTriangleQuadratic::EdgeNodeIds(int edgeIndex) const
 {
     switch (edgeIndex)
     {
@@ -112,7 +112,7 @@ std::vector<int> InterpolationTriangleQuadratic::EdgeNodeIds(int edgeIndex)
     }
 }
 
-std::unique_ptr<InterpolationSimple> InterpolationTriangleQuadratic::EdgeInterpolation(int /* edgeIndex */)
+std::unique_ptr<InterpolationSimple> InterpolationTriangleQuadratic::EdgeInterpolation(int /* edgeIndex */) const
 {
     return std::make_unique<InterpolationTrussQuadratic>();
 }

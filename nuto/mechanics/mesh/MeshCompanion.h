@@ -12,40 +12,21 @@ namespace NuTo
 //! @param rMesh elm, element whose edges are added
 Group<ElementCollectionFem> AddEdgeElements(MeshFem* rMesh, ElementCollectionFem& elm)
 {
-    // Now add the corresponding interpolation
-    // rMesh->CreateInterpolation(elm.Interpolation().GetEdgeInterpolation()) -> Has to be implemented for all
-    // interpolations
-    InterpolationTriangleQuadratic ipol;
-    rMesh->CreateInterpolation(ipol);
+    auto& elmIpol = elm.CoordinateElement().Interpolation();
+    Group<ElementCollectionFem> edgeElements;
 
     // Now add elements
-    std::vector<NodeSimple*> nodes0;
-    for (int i : ipol.EdgeNodeIds(0))
+    for (int edgeId = 0; edgeId < elmIpol.NumEdges(); edgeId++)
     {
-        nodes0.push_back(&(elm.CoordinateElement().GetNode(i)));
+        std::vector<NodeSimple*> nodes;
+        for (int i : elmIpol.EdgeNodeIds(edgeId))
+        {
+            nodes.push_back(&(elm.CoordinateElement().GetNode(i)));
+        }
+        auto& edgeIpol = rMesh->CreateInterpolation(*elmIpol.EdgeInterpolation(edgeId));
+        auto& e0 = rMesh->Elements.Add({{nodes, edgeIpol}});
+        edgeElements.Add({e0});
     }
-    auto& e0 = rMesh->Elements.Add({{nodes0, *ipol.EdgeInterpolation(0)}});
-
-
-    std::vector<NodeSimple*> nodes1;
-    for (int i : ipol.EdgeNodeIds(1))
-    {
-        nodes1.push_back(&(elm.CoordinateElement().GetNode(i)));
-    }
-    auto& e1 = rMesh->Elements.Add({{nodes1, *ipol.EdgeInterpolation(1)}});
-
-
-    std::vector<NodeSimple*> nodes2;
-    for (int i : ipol.EdgeNodeIds(2))
-    {
-        nodes2.push_back(&(elm.CoordinateElement().GetNode(i)));
-    }
-    auto& e2 = rMesh->Elements.Add({{nodes2, *ipol.EdgeInterpolation(2)}});
-
-    Group<ElementCollectionFem> edgeElements;
-    edgeElements.Add({e0});
-    edgeElements.Add({e1});
-    edgeElements.Add({e2});
     return edgeElements;
 }
 
