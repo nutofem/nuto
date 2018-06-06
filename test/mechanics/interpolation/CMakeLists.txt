@@ -7,14 +7,17 @@ add_unit_test(InterpolationTetrahedronLinear)
 add_unit_test(InterpolationTetrahedronQuadratic)
 
 add_unit_test(InterpolationTriangleLinear)
-add_unit_test(InterpolationTriangleQuadratic)
+add_unit_test(InterpolationTriangleQuadratic
+    mechanics/interpolation/InterpolationTrussQuadratic.cpp)
 add_unit_test(InterpolationTriangle3rdOrder)
 add_unit_test(InterpolationTriangle4thOrder)
 
 add_unit_test(InterpolationQuadLinear)
 add_unit_test(InterpolationQuadSerendipity)
 
-add_unit_test(InterpolationBrickLinear)
+add_unit_test(InterpolationBrickLinear
+    mechanics/interpolation/InterpolationTrussLinear.cpp
+    mechanics/interpolation/InterpolationQuadLinear.cpp)
 add_unit_test(InterpolationBrickQuadratic)
 
 add_unit_test(InterpolationPrismLinear)

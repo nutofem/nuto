@@ -1,5 +1,6 @@
 add_unit_test(NeumannBc
     mechanics/interpolation/InterpolationTrussLinear.cpp
+    mechanics/interpolation/InterpolationTrussQuadratic.cpp
     mechanics/interpolation/InterpolationTriangleLinear.cpp
     mechanics/interpolation/InterpolationTriangleQuadratic.cpp
     )

@@ -3,6 +3,7 @@ add_unit_test(MeshFem
     mechanics/interpolation/InterpolationTriangleLinear.cpp
     mechanics/interpolation/InterpolationQuadLinear.cpp
     mechanics/interpolation/InterpolationTriangleQuadratic.cpp
+    mechanics/interpolation/InterpolationTrussQuadratic.cpp
     mechanics/mesh/MeshFemDofConvert)
 
 add_unit_test(UnitMeshFem
