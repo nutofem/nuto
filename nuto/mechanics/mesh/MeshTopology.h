@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/base/Group.h"
 #include <map>
 #include <set>
 
@@ -16,6 +17,9 @@ public:
         Group<ElementCollectionFem> edgeElements;
         Group<ElementCollectionFem> faceElements;
         Group<ElementCollectionFem> volumeElements;
+
+        std::map<NodeSimple*, std::vector<ElementCollectionFem*>> verticesToFaces;
+        std::map<NodeSimple*, std::vector<ElementCollectionFem*>> verticesToVolumes;
 
         for (ElementCollectionFem& elmColl : rMesh->Elements)
         {
@@ -37,7 +41,7 @@ public:
                 faceElements.Add(elmColl);
                 for (int i = 0; i < elmColl.CoordinateElement().GetNumNodes(); i++)
                 {
-                    mVerticesToFaces[&elmColl.CoordinateElement().GetNode(i)].push_back(&elmColl);
+                    verticesToFaces[&elmColl.CoordinateElement().GetNode(i)].push_back(&elmColl);
                 }
                 break;
             }
@@ -46,7 +50,7 @@ public:
                 volumeElements.Add(elmColl);
                 for (int i = 0; i < elmColl.CoordinateElement().GetNumNodes(); i++)
                 {
-                    mVerticesToVolumes[&elmColl.CoordinateElement().GetNode(i)].push_back(&elmColl);
+                    verticesToVolumes[&elmColl.CoordinateElement().GetNode(i)].push_back(&elmColl);
                 }
                 break;
             }
@@ -66,7 +70,7 @@ public:
                     bool edgeIsContained = true;
                     for (int i = 0; i < edge->CoordinateElement().GetNumNodes(); i++)
                     {
-                        auto& otherFaces = mVerticesToFaces[&(edge->CoordinateElement().GetNode(i))];
+                        auto& otherFaces = verticesToFaces[&(edge->CoordinateElement().GetNode(i))];
                         if (std::find(otherFaces.begin(), otherFaces.end(), &face) == otherFaces.end())
                         {
                             edgeIsContained = false;
@@ -74,7 +78,10 @@ public:
                         }
                     }
                     if (edgeIsContained)
+                    {
                         mFacesToEdges[&face].push_back(edge);
+                        mEdgesToFaces[edge].push_back(&face);
+                    }
                 }
             }
         }
@@ -84,13 +91,13 @@ public:
             for (int i = 0; i < volume.CoordinateElement().GetNumNodes(); i++)
             {
                 std::vector<ElementCollectionFem*> connectedFaces =
-                        mVerticesToFaces[&volume.CoordinateElement().GetNode(i)];
+                        verticesToFaces[&volume.CoordinateElement().GetNode(i)];
                 for (ElementCollectionFem* face : connectedFaces)
                 {
                     bool faceIsContained = true;
                     for (int i = 0; i < face->CoordinateElement().GetNumNodes(); i++)
                     {
-                        auto& otherVolumes = mVerticesToVolumes[&(face->CoordinateElement().GetNode(i))];
+                        auto& otherVolumes = verticesToVolumes[&(face->CoordinateElement().GetNode(i))];
                         if (std::find(otherVolumes.begin(), otherVolumes.end(), &volume) == otherVolumes.end())
                         {
                             faceIsContained = false;
@@ -98,7 +105,10 @@ public:
                         }
                     }
                     if (faceIsContained)
+                    {
                         mVolumesToFaces[&volume].push_back(face);
+                        mFacesToVolumes[face].push_back(&volume);
+                    }
                 }
             }
         }
@@ -119,13 +129,106 @@ public:
         return mVolumesToFaces.size();
     }
 
+    Group<ElementCollectionFem> GetAdjacentEdges(ElementCollectionFem& elm)
+    {
+        Group<ElementCollectionFem> result;
+        int dim = elm.CoordinateElement().Interpolation().GetLocalCoords(0).size();
+        switch (dim)
+        {
+        case 1:
+        {
+            for (NodeSimple* node : mEdgesToVertices[&elm])
+                for (ElementCollectionFem* edge : mVerticesToEdges[node])
+                    result.Add(*edge);
+            return result;
+        }
+        case 2:
+        {
+            for (ElementCollectionFem* edge : mFacesToEdges[&elm])
+                result.Add(*edge);
+            return result;
+        }
+        case 3:
+        {
+            for (ElementCollectionFem* face : mVolumesToFaces[&elm])
+                for (ElementCollectionFem* edge : mFacesToEdges[face])
+                    result.Add(*edge);
+            return result;
+        }
+        default:
+            throw Exception(__PRETTY_FUNCTION__, "Dimension out of range (1-3).");
+        }
+    }
+
+    Group<ElementCollectionFem> GetAdjacentFaces(ElementCollectionFem& elm)
+    {
+        Group<ElementCollectionFem> result;
+        int dim = elm.CoordinateElement().Interpolation().GetLocalCoords(0).size();
+        switch (dim)
+        {
+        case 1:
+        {
+            for (ElementCollectionFem* face : mEdgesToFaces[&elm])
+                result.Add(*face);
+            return result;
+        }
+        case 2:
+        {
+            for (ElementCollectionFem* edge : mFacesToEdges[&elm])
+                for (ElementCollectionFem* face : mEdgesToFaces[edge])
+                    result.Add(*face);
+            return result;
+        }
+        case 3:
+        {
+            for (ElementCollectionFem* face : mVolumesToFaces[&elm])
+                result.Add(*face);
+            return result;
+        }
+        default:
+            throw Exception(__PRETTY_FUNCTION__, "Dimension out of range (1-3).");
+        }
+    }
+
+    Group<ElementCollectionFem> GetAdjacentVolumes(ElementCollectionFem& elm)
+    {
+        Group<ElementCollectionFem> result;
+        int dim = elm.CoordinateElement().Interpolation().GetLocalCoords(0).size();
+        switch (dim)
+        {
+        case 1:
+        {
+            for (ElementCollectionFem* face : mEdgesToFaces[&elm])
+                for (ElementCollectionFem* volume : mFacesToVolumes[face])
+                    result.Add(*volume);
+            return result;
+        }
+        case 2:
+        {
+            for (ElementCollectionFem* volume : mFacesToVolumes[&elm])
+                result.Add(*volume);
+            return result;
+        }
+        case 3:
+        {
+            for (ElementCollectionFem* face : mVolumesToFaces[&elm])
+                for (ElementCollectionFem* volume : mFacesToVolumes[face])
+                    result.Add(*volume);
+            return result;
+        }
+        default:
+            throw Exception(__PRETTY_FUNCTION__, "Dimension out of range (1-3).");
+        }
+    }
+
 private:
     std::map<NodeSimple*, std::vector<ElementCollectionFem*>> mVerticesToEdges;
-    std::map<NodeSimple*, std::vector<ElementCollectionFem*>> mVerticesToFaces;
-    std::map<NodeSimple*, std::vector<ElementCollectionFem*>> mVerticesToVolumes;
-
     std::map<ElementCollectionFem*, std::vector<NodeSimple*>> mEdgesToVertices;
+
     std::map<ElementCollectionFem*, std::vector<ElementCollectionFem*>> mFacesToEdges;
+    std::map<ElementCollectionFem*, std::vector<ElementCollectionFem*>> mEdgesToFaces;
+
     std::map<ElementCollectionFem*, std::vector<ElementCollectionFem*>> mVolumesToFaces;
+    std::map<ElementCollectionFem*, std::vector<ElementCollectionFem*>> mFacesToVolumes;
 };
 } /* NuTo */
