@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/elements/ElementCollection.h"
 #include "nuto/base/Group.h"
 #include <map>
 #include <set>
@@ -12,7 +12,7 @@ namespace NuTo
 class MeshTopology
 {
 public:
-    MeshTopology(MeshFem* rMesh)
+    MeshTopology(Group<ElementCollectionFem> elements)
     {
         Group<ElementCollectionFem> edgeElements;
         Group<ElementCollectionFem> faceElements;
@@ -21,7 +21,7 @@ public:
         std::map<NodeSimple*, std::vector<ElementCollectionFem*>> verticesToFaces;
         std::map<NodeSimple*, std::vector<ElementCollectionFem*>> verticesToVolumes;
 
-        for (ElementCollectionFem& elmColl : rMesh->Elements)
+        for (ElementCollectionFem& elmColl : elements)
         {
             int dim = elmColl.CoordinateElement().Interpolation().GetLocalCoords(0).size();
             switch (dim)

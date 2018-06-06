@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(CreateMeshTopology)
     AddEdgeElements(&mesh, allVolumeElements);
     AddFaceElements(&mesh, allVolumeElements);
 
-    MeshTopology meshTopo(&mesh);
+    MeshTopology meshTopo(mesh.ElementsTotal());
 
     BOOST_CHECK_EQUAL(meshTopo.GetNumEdges(), 20);
     BOOST_CHECK_EQUAL(meshTopo.GetNumFaces(), 11);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(Adjacency)
 
     auto& face0 = mesh.Elements.Add({{{nd1, nd5, nd6, nd2}, ipol2d}});
 
-    MeshTopology meshTopo(&mesh);
+    MeshTopology meshTopo(mesh.ElementsTotal());
 
     auto edgesOfFace0 = meshTopo.GetAdjacentEdges(face0);
     BOOST_CHECK(edgesOfFace0.Contains(edge1));
