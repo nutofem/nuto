@@ -1,4 +1,4 @@
-#include <iostream>
+#include "BoostUnitTest.h"
 
 #include "nuto/mechanics/mesh/MeshCompanion.h"
 #include "nuto/mechanics/nodes/NodeSimple.h"
@@ -8,10 +8,8 @@
 
 using namespace NuTo;
 
-void Triangle2ndOrder()
+BOOST_AUTO_TEST_CASE(Triangle2ndOrderMeshAddEdges)
 {
-    std::cout << "Create a test mesh" << std::endl;
-
     MeshFem mesh;
 
     auto& nd0 = mesh.Nodes.Add(Eigen::Vector2d(0., 0.));
@@ -32,14 +30,12 @@ void Triangle2ndOrder()
 
     Group<ElementCollectionFem> allElements = mesh.ElementsTotal();
 
-    auto edges0 = AddEdgeElements(&mesh, mesh.Elements[0]);
-    std::cout << "Added edges of element 0 (3)  : " << edges0.Size() << std::endl;
-
     auto edgesAll = AddEdgeElements(&mesh, allElements);
-    std::cout << "Added edges of all elements (5): " << edgesAll.Size() << std::endl;
+
+    BOOST_CHECK_EQUAL(edgesAll.Size(), 5);
 }
 
-void QuadLinear()
+BOOST_AUTO_TEST_CASE(BrickLinearMeshAddEdgesAndFaces)
 {
     std::cout << "Create a test mesh" << std::endl;
 
@@ -47,21 +43,12 @@ void QuadLinear()
 
     Group<ElementCollectionFem> allElements = mesh.ElementsTotal();
 
-    auto edges0 = AddEdgeElements(&mesh, mesh.Elements[0]);
-    std::cout << "Added edges of element 0 (12)  : " << edges0.Size() << std::endl;
-
     auto edgesAll = AddEdgeElements(&mesh, allElements);
-    std::cout << "Added edges of all elements (20): " << edgesAll.Size() << std::endl;
-
-    auto faces0 = AddFaceElements(&mesh, mesh.Elements[0]);
-    std::cout << "Added faces of element 0 (6)  : " << faces0.Size() << std::endl;
+    BOOST_CHECK_EQUAL(edgesAll.Size(), 20);
 
     auto facesAll = AddFaceElements(&mesh, allElements);
-    std::cout << "Added faces of all elements (11)  : " << facesAll.Size() << std::endl;
-}
+    BOOST_CHECK_EQUAL(facesAll.Size(), 11);
 
-int main(int, char* argv[])
-{
-    // Triangle2ndOrder();
-    QuadLinear();
+    auto facesOrientedAll = AddFaceElements(&mesh, allElements, true);
+    BOOST_CHECK_EQUAL(facesOrientedAll.Size(), 12);
 }
