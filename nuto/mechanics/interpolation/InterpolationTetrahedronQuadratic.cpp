@@ -13,8 +13,7 @@ Eigen::VectorXd InterpolationTetrahedronQuadratic::GetShapeFunctions(const Natur
     return ShapeFunctions(naturalIpCoords);
 }
 
-Eigen::MatrixXd
-InterpolationTetrahedronQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& coords) const
+Eigen::MatrixXd InterpolationTetrahedronQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& coords) const
 {
     return DerivativeShapeFunctions(coords);
 }
@@ -153,4 +152,24 @@ InterpolationTetrahedronQuadratic::DerivativeShapeFunctions(const Eigen::VectorX
     derivativeShapeFunctions(9, 2) = 4. * r;
 
     return derivativeShapeFunctions;
+}
+
+std::vector<int> InterpolationTetrahedronQuadratic::EdgeNodeIds(int /* edgeIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTetrahedronQuadratic::EdgeInterpolation(int /* edgeIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::vector<int> InterpolationTetrahedronQuadratic::FaceNodeIds(int /* faceIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTetrahedronQuadratic::FaceInterpolation(int /* faceIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }

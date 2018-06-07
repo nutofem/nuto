@@ -36,6 +36,15 @@ public:
         return 3;
     }
 
+    int NumFaces() const override
+    {
+        return 1;
+    }
+
+    virtual std::vector<int> FaceNodeIds(int /* faceIndex */) const override;
+
+    virtual std::unique_ptr<InterpolationSimple> FaceInterpolation(int /* faceIndex*/) const override;
+
 private:
     Triangle mShape;
 };

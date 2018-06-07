@@ -112,3 +112,23 @@ Eigen::Matrix<double, 5, 3> InterpolationPyramidLinear::DerivativeShapeFunctions
 
     return derivativeShapeFunctions;
 }
+
+std::vector<int> InterpolationPyramidLinear::EdgeNodeIds(int edgeIndex) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::EdgeInterpolation(int /* edgeIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::vector<int> InterpolationPyramidLinear::FaceNodeIds(int /* faceIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::FaceInterpolation(int /* faceIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}

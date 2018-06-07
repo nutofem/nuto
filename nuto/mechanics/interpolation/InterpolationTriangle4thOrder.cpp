@@ -13,8 +13,7 @@ Eigen::VectorXd InterpolationTriangle4thOrder::GetShapeFunctions(const NaturalCo
     return ShapeFunctions(naturalIpCoords);
 }
 
-Eigen::MatrixXd
-InterpolationTriangle4thOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::MatrixXd InterpolationTriangle4thOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);
 }
@@ -181,4 +180,24 @@ InterpolationTriangle4thOrder::DerivativeShapeFunctions(const Eigen::VectorXd& r
     derivativeShapeFunctions(14, 1) = -1.0 + 14.6666666667 * s - 48.0 * s * s + 42.6666666667 * s * s * s;
 
     return derivativeShapeFunctions;
+}
+
+std::vector<int> InterpolationTriangle4thOrder::EdgeNodeIds(int edgeIndex) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTriangle4thOrder::EdgeInterpolation(int /* edgeIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::vector<int> InterpolationTriangle4thOrder::FaceNodeIds(int /* faceIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTriangle4thOrder::FaceInterpolation(int /* faceIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }

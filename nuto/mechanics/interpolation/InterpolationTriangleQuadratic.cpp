@@ -116,3 +116,13 @@ std::unique_ptr<InterpolationSimple> InterpolationTriangleQuadratic::EdgeInterpo
 {
     return std::make_unique<InterpolationTrussQuadratic>();
 }
+
+std::vector<int> InterpolationTriangleQuadratic::FaceNodeIds(int /* faceIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTriangleQuadratic::FaceInterpolation(int /* faceIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}

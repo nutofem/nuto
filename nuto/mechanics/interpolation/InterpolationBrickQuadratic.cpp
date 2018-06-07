@@ -13,8 +13,7 @@ Eigen::VectorXd InterpolationBrickQuadratic::GetShapeFunctions(const NaturalCoor
     return ShapeFunctions(naturalIpCoords);
 }
 
-Eigen::MatrixXd
-InterpolationBrickQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::MatrixXd InterpolationBrickQuadratic::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);
 }
@@ -260,4 +259,24 @@ Eigen::Matrix<double, 20, 3> InterpolationBrickQuadratic::DerivativeShapeFunctio
     derivativeShapeFunctions(19, 2) = 0.25 * minus_r * mid_s;
 
     return derivativeShapeFunctions;
+}
+
+std::vector<int> InterpolationBrickQuadratic::EdgeNodeIds(int edgeIndex) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationBrickQuadratic::EdgeInterpolation(int /* edgeIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::vector<int> InterpolationBrickQuadratic::FaceNodeIds(int /* faceIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationBrickQuadratic::FaceInterpolation(int /* faceIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }

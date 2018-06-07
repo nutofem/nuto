@@ -25,6 +25,24 @@ public:
 
     const Shape& GetShape() const override;
 
+    std::vector<int> EdgeNodeIds(int edgeIndex) const override;
+
+    int NumEdges() const override
+    {
+        return 12;
+    }
+
+    int NumFaces() const override
+    {
+        return 6;
+    }
+
+    virtual std::unique_ptr<InterpolationSimple> EdgeInterpolation(int /* edgeIndex*/) const override;
+
+    virtual std::vector<int> FaceNodeIds(int /* faceIndex */) const override;
+
+    virtual std::unique_ptr<InterpolationSimple> FaceInterpolation(int /* faceIndex*/) const override;
+
 private:
     Hexahedron mShape;
 };

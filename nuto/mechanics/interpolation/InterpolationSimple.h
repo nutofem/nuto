@@ -40,35 +40,17 @@ public:
 
     virtual const Shape& GetShape() const = 0;
 
-    virtual std::vector<int> EdgeNodeIds(int /* edgeIndex */) const
-    {
-        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
-    }
+    virtual std::vector<int> EdgeNodeIds(int /* edgeIndex */) const = 0;
 
-    virtual std::unique_ptr<InterpolationSimple> EdgeInterpolation(int /* edgeIndex*/) const
-    {
-        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
-    }
+    virtual int NumEdges() const = 0;
 
-    virtual int NumEdges() const
-    {
-        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
-    }
+    virtual int NumFaces() const = 0;
 
-    virtual std::vector<int> FaceNodeIds(int /* faceIndex */) const
-    {
-        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
-    }
+    virtual std::unique_ptr<InterpolationSimple> EdgeInterpolation(int /* edgeIndex*/) const = 0;
 
-    virtual std::unique_ptr<InterpolationSimple> FaceInterpolation(int /* faceIndex*/) const
-    {
-        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
-    }
+    virtual std::vector<int> FaceNodeIds(int /* faceIndex */) const = 0;
 
-    virtual int NumFaces() const
-    {
-        throw Exception(__PRETTY_FUNCTION__, "Not implemented");
-    }
+    virtual std::unique_ptr<InterpolationSimple> FaceInterpolation(int /* faceIndex*/) const = 0;
 };
 
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself

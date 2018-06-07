@@ -81,3 +81,23 @@ Eigen::Matrix<double, 4, 3> InterpolationTetrahedronLinear::DerivativeShapeFunct
 
     return derivativeShapeFunctions;
 }
+
+std::vector<int> InterpolationTetrahedronLinear::EdgeNodeIds(int edgeIndex) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::EdgeInterpolation(int /* edgeIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::vector<int> InterpolationTetrahedronLinear::FaceNodeIds(int /* faceIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::FaceInterpolation(int /* faceIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}

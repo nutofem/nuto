@@ -13,8 +13,7 @@ Eigen::VectorXd InterpolationTruss4thOrder::GetShapeFunctions(const NaturalCoord
     return ShapeFunctions(naturalIpCoords);
 }
 
-Eigen::MatrixXd
-InterpolationTruss4thOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::MatrixXd InterpolationTruss4thOrder::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);
 }
@@ -80,4 +79,24 @@ Eigen::Matrix<double, 5, 1> InterpolationTruss4thOrder::DerivativeShapeFunctions
     derivativeShapeFunctions[3] = +1.33333333333 + 5.33333333333 * r - 4.0 * r2 - 10.6666666667 * r3;
     derivativeShapeFunctions[4] = -0.166666666667 - 0.333333333333 * r + 2.0 * r2 + 2.66666666667 * r3;
     return derivativeShapeFunctions;
+}
+
+std::vector<int> InterpolationTruss4thOrder::EdgeNodeIds(int edgeIndex) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTruss4thOrder::EdgeInterpolation(int /* edgeIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::vector<int> InterpolationTruss4thOrder::FaceNodeIds(int /* faceIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTruss4thOrder::FaceInterpolation(int /* faceIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }

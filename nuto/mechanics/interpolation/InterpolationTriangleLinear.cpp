@@ -13,8 +13,7 @@ Eigen::VectorXd InterpolationTriangleLinear::GetShapeFunctions(const NaturalCoor
     return ShapeFunctions(naturalIpCoords);
 }
 
-Eigen::MatrixXd
-InterpolationTriangleLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+Eigen::MatrixXd InterpolationTriangleLinear::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
 {
     return DerivativeShapeFunctions(naturalIpCoords);
 }
@@ -70,4 +69,24 @@ Eigen::Matrix<double, 3, 2> InterpolationTriangleLinear::DerivativeShapeFunction
     derivativeShapeFunctions(2, 0) = 0.0;
     derivativeShapeFunctions(2, 1) = 1.0;
     return derivativeShapeFunctions;
+}
+
+std::vector<int> InterpolationTriangleLinear::EdgeNodeIds(int edgeIndex) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTriangleLinear::EdgeInterpolation(int /* edgeIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::vector<int> InterpolationTriangleLinear::FaceNodeIds(int /* faceIndex */) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+}
+
+std::unique_ptr<InterpolationSimple> InterpolationTriangleLinear::FaceInterpolation(int /* faceIndex*/) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }

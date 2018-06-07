@@ -10,7 +10,6 @@ namespace NuTo
 class InterpolationTrussLobatto : public InterpolationSimple
 {
 public:
-
     static Eigen::VectorXd LocalCoords(int order);
 
     static Eigen::VectorXd BarycentricWeights(const Eigen::VectorXd& nodes);
@@ -32,6 +31,24 @@ public:
     int GetNumNodes() const override;
 
     const Shape& GetShape() const override;
+
+    std::vector<int> EdgeNodeIds(int edgeIndex) const override;
+
+    int NumEdges() const override
+    {
+        return 1;
+    }
+
+    int NumFaces() const override
+    {
+        return 0;
+    }
+
+    virtual std::unique_ptr<InterpolationSimple> EdgeInterpolation(int /* edgeIndex*/) const override;
+
+    virtual std::vector<int> FaceNodeIds(int /* faceIndex */) const override;
+
+    virtual std::unique_ptr<InterpolationSimple> FaceInterpolation(int /* faceIndex*/) const override;
 
 private:
     Eigen::VectorXd mNodes;
