@@ -116,9 +116,29 @@ Eigen::Matrix<double, 5, 3> InterpolationPyramidLinear::DerivativeShapeFunctions
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationPyramidLinear::EdgeNodeIds(int /* edgeIndex */) const
+std::vector<int> InterpolationPyramidLinear::EdgeNodeIds(int edgeIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (edgeIndex)
+    {
+    case 0:
+        return {0, 1};
+    case 1:
+        return {1, 2};
+    case 2:
+        return {2, 3};
+    case 3:
+        return {3, 0};
+    case 4:
+        return {0, 4};
+    case 5:
+        return {1, 4};
+    case 6:
+        return {2, 4};
+    case 7:
+        return {3, 4};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0..7)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::EdgeInterpolation(int /* edgeIndex*/) const
@@ -126,9 +146,23 @@ std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::EdgeInterpolati
     return std::make_unique<InterpolationTrussLinear>();
 }
 
-std::vector<int> InterpolationPyramidLinear::FaceNodeIds(int /* faceIndex */) const
+std::vector<int> InterpolationPyramidLinear::FaceNodeIds(int faceIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (faceIndex)
+    {
+    case 0:
+        return {0, 1, 2, 3};
+    case 1:
+        return {0, 4, 1};
+    case 2:
+        return {1, 4, 2};
+    case 3:
+        return {2, 4, 3};
+    case 4:
+        return {0, 3, 4};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0..4)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::FaceInterpolation(int faceIndex) const

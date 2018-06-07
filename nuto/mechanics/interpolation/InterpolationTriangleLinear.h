@@ -26,7 +26,7 @@ public:
 
     const Shape& GetShape() const override;
 
-    std::vector<int> EdgeNodeIds(int) const override;
+    std::vector<int> EdgeNodeIds(int edgeIndex) const override;
 
     int NumEdges() const override
     {

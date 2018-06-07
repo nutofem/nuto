@@ -79,9 +79,21 @@ Eigen::Matrix<double, 4, 2> InterpolationQuadLinear::DerivativeShapeFunctions(co
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationQuadLinear::EdgeNodeIds(int /* edgeIndex */) const
+std::vector<int> InterpolationQuadLinear::EdgeNodeIds(int edgeIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (edgeIndex)
+    {
+    case 0:
+        return {0, 1};
+    case 1:
+        return {1, 2};
+    case 2:
+        return {2, 3};
+    case 3:
+        return {3, 0};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0..3)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationQuadLinear::EdgeInterpolation(int /* edgeIndex*/) const
@@ -89,9 +101,15 @@ std::unique_ptr<InterpolationSimple> InterpolationQuadLinear::EdgeInterpolation(
     return std::make_unique<InterpolationTrussLinear>();
 }
 
-std::vector<int> InterpolationQuadLinear::FaceNodeIds(int /* faceIndex */) const
+std::vector<int> InterpolationQuadLinear::FaceNodeIds(int faceIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (faceIndex)
+    {
+    case 0:
+        return {0, 1, 2, 3};
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "Face index out of range (0).");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationQuadLinear::FaceInterpolation(int /* faceIndex*/) const

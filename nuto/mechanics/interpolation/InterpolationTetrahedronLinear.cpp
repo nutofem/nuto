@@ -84,9 +84,25 @@ Eigen::Matrix<double, 4, 3> InterpolationTetrahedronLinear::DerivativeShapeFunct
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTetrahedronLinear::EdgeNodeIds(int /* edgeIndex */) const
+std::vector<int> InterpolationTetrahedronLinear::EdgeNodeIds(int edgeIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (edgeIndex)
+    {
+    case 0:
+        return {0, 1};
+    case 1:
+        return {1, 2};
+    case 2:
+        return {2, 0};
+    case 3:
+        return {0, 3};
+    case 4:
+        return {1, 3};
+    case 5:
+        return {2, 3};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0..5)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::EdgeInterpolation(int /* edgeIndex*/) const
@@ -94,9 +110,21 @@ std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::EdgeInterpo
     return std::make_unique<InterpolationTrussLinear>();
 }
 
-std::vector<int> InterpolationTetrahedronLinear::FaceNodeIds(int /* faceIndex */) const
+std::vector<int> InterpolationTetrahedronLinear::FaceNodeIds(int faceIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (faceIndex)
+    {
+    case 0:
+        return {1, 2, 3};
+    case 1:
+        return {0, 3, 2};
+    case 2:
+        return {0, 1, 3};
+    case 3:
+        return {0, 2, 1};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0..3)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::FaceInterpolation(int /* faceIndex*/) const

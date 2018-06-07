@@ -183,9 +183,15 @@ InterpolationTriangle4thOrder::DerivativeShapeFunctions(const Eigen::VectorXd& r
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTriangle4thOrder::EdgeNodeIds(int /* edgeIndex */) const
+std::vector<int> InterpolationTriangle4thOrder::EdgeNodeIds(int edgeIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (edgeIndex)
+    {
+    case 0:
+        return {0, 1, 2, 4};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTriangle4thOrder::EdgeInterpolation(int /* edgeIndex*/) const

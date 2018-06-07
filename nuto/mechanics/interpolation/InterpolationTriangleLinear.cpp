@@ -72,9 +72,19 @@ Eigen::Matrix<double, 3, 2> InterpolationTriangleLinear::DerivativeShapeFunction
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTriangleLinear::EdgeNodeIds(int /* edgeIndex */) const
+std::vector<int> InterpolationTriangleLinear::EdgeNodeIds(int edgeIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (edgeIndex)
+    {
+    case 0:
+        return {0, 1};
+    case 1:
+        return {1, 2};
+    case 2:
+        return {2, 0};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0..2)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTriangleLinear::EdgeInterpolation(int /* edgeIndex*/) const
@@ -82,9 +92,15 @@ std::unique_ptr<InterpolationSimple> InterpolationTriangleLinear::EdgeInterpolat
     return std::make_unique<InterpolationTrussLinear>();
 }
 
-std::vector<int> InterpolationTriangleLinear::FaceNodeIds(int /* faceIndex */) const
+std::vector<int> InterpolationTriangleLinear::FaceNodeIds(int faceIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (faceIndex)
+    {
+    case 0:
+        return {0, 1, 2};
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "Face index out of range (0-5).");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTriangleLinear::FaceInterpolation(int /* faceIndex*/) const

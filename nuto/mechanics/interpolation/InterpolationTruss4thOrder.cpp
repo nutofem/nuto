@@ -81,9 +81,15 @@ Eigen::Matrix<double, 5, 1> InterpolationTruss4thOrder::DerivativeShapeFunctions
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTruss4thOrder::EdgeNodeIds(int /* edgeIndex */) const
+std::vector<int> InterpolationTruss4thOrder::EdgeNodeIds(int edgeIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (edgeIndex)
+    {
+    case 0:
+        return {0, 1, 2, 3, 4};
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTruss4thOrder::EdgeInterpolation(int /* edgeIndex*/) const
@@ -93,10 +99,10 @@ std::unique_ptr<InterpolationSimple> InterpolationTruss4thOrder::EdgeInterpolati
 
 std::vector<int> InterpolationTruss4thOrder::FaceNodeIds(int /* faceIndex */) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    throw Exception(__PRETTY_FUNCTION__, "Truss interpolation has no faces");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTruss4thOrder::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    throw Exception(__PRETTY_FUNCTION__, "Truss interpolation has no faces");
 }

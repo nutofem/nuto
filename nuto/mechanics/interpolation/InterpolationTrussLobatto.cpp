@@ -1,4 +1,5 @@
 #include <eigen3/Eigen/Core>
+#include <numeric>
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 #include "nuto/math/Legendre.h"
@@ -151,9 +152,19 @@ const Shape& InterpolationTrussLobatto::GetShape() const
     return mShape;
 }
 
-std::vector<int> InterpolationTrussLobatto::EdgeNodeIds(int /* edgeIndex */) const
+std::vector<int> InterpolationTrussLobatto::EdgeNodeIds(int edgeIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (edgeIndex)
+    {
+    case 0:
+    {
+        std::vector<int> v(mNodes.size());
+        std::iota(std::begin(v), std::end(v), 0);
+        return v;
+    }
+    default:
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "edge index out of range (0)");
+    }
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTrussLobatto::EdgeInterpolation(int /* edgeIndex*/) const
@@ -163,12 +174,12 @@ std::unique_ptr<InterpolationSimple> InterpolationTrussLobatto::EdgeInterpolatio
 
 std::vector<int> InterpolationTrussLobatto::FaceNodeIds(int /* faceIndex */) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    throw Exception(__PRETTY_FUNCTION__, "Truss interpolation has no faces");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTrussLobatto::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    throw Exception(__PRETTY_FUNCTION__, "Truss interpolation has no faces");
 }
 
 } /* NuTo */
