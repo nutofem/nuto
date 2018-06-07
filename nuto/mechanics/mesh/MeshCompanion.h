@@ -7,12 +7,14 @@
 namespace NuTo
 {
 
-//! @brief Adds edge elements to mesh (coordinate elements)
+//! @brief Adds edge elements to mesh if addEdge is true
 //! @param rMesh fem mesh, return argument with r and weird pointer syntax to make it clear
 //! @param elmCollGroup, elements whose edges are added
+//! @param addEdge, function that takes an edge and returns true if it should be included
 //! @param orientedEdges if set to false, edges with reversed direction are considered equal
 //! (edge nodes are sorted by pointer so that the first is smaller than the last)
 Group<ElementCollectionFem> AddEdgeElements(MeshFem* rMesh, Group<ElementCollectionFem>& elmCollGroup,
+                                            std::function<bool(ElementCollectionFem&)> addEdge,
                                             bool orientedEdges = false)
 {
     Group<ElementCollectionFem> edgeElements;
@@ -52,20 +54,34 @@ Group<ElementCollectionFem> AddEdgeElements(MeshFem* rMesh, Group<ElementCollect
             {
                 auto& edgeIpol = rMesh->CreateInterpolation(*elmIpol.EdgeInterpolation(edgeId));
                 auto& e0 = rMesh->Elements.Add({{nodes, edgeIpol}});
-                edgeElements.Add({e0});
+                if (addEdge(e0))
+                    edgeElements.Add({e0});
             }
         }
     }
     return edgeElements;
 }
 
-//! @brief Adds face elements to mesh
+//! @brief Adds edge elements to mesh (coordinate elements)
+//! @param rMesh fem mesh, return argument with r and weird pointer syntax to make it clear
+//! @param elmCollGroup, elements whose edges are added
+//! @param addFace, function that takes a face and returns true if it should be included
+//! @param orientedEdges if set to false, edges with reversed direction are considered equal
+//! (edge nodes are sorted by pointer so that the first is smaller than the last)
+Group<ElementCollectionFem> AddEdgeElements(MeshFem* rMesh, Group<ElementCollectionFem>& elmCollGroup,
+                                            bool orientedEdges = false)
+{
+    return AddEdgeElements(rMesh, elmCollGroup, [](ElementCollectionFem&) { return true; }, orientedEdges);
+}
+
+//! @brief Adds face elements to mesh if addFace is true
 //! @param rMesh fem mesh, return argument with r and weird pointer syntax to make it clear
 //! @param elmCollGroup, elements whose faces are added
 //! @paragraph orientedFaces if set to false, faces with reversed orientation are considered equal
 //! (face nodes are sorted by pointer so that the first is smallest. orientedFaces if set to false
 //! then the orientation is chosen that gives the smallest second node)
 Group<ElementCollectionFem> AddFaceElements(MeshFem* rMesh, Group<ElementCollectionFem>& elmCollGroup,
+                                            std::function<bool(ElementCollectionFem&)> addFace,
                                             bool orientedFaces = false)
 {
     Group<ElementCollectionFem> faceElements;
@@ -110,11 +126,24 @@ Group<ElementCollectionFem> AddFaceElements(MeshFem* rMesh, Group<ElementCollect
             {
                 auto& faceIpol = rMesh->CreateInterpolation(*elmIpol.FaceInterpolation(faceId));
                 auto& e0 = rMesh->Elements.Add({{nodes, faceIpol}});
-                faceElements.Add({e0});
+                if (addFace(e0))
+                    faceElements.Add({e0});
             }
         }
     }
     return faceElements;
+}
+
+//! @brief Adds face elements to mesh
+//! @param rMesh fem mesh, return argument with r and weird pointer syntax to make it clear
+//! @param elmCollGroup, elements whose faces are added
+//! @paragraph orientedFaces if set to false, faces with reversed orientation are considered equal
+//! (face nodes are sorted by pointer so that the first is smallest. orientedFaces if set to false
+//! then the orientation is chosen that gives the smallest second node)
+Group<ElementCollectionFem> AddFaceElements(MeshFem* rMesh, Group<ElementCollectionFem>& elmCollGroup,
+                                            bool orientedFaces = false)
+{
+    return AddFaceElements(rMesh, elmCollGroup, [](ElementCollectionFem&) { return true; }, orientedFaces);
 }
 
 } /* NuTo */
