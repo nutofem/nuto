@@ -1,5 +1,8 @@
 #include "nuto/base/Exception.h"
 #include "InterpolationPyramidLinear.h"
+#include "InterpolationTriangleLinear.h"
+#include "InterpolationQuadLinear.h"
+#include "InterpolationTrussLinear.h"
 #include <cfloat>
 
 using namespace NuTo;
@@ -113,14 +116,14 @@ Eigen::Matrix<double, 5, 3> InterpolationPyramidLinear::DerivativeShapeFunctions
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationPyramidLinear::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationPyramidLinear::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussLinear>();
 }
 
 std::vector<int> InterpolationPyramidLinear::FaceNodeIds(int /* faceIndex */) const
@@ -128,7 +131,18 @@ std::vector<int> InterpolationPyramidLinear::FaceNodeIds(int /* faceIndex */) co
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
-std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::FaceInterpolation(int /* faceIndex*/) const
+std::unique_ptr<InterpolationSimple> InterpolationPyramidLinear::FaceInterpolation(int faceIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (faceIndex)
+    {
+    case 0:
+        return std::make_unique<InterpolationQuadLinear>();
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+        return std::make_unique<InterpolationTriangleLinear>();
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "Face index out of range (0-5).");
+    }
 }

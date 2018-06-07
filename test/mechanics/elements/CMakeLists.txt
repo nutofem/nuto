@@ -1,7 +1,9 @@
 add_unit_test(ElementIga)
 add_unit_test(ElementFem
     mechanics/interpolation/InterpolationTriangleLinear.cpp
+    mechanics/interpolation/InterpolationTrussLinear.cpp
     )
 add_unit_test(ElementCollection
     mechanics/interpolation/InterpolationTriangleLinear.cpp
+    mechanics/interpolation/InterpolationTrussLinear.cpp
     )

@@ -124,5 +124,5 @@ std::vector<int> InterpolationTriangleQuadratic::FaceNodeIds(int /* faceIndex */
 
 std::unique_ptr<InterpolationSimple> InterpolationTriangleQuadratic::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTriangleQuadratic>();
 }

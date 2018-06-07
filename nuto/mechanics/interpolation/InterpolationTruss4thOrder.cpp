@@ -81,14 +81,14 @@ Eigen::Matrix<double, 5, 1> InterpolationTruss4thOrder::DerivativeShapeFunctions
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTruss4thOrder::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationTruss4thOrder::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTruss4thOrder::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTruss4thOrder>();
 }
 
 std::vector<int> InterpolationTruss4thOrder::FaceNodeIds(int /* faceIndex */) const

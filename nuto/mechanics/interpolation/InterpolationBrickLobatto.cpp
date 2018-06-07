@@ -1,5 +1,6 @@
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
+#include "nuto/mechanics/interpolation/InterpolationQuadLobatto.h"
 #include "nuto/mechanics/interpolation/InterpolationBrickLobatto.h"
 #include "nuto/math/shapes/Hexahedron.h"
 
@@ -111,14 +112,14 @@ const Shape& InterpolationBrickLobatto::GetShape() const
     return mShape;
 }
 
-std::vector<int> InterpolationBrickLobatto::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationBrickLobatto::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationBrickLobatto::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussLobatto>(mNodes.size());
 }
 
 std::vector<int> InterpolationBrickLobatto::FaceNodeIds(int /* faceIndex */) const
@@ -128,7 +129,7 @@ std::vector<int> InterpolationBrickLobatto::FaceNodeIds(int /* faceIndex */) con
 
 std::unique_ptr<InterpolationSimple> InterpolationBrickLobatto::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationQuadLobatto>(mNodes.size());
 }
 
 } /* NuTo */

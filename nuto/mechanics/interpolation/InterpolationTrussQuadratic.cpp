@@ -66,14 +66,14 @@ Eigen::Matrix<double, 3, 1> InterpolationTrussQuadratic::DerivativeShapeFunction
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTrussQuadratic::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationTrussQuadratic::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTrussQuadratic::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussQuadratic>();
 }
 
 std::vector<int> InterpolationTrussQuadratic::FaceNodeIds(int /* faceIndex */) const

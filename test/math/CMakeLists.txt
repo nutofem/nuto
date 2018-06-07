@@ -26,4 +26,5 @@ add_unit_test(Shapes
     mechanics/interpolation/InterpolationTriangleLinear.cpp
     mechanics/interpolation/InterpolationTetrahedronLinear.cpp
     mechanics/interpolation/InterpolationPrismLinear.cpp
+    mechanics/interpolation/InterpolationQuadLinear.cpp
     )

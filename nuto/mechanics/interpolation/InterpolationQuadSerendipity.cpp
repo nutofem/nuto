@@ -1,5 +1,6 @@
 #include "nuto/base/Exception.h"
 #include "InterpolationQuadSerendipity.h"
+#include "InterpolationTrussQuadratic.h"
 
 using namespace NuTo;
 
@@ -109,14 +110,14 @@ Eigen::Matrix<double, 8, 2> InterpolationQuadQuadratic::DerivativeShapeFunctions
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationQuadQuadratic::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationQuadQuadratic::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationQuadQuadratic::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussQuadratic>();
 }
 
 std::vector<int> InterpolationQuadQuadratic::FaceNodeIds(int /* faceIndex */) const
@@ -126,5 +127,5 @@ std::vector<int> InterpolationQuadQuadratic::FaceNodeIds(int /* faceIndex */) co
 
 std::unique_ptr<InterpolationSimple> InterpolationQuadQuadratic::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationQuadQuadratic>();
 }

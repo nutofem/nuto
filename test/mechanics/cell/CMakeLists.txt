@@ -1,6 +1,6 @@
 add_unit_test(Cell
     mechanics/interpolation/InterpolationQuadLinear.cpp
-    )
+    mechanics/interpolation/InterpolationTrussLinear.cpp)
 
 add_unit_test(Jacobian
     mechanics/interpolation/InterpolationTrussLinear.cpp

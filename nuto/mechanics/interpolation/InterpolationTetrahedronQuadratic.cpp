@@ -1,5 +1,7 @@
 #include "nuto/base/Exception.h"
 #include "InterpolationTetrahedronQuadratic.h"
+#include "InterpolationTriangleQuadratic.h"
+#include "InterpolationTrussQuadratic.h"
 
 using namespace NuTo;
 
@@ -161,7 +163,7 @@ std::vector<int> InterpolationTetrahedronQuadratic::EdgeNodeIds(int /* edgeIndex
 
 std::unique_ptr<InterpolationSimple> InterpolationTetrahedronQuadratic::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussQuadratic>();
 }
 
 std::vector<int> InterpolationTetrahedronQuadratic::FaceNodeIds(int /* faceIndex */) const
@@ -171,5 +173,5 @@ std::vector<int> InterpolationTetrahedronQuadratic::FaceNodeIds(int /* faceIndex
 
 std::unique_ptr<InterpolationSimple> InterpolationTetrahedronQuadratic::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTriangleQuadratic>();
 }

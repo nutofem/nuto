@@ -1,5 +1,6 @@
 #include "nuto/base/Exception.h"
 #include "InterpolationTriangle4thOrder.h"
+#include "InterpolationTruss4thOrder.h"
 
 using namespace NuTo;
 
@@ -182,14 +183,14 @@ InterpolationTriangle4thOrder::DerivativeShapeFunctions(const Eigen::VectorXd& r
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTriangle4thOrder::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationTriangle4thOrder::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTriangle4thOrder::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTruss4thOrder>();
 }
 
 std::vector<int> InterpolationTriangle4thOrder::FaceNodeIds(int /* faceIndex */) const
@@ -199,5 +200,5 @@ std::vector<int> InterpolationTriangle4thOrder::FaceNodeIds(int /* faceIndex */)
 
 std::unique_ptr<InterpolationSimple> InterpolationTriangle4thOrder::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTriangle4thOrder>();
 }

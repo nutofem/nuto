@@ -7,7 +7,7 @@
 namespace NuTo
 {
 
-//! @brief Adds edge elements to mesh
+//! @brief Adds edge elements to mesh (coordinate elements)
 //! @param rMesh fem mesh, return argument with r and weird pointer syntax to make it clear
 //! @param elmCollGroup, elements whose edges are added
 //! @param orientedEdges if set to false, edges with reversed direction are considered equal

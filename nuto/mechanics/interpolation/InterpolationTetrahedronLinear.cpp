@@ -1,5 +1,7 @@
 #include "nuto/base/Exception.h"
 #include "InterpolationTetrahedronLinear.h"
+#include "InterpolationTriangleLinear.h"
+#include "InterpolationTrussLinear.h"
 
 using namespace NuTo;
 
@@ -82,14 +84,14 @@ Eigen::Matrix<double, 4, 3> InterpolationTetrahedronLinear::DerivativeShapeFunct
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationTetrahedronLinear::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationTetrahedronLinear::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussLinear>();
 }
 
 std::vector<int> InterpolationTetrahedronLinear::FaceNodeIds(int /* faceIndex */) const
@@ -99,5 +101,5 @@ std::vector<int> InterpolationTetrahedronLinear::FaceNodeIds(int /* faceIndex */
 
 std::unique_ptr<InterpolationSimple> InterpolationTetrahedronLinear::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTriangleLinear>();
 }

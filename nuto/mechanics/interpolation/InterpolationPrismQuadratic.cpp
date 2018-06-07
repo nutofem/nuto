@@ -2,6 +2,7 @@
 #include "InterpolationPrismQuadratic.h"
 #include "InterpolationTriangleQuadratic.h"
 #include "InterpolationTrussQuadratic.h"
+#include "InterpolationQuadSerendipity.h"
 
 using namespace NuTo;
 
@@ -202,14 +203,14 @@ Eigen::Matrix<double, 18, 3> InterpolationPrismQuadratic::DerivativeShapeFunctio
     return derivativeShapeFunctions;
 }
 
-std::vector<int> InterpolationPrismQuadratic::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationPrismQuadratic::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationPrismQuadratic::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussQuadratic>();
 }
 
 std::vector<int> InterpolationPrismQuadratic::FaceNodeIds(int /* faceIndex */) const
@@ -217,7 +218,18 @@ std::vector<int> InterpolationPrismQuadratic::FaceNodeIds(int /* faceIndex */) c
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
-std::unique_ptr<InterpolationSimple> InterpolationPrismQuadratic::FaceInterpolation(int /* faceIndex*/) const
+std::unique_ptr<InterpolationSimple> InterpolationPrismQuadratic::FaceInterpolation(int faceIndex) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    switch (faceIndex)
+    {
+    case 0:
+    case 1:
+        return std::make_unique<InterpolationTriangleQuadratic>();
+    case 2:
+    case 3:
+    case 4:
+        return std::make_unique<InterpolationQuadQuadratic>();
+    default:
+        throw Exception(__PRETTY_FUNCTION__, "Face index out of range (0-5).");
+    }
 }

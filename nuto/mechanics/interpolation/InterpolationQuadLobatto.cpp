@@ -97,14 +97,14 @@ const Shape& InterpolationQuadLobatto::GetShape() const
     return mShape;
 }
 
-std::vector<int> InterpolationQuadLobatto::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationQuadLobatto::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationQuadLobatto::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussLobatto>(mNodes.size());
 }
 
 std::vector<int> InterpolationQuadLobatto::FaceNodeIds(int /* faceIndex */) const
@@ -114,7 +114,7 @@ std::vector<int> InterpolationQuadLobatto::FaceNodeIds(int /* faceIndex */) cons
 
 std::unique_ptr<InterpolationSimple> InterpolationQuadLobatto::FaceInterpolation(int /* faceIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationQuadLobatto>(mNodes.size());
 }
 
 } /* NuTo */

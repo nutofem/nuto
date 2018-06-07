@@ -56,14 +56,14 @@ Eigen::Matrix<double, 2, 1> InterpolationTrussLinear::DerivativeShapeFunctions()
     return Eigen::Vector2d(-0.5, 0.5);
 }
 
-std::vector<int> InterpolationTrussLinear::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationTrussLinear::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTrussLinear::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussLinear>();
 }
 
 std::vector<int> InterpolationTrussLinear::FaceNodeIds(int /* faceIndex */) const

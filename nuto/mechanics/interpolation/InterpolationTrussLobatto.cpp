@@ -151,14 +151,14 @@ const Shape& InterpolationTrussLobatto::GetShape() const
     return mShape;
 }
 
-std::vector<int> InterpolationTrussLobatto::EdgeNodeIds(int edgeIndex) const
+std::vector<int> InterpolationTrussLobatto::EdgeNodeIds(int /* edgeIndex */) const
 {
     throw Exception(__PRETTY_FUNCTION__, "Not implemented");
 }
 
 std::unique_ptr<InterpolationSimple> InterpolationTrussLobatto::EdgeInterpolation(int /* edgeIndex*/) const
 {
-    throw Exception(__PRETTY_FUNCTION__, "Not implemented");
+    return std::make_unique<InterpolationTrussLobatto>(mNodes.size());
 }
 
 std::vector<int> InterpolationTrussLobatto::FaceNodeIds(int /* faceIndex */) const
