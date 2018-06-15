@@ -87,7 +87,7 @@ void ExpectNextLineToBe(std::ifstream& rFile, std::string expected)
 
 void CheckJacobian(NuTo::ElementFem& elm)
 {
-    int n = elm.GetDofDimension();
+    int n = elm.Interpolation().GetLocalCoords(0).size();
     NuTo::Jacobian jac(elm.ExtractNodeValues(), elm.GetDerivativeShapeFunctions(Eigen::VectorXd::Zero(n)));
     if (jac.Det() <= 0)
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Negative Jacobian not allowed");

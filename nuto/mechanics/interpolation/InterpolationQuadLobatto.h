@@ -2,20 +2,21 @@
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 #include "nuto/math/shapes/Quadrilateral.h"
+#include "nuto/math/NaturalCoordinateMemoizer.h"
 
 namespace NuTo
 {
 class InterpolationQuadLobatto : public InterpolationSimple
 {
 public:
-
     static Eigen::MatrixXd LocalCoords(int nodeId, const Eigen::VectorXd& nodes);
 
     static Eigen::VectorXd ShapeFunctions(const Eigen::Vector2d x, const Eigen::VectorXd& nodes);
 
-    static Eigen::MatrixXd DerivativeShapeFunctions(const Eigen::Vector2d x,
-                                                                           const Eigen::VectorXd& nodes);
+    static Eigen::MatrixXd DerivativeShapeFunctions(const Eigen::Vector2d x, const Eigen::VectorXd& nodes);
     InterpolationQuadLobatto(int order);
+
+    InterpolationQuadLobatto(const InterpolationQuadLobatto& other);
 
     std::unique_ptr<InterpolationSimple> Clone() const override;
 
@@ -32,5 +33,7 @@ public:
 private:
     Eigen::VectorXd mNodes;
     Quadrilateral mShape;
+    NaturalCoordinateMemoizerMap<Eigen::VectorXd, NaturalCoords> mShapeFunctionMemo;
+    NaturalCoordinateMemoizerMap<Eigen::MatrixXd, NaturalCoords> mShapeFunctionDerivativesMemo;
 };
 } /* NuTo */

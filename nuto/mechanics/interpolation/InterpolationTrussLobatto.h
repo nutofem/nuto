@@ -4,13 +4,13 @@
 #include "nuto/math/Legendre.h"
 #include "nuto/math/shapes/Line.h"
 #include "nuto/base/Exception.h"
+#include "nuto/math/NaturalCoordinateMemoizer.h"
 
 namespace NuTo
 {
 class InterpolationTrussLobatto : public InterpolationSimple
 {
 public:
-
     static Eigen::VectorXd LocalCoords(int order);
 
     static Eigen::VectorXd BarycentricWeights(const Eigen::VectorXd& nodes);
@@ -20,6 +20,8 @@ public:
     static Eigen::VectorXd DerivativeShapeFunctions(const double x, const Eigen::VectorXd& nodes);
 
     InterpolationTrussLobatto(int order);
+
+    InterpolationTrussLobatto(const InterpolationTrussLobatto& other);
 
     std::unique_ptr<InterpolationSimple> Clone() const override;
 
@@ -36,5 +38,7 @@ public:
 private:
     Eigen::VectorXd mNodes;
     Line mShape;
+    NaturalCoordinateMemoizerMap<Eigen::VectorXd, NaturalCoords> mShapeFunctionMemo;
+    NaturalCoordinateMemoizerMap<Eigen::MatrixXd, NaturalCoords> mShapeFunctionDerivativesMemo;
 };
 } /* NuTo */

@@ -5,96 +5,105 @@
 
 namespace NuTo
 {
-     Eigen::MatrixXd InterpolationQuadLobatto::LocalCoords(int nodeId, const Eigen::VectorXd& nodes)
+Eigen::MatrixXd InterpolationQuadLobatto::LocalCoords(int nodeId, const Eigen::VectorXd& nodes)
+{
+    const int d = nodes.rows();
+
+    assert(nodeId >= 0);
+    assert(nodeId < nodes.rows() * nodes.rows());
+
+    int i = nodeId % d;
+    int j = nodeId / d;
+
+    double cX = nodes[i];
+    double cY = nodes[j];
+
+    return Eigen::Vector2d({cX, cY});
+}
+
+Eigen::VectorXd InterpolationQuadLobatto::ShapeFunctions(const Eigen::Vector2d x, const Eigen::VectorXd& nodes)
+{
+    Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctions(x(0), nodes);
+    Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctions(x(1), nodes);
+
+    Eigen::VectorXd result(nodes.rows() * nodes.rows());
+    int count = 0;
+    for (int j = 0; j < nodes.rows(); j++)
     {
-        const int d = nodes.rows();
-
-        assert(nodeId >= 0);
-        assert(nodeId < nodes.rows() * nodes.rows());
-
-        int i = nodeId % d;
-        int j = nodeId / d;
-
-        double cX = nodes[i];
-        double cY = nodes[j];
-
-        return Eigen::Vector2d({cX, cY});
-    }
-
-    Eigen::VectorXd InterpolationQuadLobatto::ShapeFunctions(const Eigen::Vector2d x, const Eigen::VectorXd& nodes)
-    {
-        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctions(x(0), nodes);
-        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctions(x(1), nodes);
-
-        Eigen::VectorXd result(nodes.rows() * nodes.rows());
-        int count = 0;
-        for (int j = 0; j < nodes.rows(); j++)
+        for (int i = 0; i < nodes.rows(); i++)
         {
-            for (int i = 0; i < nodes.rows(); i++)
-            {
-                result[count] = Nx[i] * Ny[j];
-                count++;
-            }
+            result[count] = Nx[i] * Ny[j];
+            count++;
         }
-        return result;
     }
+    return result;
+}
 
-    Eigen::MatrixXd InterpolationQuadLobatto::DerivativeShapeFunctions(const Eigen::Vector2d x,
-                                                                           const Eigen::VectorXd& nodes)
+Eigen::MatrixXd InterpolationQuadLobatto::DerivativeShapeFunctions(const Eigen::Vector2d x,
+                                                                   const Eigen::VectorXd& nodes)
+{
+    Eigen::VectorXd DNx = InterpolationTrussLobatto::DerivativeShapeFunctions(x(0), nodes);
+    Eigen::VectorXd DNy = InterpolationTrussLobatto::DerivativeShapeFunctions(x(1), nodes);
+
+    Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctions(x(0), nodes);
+    Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctions(x(1), nodes);
+
+    Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.rows() * nodes.rows(), 2);
+    int count = 0;
+    for (int j = 0; j < nodes.rows(); j++)
     {
-        Eigen::VectorXd DNx = InterpolationTrussLobatto::DerivativeShapeFunctions(x(0), nodes);
-        Eigen::VectorXd DNy = InterpolationTrussLobatto::DerivativeShapeFunctions(x(1), nodes);
-
-        Eigen::VectorXd Nx = InterpolationTrussLobatto::ShapeFunctions(x(0), nodes);
-        Eigen::VectorXd Ny = InterpolationTrussLobatto::ShapeFunctions(x(1), nodes);
-
-        Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nodes.rows() * nodes.rows(), 2);
-        int count = 0;
-        for (int j = 0; j < nodes.rows(); j++)
+        for (int i = 0; i < nodes.rows(); i++)
         {
-            for (int i = 0; i < nodes.rows(); i++)
-            {
-                result(count, 0) = DNx[i] * Ny[j];
-                result(count, 1) = Nx[i] * DNy[j];
-                count++;
-            }
+            result(count, 0) = DNx[i] * Ny[j];
+            result(count, 1) = Nx[i] * DNy[j];
+            count++;
         }
-        return result;
     }
+    return result;
+}
 
-    InterpolationQuadLobatto::InterpolationQuadLobatto(int order)
-    {
-        mNodes = InterpolationTrussLobatto::LocalCoords(order);
-    }
+InterpolationQuadLobatto::InterpolationQuadLobatto(int order)
+    : mNodes(InterpolationTrussLobatto::LocalCoords(order))
+    , mShapeFunctionMemo([this](NaturalCoords x) { return ShapeFunctions(x, mNodes); })
+    , mShapeFunctionDerivativesMemo([this](NaturalCoords x) { return DerivativeShapeFunctions(x, mNodes); })
+{
+}
 
-    std::unique_ptr<InterpolationSimple> InterpolationQuadLobatto::Clone() const
-    {
-        return std::make_unique<InterpolationQuadLobatto>(*this);
-    }
+InterpolationQuadLobatto::InterpolationQuadLobatto(const InterpolationQuadLobatto& other)
+    : mNodes(other.mNodes)
+    , mShapeFunctionMemo([this](NaturalCoords x) { return ShapeFunctions(x, mNodes); })
+    , mShapeFunctionDerivativesMemo([this](NaturalCoords x) { return DerivativeShapeFunctions(x, mNodes); })
+{
+}
 
-    Eigen::VectorXd InterpolationQuadLobatto::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
-    {
-        return ShapeFunctions(naturalIpCoords, mNodes);
-    }
+std::unique_ptr<InterpolationSimple> InterpolationQuadLobatto::Clone() const
+{
+    return std::make_unique<InterpolationQuadLobatto>(*this);
+}
 
-    Eigen::MatrixXd InterpolationQuadLobatto::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
-    {
-        return DerivativeShapeFunctions(naturalIpCoords, mNodes);
-    }
+Eigen::VectorXd InterpolationQuadLobatto::GetShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return mShapeFunctionMemo.Get(naturalIpCoords);
+}
 
-    NaturalCoords InterpolationQuadLobatto::GetLocalCoords(int nodeId) const
-    {
-        return LocalCoords(nodeId, mNodes);
-    }
+Eigen::MatrixXd InterpolationQuadLobatto::GetDerivativeShapeFunctions(const NaturalCoords& naturalIpCoords) const
+{
+    return mShapeFunctionDerivativesMemo.Get(naturalIpCoords);
+}
 
-    int InterpolationQuadLobatto::GetNumNodes() const
-    {
-        return mNodes.size() * mNodes.size();
-    }
+NaturalCoords InterpolationQuadLobatto::GetLocalCoords(int nodeId) const
+{
+    return LocalCoords(nodeId, mNodes);
+}
 
-    const Shape& InterpolationQuadLobatto::GetShape() const
-    {
-        return mShape;
-    }
+int InterpolationQuadLobatto::GetNumNodes() const
+{
+    return mNodes.size() * mNodes.size();
+}
+
+const Shape& InterpolationQuadLobatto::GetShape() const
+{
+    return mShape;
+}
 
 } /* NuTo */
