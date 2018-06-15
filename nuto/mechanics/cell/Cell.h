@@ -123,6 +123,6 @@ private:
     const IntegrationTypeBase& mIntegrationType;
     const int mId;
     const Shape& mShape;
-    NaturalCoordinateMemoizerMap<Jacobian, NaturalCoords> mJacobianMemo;
+    NaturalCoordinateMemoizerMap2<Jacobian, NaturalCoords> mJacobianMemo;
 };
 } /* NuTo */
