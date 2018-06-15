@@ -50,15 +50,15 @@ public:
         auto it = mCache.find(v);
         if (it == mCache.end())
         {
-// The memoizer is shared between all threads in the parallel assembly.
-// If it is still empty, all threads want to calculate and emplace the values
-// into the cache. This will cause problems like infinite recursions, segfaults
-// during map::rebalancing and so on. Thus: omp critical.
-// The 'hot' path however, this the code above, which is hopefully not
-// affected by the performance loss of omp critical.
-#ifdef _OPENMP
-#pragma omp critical
-#endif
+            //// The memoizer is shared between all threads in the parallel assembly.
+            //// If it is still empty, all threads want to calculate and emplace the values
+            //// into the cache. This will cause problems like infinite recursions, segfaults
+            //// during map::rebalancing and so on. Thus: omp critical.
+            //// The 'hot' path however, this the code above, which is hopefully not
+            //// affected by the performance loss of omp critical.
+            //#ifdef _OPENMP
+            //#pragma omp critical
+            //#endif
             it = mCache.emplace_hint(it, v, mFunction(v));
         }
 

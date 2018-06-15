@@ -8,6 +8,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/cell/CellData.h"
 #include "nuto/mechanics/cell/CellIpData.h"
+#include "nuto/math/NaturalCoordinateMemoizer.h"
 
 namespace NuTo
 {
@@ -19,6 +20,10 @@ public:
         , mIntegrationType(integrationType)
         , mId(id)
         , mShape(elements.GetShape())
+        , mJacobianMemo([this](NaturalCoords x) {
+            return Jacobian(mElements.CoordinateElement().ExtractNodeValues(),
+                            mElements.CoordinateElement().GetDerivativeShapeFunctions(x));
+        })
     {
         if (elements.GetShape() != integrationType.GetShape())
         {
@@ -50,9 +55,7 @@ public:
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
-            CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
+            CellIpData cellipData(cellData, mJacobianMemo.Get(ipCoords), ipCoords, iIP);
             f(cellipData);
         }
     }
@@ -84,9 +87,7 @@ public:
         for (int iIP = 0; iIP < mIntegrationType.GetNumIntegrationPoints(); ++iIP)
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
-            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
-            CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
+            CellIpData cellipData(cellData, mJacobianMemo.Get(ipCoords), ipCoords, iIP);
             result.push_back(f(cellipData));
         }
         return result;
@@ -110,8 +111,7 @@ private:
         {
             auto ipCoords = mIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
             auto ipWeight = mIntegrationType.GetIntegrationPointWeight(iIP);
-            Jacobian jacobian(mElements.CoordinateElement().ExtractNodeValues(),
-                              mElements.CoordinateElement().GetDerivativeShapeFunctions(ipCoords));
+            auto jacobian = mJacobianMemo.Get(ipCoords);
             CellIpData cellipData(cellData, jacobian, ipCoords, iIP);
             result += f(cellipData) * jacobian.Det() * ipWeight;
         }
@@ -123,5 +123,6 @@ private:
     const IntegrationTypeBase& mIntegrationType;
     const int mId;
     const Shape& mShape;
+    NaturalCoordinateMemoizerMap<Jacobian, NaturalCoords> mJacobianMemo;
 };
 } /* NuTo */
