@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
     ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator, 1.e-6);
 
-    QuasistaticSolver problem;
+    QuasistaticSolver timeIntegrator;
 
     int dofLeft = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L), d).GetDofNumber(0);
 
@@ -114,10 +114,10 @@ BOOST_AUTO_TEST_CASE(Integrand)
     std::ofstream loadDisplacement(visu.ResultDirectory() + "/LD.dat");
 
     /* solve adaptively */
-    auto doStep = [&](double t) { return problem.DoStep(solutionVector, implicitCallBack, t, "MumpsLU"); };
+    auto doStep = [&](double t) { return timeIntegrator.DoStep(solutionVector, implicitCallBack, t, "MumpsLU"); };
     auto postProcessF = [&](double t) {
         visu.Plot(t, true);
-        problem.WriteTimeDofResidual(solutionVector, loadDisplacement, d, {dofLeft}, implicitCallBack);
+        timeIntegrator.WriteTimeDofResidual(solutionVector, loadDisplacement, d, {dofLeft}, implicitCallBack);
     };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     DofVector<double> X = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
     Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
 
-    QuasistaticSolver problem;
+    QuasistaticSolver timeIntegrator;
 
     DofContainer<int> numTotalDofs;
     DofInfo dofInfoDisp = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
@@ -245,11 +245,12 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
 
-    auto doStep = [&](double t) { return problem.DoStep(solutionVector, implicitCallBack, t, "EigenSparseLU"); };
+    auto doStep = [&](double t) { return timeIntegrator.DoStep(solutionVector, implicitCallBack, t, "EigenSparseLU"); };
     auto postProcess = [&](double t) {
         visu.Plot(t, true);
-        problem.WriteTimeDofResidual(solutionVector, loadDisp, d,
-                                     DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)), implicitCallBack);
+        timeIntegrator.WriteTimeDofResidual(solutionVector, loadDisp, d,
+                                            DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)),
+                                            implicitCallBack);
     };
 
     NuTo::AdaptiveSolve adaptive(doStep, postProcess);
