@@ -15,7 +15,8 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/tools/CellStorage.h"
 #include "nuto/mechanics/tools/TimeDependentProblem.h"
-#include "nuto/mechanics/tools/QuasistaticSolver.h"
+#include "nuto/mechanics/tools/ImplicitTimeIntegration.h"
+#include "nuto/mechanics/tools/QuasiStaticProblem.h"
 #include "nuto/mechanics/tools/AdaptiveSolve.h"
 #include "nuto/mechanics/constraints/ConstraintCompanion.h"
 #include "nuto/visualize/PostProcess.h"
@@ -89,9 +90,9 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
     Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
 
-    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator, 1.e-6);
+    QuasiStaticProblem quasiStaticProblem(equations, reducedSolutionSpaceOperator, 1.e-6);
 
-    QuasistaticSolver timeIntegrator;
+    ImplicitTimeIntegration implicitTimeIntegration;
 
     int dofLeft = mesh.NodeAtCoordinate(EigenCompanion::ToEigen(L), d).GetDofNumber(0);
 
@@ -114,10 +115,13 @@ BOOST_AUTO_TEST_CASE(Integrand)
     std::ofstream loadDisplacement(visu.ResultDirectory() + "/LD.dat");
 
     /* solve adaptively */
-    auto doStep = [&](double t) { return timeIntegrator.DoStep(solutionVector, implicitCallBack, t, "MumpsLU"); };
+    auto doStep = [&](double t) {
+        return implicitTimeIntegration.DoStep(solutionVector, quasiStaticProblem, t, "MumpsLU");
+    };
     auto postProcessF = [&](double t) {
         visu.Plot(t, true);
-        timeIntegrator.WriteTimeDofResidual(solutionVector, loadDisplacement, d, {dofLeft}, implicitCallBack);
+        implicitTimeIntegration.WriteTimeDofResidual(solutionVector, loadDisplacement, d, {dofLeft},
+                                                     quasiStaticProblem);
     };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
@@ -224,7 +228,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     DofVector<double> X = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
     Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
 
-    QuasistaticSolver timeIntegrator;
+    ImplicitTimeIntegration implicitTimeIntegration;
 
     DofContainer<int> numTotalDofs;
     DofInfo dofInfoDisp = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
@@ -234,7 +238,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
-    ImplicitCallBack implicitCallBack(equations, reducedSolutionSpaceOperator, 1.e-6);
+    QuasiStaticProblem quasiStaticProblem(equations, reducedSolutionSpaceOperator, 1.e-6);
 
     using namespace NuTo::Visualize;
     PostProcess visu("./GradientDamageOut2D");
@@ -245,12 +249,14 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     std::ofstream loadDisp(visu.ResultDirectory() + "/LD.dat");
 
-    auto doStep = [&](double t) { return timeIntegrator.DoStep(solutionVector, implicitCallBack, t, "EigenSparseLU"); };
+    auto doStep = [&](double t) {
+        return implicitTimeIntegration.DoStep(solutionVector, quasiStaticProblem, t, "EigenSparseLU");
+    };
     auto postProcess = [&](double t) {
         visu.Plot(t, true);
-        timeIntegrator.WriteTimeDofResidual(solutionVector, loadDisp, d,
-                                            DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)),
-                                            implicitCallBack);
+        implicitTimeIntegration.WriteTimeDofResidual(solutionVector, loadDisp, d,
+                                                     DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)),
+                                                     quasiStaticProblem);
     };
 
     NuTo::AdaptiveSolve adaptive(doStep, postProcess);

@@ -13,7 +13,8 @@
 #include "nuto/mechanics/constitutive/LocalIsotropicDamage.h"
 #include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 
-#include "nuto/mechanics/tools/QuasistaticSolver.h"
+#include "nuto/mechanics/tools/ImplicitTimeIntegration.h"
+#include "nuto/mechanics/tools/QuasiStaticProblem.h"
 #include "nuto/mechanics/tools/GlobalFractureEnergyIntegrator.h"
 /*               3   2
  *   /|          /  /           \

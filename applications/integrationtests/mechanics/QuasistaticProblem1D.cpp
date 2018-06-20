@@ -14,7 +14,8 @@
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/tools/CellStorage.h"
-#include "nuto/mechanics/tools/QuasistaticSolver.h"
+#include "nuto/mechanics/tools/ImplicitTimeIntegration.h"
+#include "nuto/mechanics/tools/QuasiStaticProblem.h"
 #include "nuto/mechanics/tools/AdaptiveSolve.h"
 
 #include "nuto/mechanics/constitutive/LocalIsotropicDamage.h"
@@ -71,11 +72,13 @@ public:
 
         ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
-        ImplicitCallBack implicitCallBack(mEquations, reducedSolutionSpaceOperator, 1.e-12);
+        QuasiStaticProblem quasiStaticProblem(mEquations, reducedSolutionSpaceOperator, 1.e-12);
         DofVector<double> X = mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
         mSolutionVector = ToEigen(X, dofTypes);
 
-        auto doStep = [&](double t) { return mProblem.DoStep(mSolutionVector, implicitCallBack, t, "EigenSparseLU"); };
+        auto doStep = [&](double t) {
+            return mImplicitTimeIntegration.DoStep(mSolutionVector, quasiStaticProblem, t, "EigenSparseLU");
+        };
         AdaptiveSolve adaptive(doStep);
         adaptive.dt = 0.01;
         adaptive.Solve(tEnd);
@@ -106,7 +109,7 @@ private:
     Integrands::MomentumBalance<1> mMomentumBalance;
 
     TimeDependentProblem mEquations;
-    QuasistaticSolver mProblem;
+    ImplicitTimeIntegration mImplicitTimeIntegration;
 
     IntegrationTypeTensorProduct<1> mIntegrationType;
     CellStorage mCells;
