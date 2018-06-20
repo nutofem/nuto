@@ -35,8 +35,6 @@ public:
         , mMomentumBalance(mDof, mLaw)
         , mEquations(&mMesh)
         , mIntegrationType(2, eIntegrationMethod::GAUSS)
-        , mReducedSolutionSpaceOperator()
-        , mImplicitCallBack(mEquations, mReducedSolutionSpaceOperator, 1.e-12)
     {
         AddDofInterpolation(&mMesh, mDof);
 
@@ -49,24 +47,9 @@ public:
             mLaw.Update(cellIpData.Apply(mDof, Nabla::Strain()), dt, cellIpData.Ids());
         };
 
-        auto constraints = DefineConstraints(mMesh, mDof);
-
-        std::vector<DofType> dofTypes;
-        dofTypes.push_back(mDof);
-
         mEquations.AddGradientFunction(mCellGroup, Gradient);
         mEquations.AddHessian0Function(mCellGroup, Hessian0);
         mEquations.AddUpdateFunction(mCellGroup, UpdateHistory);
-        DofVector<double> X = mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
-
-        DofContainer<int> numTotalDofs;
-        DofInfo dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, constraints);
-        numTotalDofs.Insert(mDof, dofInfo.numDependentDofs[mDof] + dofInfo.numIndependentDofs[mDof]);
-        mReducedSolutionSpaceOperator = ReducedSolutionSpace(dofTypes, numTotalDofs, constraints);
-
-        mImplicitCallBack.SetReducedSolutionSpaceOperator(mReducedSolutionSpaceOperator);
-
-        mSolutionVector = ToEigen(X, dofTypes);
     }
 
     void SetImperfection(double kappaImperfection)
@@ -77,7 +60,22 @@ public:
 
     void Solve(double tEnd)
     {
-        auto doStep = [&](double t) { return mProblem.DoStep(mSolutionVector, mImplicitCallBack, t, "EigenSparseLU"); };
+        std::vector<DofType> dofTypes;
+        dofTypes.push_back(mDof);
+
+        auto constraints = DefineConstraints(mMesh, mDof);
+
+        DofContainer<int> numTotalDofs;
+        DofInfo dofInfo = DofNumbering::Build(mMesh.NodesTotal(mDof), mDof, constraints);
+        numTotalDofs.Insert(mDof, dofInfo.numDependentDofs[mDof] + dofInfo.numIndependentDofs[mDof]);
+
+        ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
+
+        ImplicitCallBack implicitCallBack(mEquations, reducedSolutionSpaceOperator, 1.e-12);
+        DofVector<double> X = mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
+        mSolutionVector = ToEigen(X, dofTypes);
+
+        auto doStep = [&](double t) { return mProblem.DoStep(mSolutionVector, implicitCallBack, t, "EigenSparseLU"); };
         AdaptiveSolve adaptive(doStep);
         adaptive.dt = 0.01;
         adaptive.Solve(tEnd);
@@ -113,10 +111,6 @@ private:
     IntegrationTypeTensorProduct<1> mIntegrationType;
     CellStorage mCells;
     Group<CellInterface> mCellGroup;
-
-    ReducedSolutionSpace mReducedSolutionSpaceOperator;
-
-    ImplicitCallBack mImplicitCallBack;
 
     Eigen::VectorXd mSolutionVector;
 
