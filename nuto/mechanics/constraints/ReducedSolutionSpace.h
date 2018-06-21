@@ -43,7 +43,12 @@ public:
     //! @brief transforms a full solution vector back to a dofVector and replaces the corresponding entries
     //! @param source ... vector of all dofs
     //! @param destination ... dof vector of all dofs
-    void ToDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const;
+    void ToDofVector2(const Eigen::VectorXd& source, DofVector<double>& destination) const;
+
+    //! @brief extracts from a full solution vector the independent dofs
+    //! @param source ... vector of all dofs
+    //! @return independent dofs
+    Eigen::VectorXd ExtractIndependentDofVector(const DofVector<double>& source) const;
 
     //! @brief transforms a delta of the reduced solution vector back to the full system (assuming t=const)
     //! @param independent ... vector of independent dofs
@@ -81,6 +86,9 @@ private:
 
     //! @brief the linear transformation matrix to map the reduced space to the full space d_tot = C d_red + b(t)
     Eigen::SparseMatrix<double> mCmatUnitSparse;
+
+    //! @brief the linear transformation matrix to extract from the full space the reduced space d_red = CmatInv d_tot
+    Eigen::SparseMatrix<double> mCmatUnitSparseInv;
 
     //! @brief constraints
     Constraints mConstraints;

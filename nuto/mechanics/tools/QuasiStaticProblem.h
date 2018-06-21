@@ -16,31 +16,23 @@ public:
                        double tolerance = 1.e-10);
 
     //! evaluates the residual R(u), part of NuTo::NewtonRaphson::Problem
-    //! @param u ... all dof values
+    //! @param u ... independent dof values
     Eigen::VectorXd Residual(const Eigen::VectorXd& u);
+
+    //! evaluates the full residual R(u), e.g. to evaluate reaction forces
+    //! @param u ... independent dof values
+    DofVector<double> FullResidual(const Eigen::VectorXd& u);
 
     //! evaluates the derivative dR/dx, part of NuTo::NewtonRaphson::Problem
     //! @param u ... all dof values
     Eigen::SparseMatrix<double> Derivative(const Eigen::VectorXd& u);
 
-    //! evaluates the residual R(u, t ,dt), part of NuTo::QuasistaticSolver::TrialState
-    //! @param u all dof values
-    //! @param t ... time
-    //! @param dt ... time step
-    Eigen::VectorXd Residual(const Eigen::VectorXd& u, double t, double dt);
-
-    //! evaluates the residual D(u, t ,dt), part of NuTo::QuasistaticSolver::TrialState
-    //! @param u ... all dof values
-    //! @param t ... time
-    //! @param dt ... time step
-    Eigen::SparseMatrix<double> Derivative(const Eigen::VectorXd& u, double t, double dt);
-
     //! computes the trial state of the system
     //! @param start ... starting vector
     //! @param newGlobalTime ... new time, for which the trial state is to be computed
-    //! @param solverType ... string definig which solver is used
+    //! @param solverType ... string defining which solver is used
     //! @return computes the trial state (starting vector for the Newton iteration)
-    Eigen::VectorXd TrialState(Eigen::VectorXd& start, double newGlobalTime, std::string solverType);
+    Eigen::VectorXd TrialState(DofVector<double>& start, double newGlobalTime, std::string solverType);
 
     //! evaluates the norm of R, part of NuTo::NewtonRaphson::Problem
     //! @param residual ... residual vector
@@ -60,15 +52,36 @@ public:
     //! @param globalTime ... global time
     void SetGlobalTime(double globalTime);
 
+    //! gets the global time
+    //! @return globalTime ... global time
+    double GetGlobalTime() const
+    {
+        return mGlobalTime;
+    }
+
     //! sets the operator for the mapping of ind dofs to all dofs etc. (C * u_ind = u_all)
     //! @param reducedSolutionSpaceOperator ... object of the class ReducedSolutionSpace
     void SetReducedSolutionSpaceOperator(ReducedSolutionSpace& reducedSolutionSpaceOperator);
 
     //    void FillDofVector(DofVector<double>& destination, const Eigen::VectorXd& source) const;
 
-public:
     //! tolerance for Norm(R), public member because it is part of NuTo::NewtonRaphson::Problem
+    //! I don't think this is optimal (instead use tol as a parameter when calling NewtonRaphson)
     double mTolerance = 1.e-10;
+
+private:
+    //! evaluates the residual R(u, t ,dt), part of NuTo::QuasistaticSolver::TrialState
+    //! @param u all dof values
+    //! @param t ... time
+    //! @param dt ... time step
+    Eigen::VectorXd Residual(const Eigen::VectorXd& u, double t, double dt);
+
+    //! evaluates the residual D(u, t ,dt), part of NuTo::QuasistaticSolver::TrialState
+    //! @param u ... all dof values
+    //! @param t ... time
+    //! @param dt ... time step
+    Eigen::SparseMatrix<double> Derivative(const Eigen::VectorXd& u, double t, double dt);
+
 
     double mGlobalTime = 0;
     double mTimeStep = 0;
@@ -78,6 +91,9 @@ public:
 
     //! the class describing the tranformation by the constraint matrix to the reduced solution space
     ReducedSolutionSpace& mReducedSolutionSpaceOperator;
+
+    //! this includes the complete solution vector of all dofs (not only the ones we solve for)
+    DofVector<double> mSolution;
 };
 
 } /* NuTo */

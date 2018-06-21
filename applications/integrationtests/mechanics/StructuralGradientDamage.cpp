@@ -22,6 +22,9 @@
 #include "nuto/visualize/PostProcess.h"
 #include "nuto/visualize/VoronoiGeometries.h"
 
+#include <boost/range/numeric.hpp>
+
+
 using namespace NuTo;
 
 BOOST_AUTO_TEST_CASE(Integrand)
@@ -120,8 +123,11 @@ BOOST_AUTO_TEST_CASE(Integrand)
     };
     auto postProcessF = [&](double t) {
         visu.Plot(t, true);
-        implicitTimeIntegration.WriteTimeDofResidual(solutionVector, loadDisplacement, d, {dofLeft},
-                                                     quasiStaticProblem);
+        DofVector<double> residual = quasiStaticProblem.FullResidual(solutionVector);
+        std::vector<int> dofnumbers = {dofLeft};
+        double reactionForce = boost::accumulate(residual(d, dofnumbers), 0.);
+        loadDisplacement << quasiStaticProblem.GetGlobalTime() << '\t' << reactionForce << '\n';
+        loadDisplacement << std::flush;
     };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
@@ -131,7 +137,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     // A small zone around the middle is damaged and the strains localize there.
     // The rest of the structure is expected to be unloaded
     //
-    //  damage:
+    //  damage:git commit -m "rename QuasistaticSolver to ImplicitTimeIntegration and introduce QuasiStaticProblem"
     //           _
     //          ' '
     //         |   |
@@ -254,9 +260,11 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     };
     auto postProcess = [&](double t) {
         visu.Plot(t, true);
-        implicitTimeIntegration.WriteTimeDofResidual(solutionVector, loadDisp, d,
-                                                     DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y)),
-                                                     quasiStaticProblem);
+        DofVector<double> residual = quasiStaticProblem.FullResidual(solutionVector);
+        std::vector<int> dofnumbers = DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y));
+        double reactionForce = boost::accumulate(residual(d, dofnumbers), 0.);
+        loadDisp << quasiStaticProblem.GetGlobalTime() << '\t' << reactionForce << '\n';
+        loadDisp << std::flush;
     };
 
     NuTo::AdaptiveSolve adaptive(doStep, postProcess);

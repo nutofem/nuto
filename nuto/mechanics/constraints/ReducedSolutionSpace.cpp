@@ -11,20 +11,34 @@ ReducedSolutionSpace::ReducedSolutionSpace(const std::vector<DofType>& dofTypes,
     , mNumTotalDofs(numTotalDofs)
     , mConstraints(constraints)
 {
-    DofMatrixSparse<double> mCmatUnit;
+    DofMatrixSparse<double> CmatUnit;
+    DofMatrixSparse<double> CmatUnitInv;
     for (auto dofI : mDofTypes)
     {
-        int numDofs = mNumTotalDofs.At(dofI); // throws if no dof
-        for (auto dofJ : mDofTypes)
-            if (dofI.Id() == dofJ.Id())
-                mCmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix(dofI, numDofs);
-            else
-                mCmatUnit(dofI, dofJ) =
-                        Eigen::SparseMatrix<double>(mCmatUnit(dofI, dofI).rows(), mCmatUnit(dofJ, dofJ).cols());
+        int numDofsI = mNumTotalDofs.At(dofI); // throws if no dof
+        CmatUnit(dofI, dofI) = constraints.BuildUnitConstraintMatrix(dofI, numDofsI);
+        CmatUnitInv(dofI, dofI) = constraints.BuildUnitConstraintMatrixInv(dofI, numDofsI);
     }
 
-    mCmatUnitSparse = ToEigen(mCmatUnit, mDofTypes);
+    for (auto dofI : mDofTypes)
+    {
+        int numDofsI = mNumTotalDofs.At(dofI); // throws if no dof
+        for (auto dofJ : mDofTypes)
+        {
+            if (dofI.Id() != dofJ.Id())
+            {
+                CmatUnit(dofI, dofJ) =
+                        Eigen::SparseMatrix<double>(CmatUnit(dofI, dofI).rows(), CmatUnit(dofJ, dofJ).cols());
+                CmatUnitInv(dofI, dofJ) =
+                        Eigen::SparseMatrix<double>(CmatUnit(dofJ, dofJ).cols(), CmatUnit(dofI, dofI).rows());
+            }
+        }
+    }
+
+    mCmatUnitSparse = ToEigen(CmatUnit, mDofTypes);
+    mCmatUnitSparseInv = ToEigen(CmatUnitInv, mDofTypes);
 }
+
 
 Eigen::SparseMatrix<double> ReducedSolutionSpace::HessianToReducedBasis(const Eigen::SparseMatrix<double>& matrix) const
 {
@@ -47,12 +61,17 @@ Eigen::VectorXd ReducedSolutionSpace::ToFullWithRhs(const Eigen::VectorXd& indep
     return mCmatUnitSparse * independent + mConstraints.GetRhs(dof, time);
 }
 
-void ReducedSolutionSpace::ToDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const
+void ReducedSolutionSpace::ToDofVector2(const Eigen::VectorXd& source, DofVector<double>& destination) const
 {
     for (auto dof : mDofTypes)
         destination[dof].setZero(mNumTotalDofs[dof]);
 
     FromEigen(source, mDofTypes, &destination);
+}
+
+Eigen::VectorXd ReducedSolutionSpace::ExtractIndependentDofVector(const DofVector<double>& source) const
+{
+    return mCmatUnitSparseInv * ToEigen(source, mDofTypes);
 }
 
 Eigen::VectorXd ReducedSolutionSpace::DeltaFull(const Eigen::VectorXd& independent,

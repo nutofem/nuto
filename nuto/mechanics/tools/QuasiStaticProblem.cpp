@@ -24,13 +24,15 @@ QuasiStaticProblem::QuasiStaticProblem(TimeDependentProblem& s, ReducedSolutionS
 
 Eigen::VectorXd QuasiStaticProblem::Residual(const Eigen::VectorXd& u)
 {
-    DofVector<double> uDof;
-    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    return mReducedSolutionSpaceOperator.GradientToReducedBasis(
+            ToEigen(this->FullResidual(u), mReducedSolutionSpaceOperator.GetDofTypes()));
+}
 
-    DofVector<double> gradient =
-            mProblem.Gradient(uDof, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime + mTimeStep, mTimeStep);
-    auto f_full = ToEigen(gradient, mReducedSolutionSpaceOperator.GetDofTypes());
-    return mReducedSolutionSpaceOperator.GradientToReducedBasis(f_full);
+DofVector<double> QuasiStaticProblem::FullResidual(const Eigen::VectorXd& u)
+{
+    mReducedSolutionSpaceOperator.ToDofVector2(u, mSolution);
+    return mProblem.Gradient(mSolution, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime + mTimeStep,
+                             mTimeStep);
 }
 
 Eigen::SparseMatrix<double> QuasiStaticProblem::Derivative(const Eigen::VectorXd& u)
@@ -75,40 +77,61 @@ void QuasiStaticProblem::SetReducedSolutionSpaceOperator(ReducedSolutionSpace& r
 
 Eigen::VectorXd QuasiStaticProblem::Residual(const Eigen::VectorXd& u, double t, double dt)
 {
-    DofVector<double> uDof;
-    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    mReducedSolutionSpaceOperator.ToDofVector(u, mSolution);
     const std::vector<DofType>& dofTypes = mReducedSolutionSpaceOperator.GetDofTypes();
-    auto gradient = mProblem.Gradient(uDof, dofTypes, t, dt);
+    auto gradient = mProblem.Gradient(mSolution, dofTypes, t, dt);
     return ToEigen(gradient, dofTypes);
 }
 
 Eigen::SparseMatrix<double> QuasiStaticProblem::Derivative(const Eigen::VectorXd& u, double t, double dt)
 {
-    DofVector<double> uDof;
-    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    mReducedSolutionSpaceOperator.ToDofVector(u, mSolution);
     const std::vector<DofType>& dofTypes = mReducedSolutionSpaceOperator.GetDofTypes();
-    return ToEigen(mProblem.Hessian0(uDof, dofTypes, t, dt), dofTypes);
+    return ToEigen(mProblem.Hessian0(mSolution, dofTypes, t, dt), dofTypes);
 }
 
-Eigen::VectorXd QuasiStaticProblem::TrialState(Eigen::VectorXd& start, double newGlobalTime, std::string solverType)
+
+Eigen::VectorXd QuasiStaticProblem::TrialState(DofVector<double>& start, double newGlobalTime, std::string solverType)
 {
+    // store old values as well as all dofs not solved for in mSolutionVector
+    mSolution = start;
+
+    // compute "old" hessian in previously eqilibrated time step
+    Eigen::SparseMatrix<double> K_full =
+            ToEigen(mProblem.Hessian0(start, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime, mTimeStep),
+                    mReducedSolutionSpaceOperator.GetDofTypes());
+
     // update time step
-    double newTimeStep = newGlobalTime - mGlobalTime;
+    mTimeStep = newGlobalTime - mGlobalTime;
+    mGlobalTime = newGlobalTime;
 
+    // compute new residual (for the new time, but with old dof values, so in most cases this is the change of external
+    // force)
+    Eigen::VectorXd f_full =
+            ToEigen(mProblem.Gradient(start, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime, mTimeStep),
+                    mReducedSolutionSpaceOperator.GetDofTypes());
+
+    // compute change of rhs of constraint equations
     Eigen::VectorXd deltaBrhsEigen;
-
-    Eigen::SparseMatrix<double> K_full = Derivative(start, mGlobalTime, mTimeStep);
-    Eigen::VectorXd f_full = Residual(start, newGlobalTime, newTimeStep);
-
     deltaBrhsEigen = mReducedSolutionSpaceOperator.DeltaFullRhs(mGlobalTime, newGlobalTime);
 
+    // reduce the matrix to the independent dofs
     Eigen::SparseMatrix<double> Kmod = mReducedSolutionSpaceOperator.HessianToReducedBasis(K_full);
+
+    // compute trial resiudal
     Eigen::VectorXd fmod =
             mReducedSolutionSpaceOperator.GetConstraintMatrix().transpose() * (f_full + K_full * deltaBrhsEigen);
 
+    // solve reduced system
     Eigen::VectorXd u = EigenSparseSolve(Kmod, fmod, solverType);
 
-    u = mReducedSolutionSpaceOperator.DeltaFull(u, deltaBrhsEigen); // full
+    // compute from the delta of the independent dofs the delta of dependent and independent dofs (only for active
+    // doftypes)
+    u = mReducedSolutionSpaceOperator.DeltaFull(u, deltaBrhsEigen);
 
-    return start - u;
+    // extract from the start vector the current independent dofs
+    EigenVectorXd startIndependent(mReducedSolutionSpaceOperator.ExtractIndependentDofVector(start));
+
+    // return the new solution vector (old+delta) of the independent dofs
+    return startIndependent - u;
 }

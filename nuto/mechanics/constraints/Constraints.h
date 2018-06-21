@@ -89,6 +89,12 @@ public:
     //! @return sparse matrix containing the constraint terms
     Eigen::SparseMatrix<double> BuildUnitConstraintMatrix(DofType dof, int numDofs) const;
 
+    //! @brief builds a sparse matrix to extract the independent values from the full vector of dofs
+    //! @param dof dof type
+    //! @param numDofs number dofs for the dof type, required for a proper resize of the sparse matrix
+    //! @return sparse matrix
+    Eigen::SparseMatrix<double> BuildUnitConstraintMatrixInv(DofType dof, int numDofs) const;
+
     //! @brief calculates the number of constraint equations for a specific dof type
     //! @param dof dof type
     //! @return number of constraint equations

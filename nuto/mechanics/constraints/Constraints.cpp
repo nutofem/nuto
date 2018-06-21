@@ -64,9 +64,10 @@ JKNumbering Constraints::GetJKNumbering(DofType dof, int numDofs) const
             throw Exception(__PRETTY_FUNCTION__,
                             "There is no dof numbering for a node in equation" + std::to_string(i) + ".");
         if (globalDofNumber >= numDofs)
-            throw Exception(__PRETTY_FUNCTION__, "The provided dof number of the dependent term exceeds "
-                                                 "the total number of dofs in equation " +
-                                                         std::to_string(i) + ".");
+            throw Exception(__PRETTY_FUNCTION__,
+                            "The provided dof number of the dependent term exceeds "
+                            "the total number of dofs in equation " +
+                                    std::to_string(i) + ".");
         isDofConstrained[globalDofNumber] = true;
         dependentGlobalNumbering(i) = globalDofNumber;
     }
@@ -134,6 +135,35 @@ Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrix(DofType dof, 
     matrix.setFromTriplets(tripletList.begin(), tripletList.end());
     return matrix;
 }
+
+Eigen::SparseMatrix<double> Constraints::BuildUnitConstraintMatrixInv(DofType dof, int numDofs) const
+{
+    if (not mEquations.Has(dof))
+    {
+        Eigen::SparseMatrix<double> unitMatrix(numDofs, numDofs);
+        unitMatrix.setIdentity();
+        return unitMatrix; // no equations for this dof type
+    }
+
+    Eigen::VectorXi jkNumbering = GetJKNumbering(dof, numDofs).mIndices;
+
+    const Equations& equations = mEquations[dof];
+    int numEquations = equations.size();
+    int numIndependentDofs = numDofs - numEquations;
+
+    Eigen::SparseMatrix<double> matrix(numIndependentDofs, numDofs);
+    matrix.setZero();
+
+    // add unit entry for all independent dofs
+    std::vector<Eigen::Triplet<double>> tripletList;
+    for (auto i = 0; i < numIndependentDofs; i++)
+    {
+        tripletList.push_back(Eigen::Triplet<double>(i, jkNumbering(i), 1.));
+    }
+    matrix.setFromTriplets(tripletList.begin(), tripletList.end());
+    return matrix;
+}
+
 
 int Constraints::GetNumEquations(DofType dof) const
 {
