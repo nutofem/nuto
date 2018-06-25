@@ -24,21 +24,23 @@ QuasiStaticProblem::QuasiStaticProblem(TimeDependentProblem& s, ReducedSolutionS
 
 Eigen::VectorXd QuasiStaticProblem::Residual(const Eigen::VectorXd& u)
 {
+    Eigen::VectorXd u_full = mReducedSolutionSpaceOperator.ToFull(u);
     return mReducedSolutionSpaceOperator.GradientToReducedBasis(
-            ToEigen(this->FullResidual(u), mReducedSolutionSpaceOperator.GetDofTypes()));
+            ToEigen(this->FullResidual(u_full), mReducedSolutionSpaceOperator.GetDofTypes()));
 }
 
 DofVector<double> QuasiStaticProblem::FullResidual(const Eigen::VectorXd& u)
 {
-    mReducedSolutionSpaceOperator.ToDofVector2(u, mSolution);
+    mReducedSolutionSpaceOperator.ToDofVector(u, mSolution);
     return mProblem.Gradient(mSolution, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime + mTimeStep,
                              mTimeStep);
 }
 
 Eigen::SparseMatrix<double> QuasiStaticProblem::Derivative(const Eigen::VectorXd& u)
 {
+    Eigen::VectorXd u_full = mReducedSolutionSpaceOperator.ToFull(u);
     DofVector<double> uDof;
-    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    mReducedSolutionSpaceOperator.ToDofVector(u_full, uDof);
     DofMatrixSparse<double> D_dof =
             mProblem.Hessian0(uDof, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime + mTimeStep, mTimeStep);
     auto D_full = ToEigen(D_dof, mReducedSolutionSpaceOperator.GetDofTypes());
@@ -47,8 +49,9 @@ Eigen::SparseMatrix<double> QuasiStaticProblem::Derivative(const Eigen::VectorXd
 
 void QuasiStaticProblem::UpdateHistory(const Eigen::VectorXd& u)
 {
+    Eigen::VectorXd u_full = mReducedSolutionSpaceOperator.ToFull(u);
     DofVector<double> uDof;
-    mReducedSolutionSpaceOperator.ToDofVector(u, uDof);
+    mReducedSolutionSpaceOperator.ToDofVector(u_full, uDof);
     mProblem.UpdateHistory(uDof, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime + mTimeStep, mTimeStep);
 }
 
@@ -60,8 +63,7 @@ double QuasiStaticProblem::Norm(const Eigen::VectorXd& residual) const
 
 void QuasiStaticProblem::Info(int i, const Eigen::VectorXd& x, const Eigen::VectorXd& r) const
 {
-    Log::Info << "Iteration " << i << ": |R| = " << r.norm()
-              << " |x| = " << mReducedSolutionSpaceOperator.GradientToReducedBasis(x).norm() << '\n';
+    Log::Info << "Iteration " << i << ": |R| = " << r.norm() << " |x| = " << x.norm() << '\n';
 }
 
 void QuasiStaticProblem::SetGlobalTime(double globalTime)
@@ -73,6 +75,12 @@ void QuasiStaticProblem::SetGlobalTime(double globalTime)
 void QuasiStaticProblem::SetReducedSolutionSpaceOperator(ReducedSolutionSpace& reducedSolutionSpaceOperator)
 {
     mReducedSolutionSpaceOperator = reducedSolutionSpaceOperator;
+}
+
+void QuasiStaticProblem::FillDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const
+{
+    Eigen::VectorXd full = mReducedSolutionSpaceOperator.ToFull(source);
+    mReducedSolutionSpaceOperator.ToDofVector(full, destination);
 }
 
 Eigen::VectorXd QuasiStaticProblem::Residual(const Eigen::VectorXd& u, double t, double dt)
@@ -96,7 +104,7 @@ Eigen::VectorXd QuasiStaticProblem::TrialState(DofVector<double>& start, double 
     // store old values as well as all dofs not solved for in mSolutionVector
     mSolution = start;
 
-    // compute "old" hessian in previously eqilibrated time step
+    // compute "old" hessian in previously equilibrated time step
     Eigen::SparseMatrix<double> K_full =
             ToEigen(mProblem.Hessian0(start, mReducedSolutionSpaceOperator.GetDofTypes(), mGlobalTime, mTimeStep),
                     mReducedSolutionSpaceOperator.GetDofTypes());
@@ -129,9 +137,8 @@ Eigen::VectorXd QuasiStaticProblem::TrialState(DofVector<double>& start, double 
     // doftypes)
     u = mReducedSolutionSpaceOperator.DeltaFull(u, deltaBrhsEigen);
 
-    // extract from the start vector the current independent dofs
-    EigenVectorXd startIndependent(mReducedSolutionSpaceOperator.ExtractIndependentDofVector(start));
+    DofVector<double> temp;
+    mReducedSolutionSpaceOperator.ToDofVector(u, temp);
 
-    // return the new solution vector (old+delta) of the independent dofs
-    return startIndependent - u;
+    return mReducedSolutionSpaceOperator.ExtractIndependentDofVector(start - temp);
 }

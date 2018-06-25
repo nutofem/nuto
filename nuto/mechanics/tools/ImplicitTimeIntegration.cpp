@@ -58,7 +58,7 @@ int ImplicitTimeIntegration::DoStep(DofVector<double>& start, QuasiStaticProblem
         throw NewtonRaphson::NoConvergence("", "floating point exception");
 
     callBack.UpdateHistory(tmpX);
-    callBack.ToDofVector2(tmpX, start);
+    callBack.FillDofVector(tmpX, start);
 
     return numIterations;
 }

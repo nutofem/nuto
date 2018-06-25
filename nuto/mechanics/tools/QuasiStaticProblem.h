@@ -63,7 +63,7 @@ public:
     //! @param reducedSolutionSpaceOperator ... object of the class ReducedSolutionSpace
     void SetReducedSolutionSpaceOperator(ReducedSolutionSpace& reducedSolutionSpaceOperator);
 
-    //    void FillDofVector(DofVector<double>& destination, const Eigen::VectorXd& source) const;
+    void FillDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const;
 
     //! tolerance for Norm(R), public member because it is part of NuTo::NewtonRaphson::Problem
     //! I don't think this is optimal (instead use tol as a parameter when calling NewtonRaphson)

@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     dofTypes.push_back(d);
     dofTypes.push_back(eeq);
 
-    DofVector<double> X = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
+    DofVector<double> solutionVector = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
 
     DofContainer<int> numTotalDofs;
     DofInfo dofInfoDisp = DofNumbering::Build(mesh.NodesTotal(d), d, constraints);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
 
     ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
-    Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
+    //    Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
 
     QuasiStaticProblem quasiStaticProblem(equations, reducedSolutionSpaceOperator, 1.e-6);
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(Integrand)
     };
     auto postProcessF = [&](double t) {
         visu.Plot(t, true);
-        DofVector<double> residual = quasiStaticProblem.FullResidual(solutionVector);
+        DofVector<double> residual = quasiStaticProblem.FullResidual(ToEigen(solutionVector, dofTypes));
         std::vector<int> dofnumbers = {dofLeft};
         double reactionForce = boost::accumulate(residual(d, dofnumbers), 0.);
         loadDisplacement << quasiStaticProblem.GetGlobalTime() << '\t' << reactionForce << '\n';
@@ -231,8 +231,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     dofTypes.push_back(d);
     dofTypes.push_back(eeq);
 
-    DofVector<double> X = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
-    Eigen::VectorXd solutionVector = ToEigen(X, dofTypes);
+    DofVector<double> solutionVector = equations.RenumberDofs(constraints, dofTypes, DofVector<double>());
 
     ImplicitTimeIntegration implicitTimeIntegration;
 
@@ -260,7 +259,7 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     };
     auto postProcess = [&](double t) {
         visu.Plot(t, true);
-        DofVector<double> residual = quasiStaticProblem.FullResidual(solutionVector);
+        DofVector<double> residual = quasiStaticProblem.FullResidual(ToEigen(solutionVector, dofTypes));
         std::vector<int> dofnumbers = DofNumbering::Get(topNodes, ToComponentIndex(eDirection::Y));
         double reactionForce = boost::accumulate(residual(d, dofnumbers), 0.);
         loadDisp << quasiStaticProblem.GetGlobalTime() << '\t' << reactionForce << '\n';

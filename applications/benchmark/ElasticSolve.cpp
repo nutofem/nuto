@@ -13,7 +13,8 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/tools/CellStorage.h"
 #include "nuto/mechanics/tools/TimeDependentProblem.h"
-#include "nuto/mechanics/tools/QuasistaticSolver.h"
+#include "nuto/mechanics/tools/ImplicitTimeIntegration.h"
+#include "nuto/mechanics/tools/QuasiStaticProblem.h"
 #include "nuto/mechanics/constraints/ConstraintCompanion.h"
 
 #include "nuto/mechanics/dofs/DofVectorConvertEigen.h"

@@ -61,7 +61,7 @@ Eigen::VectorXd ReducedSolutionSpace::ToFullWithRhs(const Eigen::VectorXd& indep
     return mCmatUnitSparse * independent + mConstraints.GetRhs(dof, time);
 }
 
-void ReducedSolutionSpace::ToDofVector2(const Eigen::VectorXd& source, DofVector<double>& destination) const
+void ReducedSolutionSpace::ToDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const
 {
     for (auto dof : mDofTypes)
         destination[dof].setZero(mNumTotalDofs[dof]);

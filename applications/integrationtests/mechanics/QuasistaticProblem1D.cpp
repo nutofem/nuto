@@ -73,8 +73,7 @@ public:
         ReducedSolutionSpace reducedSolutionSpaceOperator(dofTypes, numTotalDofs, constraints);
 
         QuasiStaticProblem quasiStaticProblem(mEquations, reducedSolutionSpaceOperator, 1.e-12);
-        DofVector<double> X = mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
-        mSolutionVector = ToEigen(X, dofTypes);
+        mSolutionVector = mEquations.RenumberDofs(constraints, dofTypes, DofVector<double>());
 
         auto doStep = [&](double t) {
             return mImplicitTimeIntegration.DoStep(mSolutionVector, quasiStaticProblem, t, "EigenSparseLU");
@@ -115,7 +114,7 @@ private:
     CellStorage mCells;
     Group<CellInterface> mCellGroup;
 
-    Eigen::VectorXd mSolutionVector;
+    DofVector<double> mSolutionVector;
 
     Constraint::Constraints DefineConstraints(MeshFem& mesh, DofType disp)
     {

@@ -43,7 +43,7 @@ public:
     //! @brief transforms a full solution vector back to a dofVector and replaces the corresponding entries
     //! @param source ... vector of all dofs
     //! @param destination ... dof vector of all dofs
-    void ToDofVector2(const Eigen::VectorXd& source, DofVector<double>& destination) const;
+    void ToDofVector(const Eigen::VectorXd& source, DofVector<double>& destination) const;
 
     //! @brief extracts from a full solution vector the independent dofs
     //! @param source ... vector of all dofs
