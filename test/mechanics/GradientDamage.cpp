@@ -27,8 +27,10 @@
 //#define PRINTRESULT
 #include <eigen3/Eigen/Eigenvalues>
 
-namespace NuToTest {
-namespace GradientDamage {
+namespace NuToTest
+{
+namespace GradientDamage
+{
 
 
 bool CheckDamageLawsDerivatives(NuTo::GradientDamageEngineeringStress rConstitutiveLaw)
@@ -40,11 +42,12 @@ bool CheckDamageLawsDerivatives(NuTo::GradientDamageEngineeringStress rConstitut
     for (int i = 1; i < 100; ++i)
     {
         double kappa = i * step + epsilon;
-//        kappa = i*step;
+        //        kappa = i*step;
         double sigma1 = (1 - rConstitutiveLaw.CalculateDamage(kappa)) * E * kappa;
         double sigma2 = (1 - rConstitutiveLaw.CalculateDamage(kappa + epsilon)) * E * (kappa + epsilon);
 
-        double DsigmaDkappa = -rConstitutiveLaw.CalculateDerivativeDamage(kappa) * E * kappa + (1 - rConstitutiveLaw.CalculateDamage(kappa)) * E;
+        double DsigmaDkappa = -rConstitutiveLaw.CalculateDerivativeDamage(kappa) * E * kappa +
+                              (1 - rConstitutiveLaw.CalculateDamage(kappa)) * E;
         double DsigmaDkappa_CDF = (sigma2 - sigma1) / epsilon;
 
         double differenceSigma = DsigmaDkappa - DsigmaDkappa_CDF;
@@ -66,49 +69,65 @@ void CheckDamageLaws()
 {
     NuTo::GradientDamageEngineeringStress myConstitutiveLaw;
 
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY,1.0);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,30000);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.3);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,1.0);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER,10.0);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,4.);
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,0.21);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.3);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 1.0);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER, 10.0);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.21);
 
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING));
+    myConstitutiveLaw.SetParameterDouble(
+            NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,
+            static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING));
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_NO_SOFTENING: wrong damage derivatives");
 
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING));
+    myConstitutiveLaw.SetParameterDouble(
+            NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,
+            static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING));
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_LINEAR_SOFTENING: wrong damage derivatives");
 
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING));
+    myConstitutiveLaw.SetParameterDouble(
+            NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,
+            static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING));
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING: wrong damage derivatives");
 
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD));
+    myConstitutiveLaw.SetParameterDouble(
+            NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,
+            static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD));
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD: wrong damage derivatives");
 
 
-    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW, static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE));
+    myConstitutiveLaw.SetParameterDouble(
+            NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,
+            static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE));
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_CUBIC_HERMITE: wrong damage derivatives");
-
 }
 
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
     // create a damage law
-    int lawId = rStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 3);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER, 0.);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
+    int lawId =
+            rStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,
+                                                 30000);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,
+                                                 0.2);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 3);
+    rStructure.ConstitutiveLawSetParameterDouble(
+            lawId, NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER, 0.);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,
+                                                 4.);
+    rStructure.ConstitutiveLawSetParameterDouble(
+            lawId, NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId, NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,
+                                                 0.021);
     rStructure.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
 
     return lawId;
@@ -138,7 +157,7 @@ void CheckStiffnesses(NuTo::Structure& rStructure)
 {
     ApplyDofValues(rStructure);
 
-//    rStructure.Info();
+    //    rStructure.Info();
 
     bool elementStiffnessCorrect = rStructure.ElementCheckHessian0(1.e-8, 1.e-4, true);
     if (not elementStiffnessCorrect)
@@ -146,7 +165,7 @@ void CheckStiffnesses(NuTo::Structure& rStructure)
 
     bool globalStiffnessCorrect = rStructure.CheckHessian0(1.e-8, 1.e-4, true);
     if (not globalStiffnessCorrect)
-        throw NuTo::Exception(__PRETTY_FUNCTION__,  "global stiffness matrix incorrect!");
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "global stiffness matrix incorrect!");
 }
 
 void Visualize(NuTo::Structure& rStructure, std::string rDir)
@@ -164,7 +183,7 @@ void Visualize(NuTo::Structure& rStructure, std::string rDir)
     resultDir += "/" + rDir;
     boost::filesystem::create_directory(resultDir);
 
-    rStructure.ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
+    rStructure.ExportVtkDataFileElements(resultDir + "/Elements.vtu", true);
 }
 
 int AddInterpolationType(NuTo::Structure& rStructure, NuTo::Interpolation::eShapeType rShape)
@@ -172,11 +191,12 @@ int AddInterpolationType(NuTo::Structure& rStructure, NuTo::Interpolation::eShap
     int it = rStructure.InterpolationTypeCreate(rShape);
     rStructure.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     rStructure.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    rStructure.InterpolationTypeAdd(it, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    rStructure.InterpolationTypeAdd(it, NuTo::Node::eDof::NONLOCALEQSTRAIN,
+                                    NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     return it;
 }
 
-int AddBoundaryElementsAtCoordinate(NuTo::Structure &s, double rCoordinate)
+int AddBoundaryElementsAtCoordinate(NuTo::Structure& s, double rCoordinate)
 {
     int gNodesBoundary = s.GroupCreate("NODES");
     s.GroupAddNodeCoordinateRange(gNodesBoundary, 0, rCoordinate - 1.e-6, rCoordinate + 1.e-6);
@@ -196,7 +216,9 @@ void AddBoundaryElements(NuTo::Structure& s, double rLength, int rNumExpectedBou
 
     if (numBoundaryElements != rNumExpectedBoundaryElements)
     {
-        throw NuTo::MechanicsException("Wrong number of boundary elements. \nCreated: " + std::to_string(numBoundaryElements) + "\nExpected: " + std::to_string(rNumExpectedBoundaryElements));
+        throw NuTo::MechanicsException("Wrong number of boundary elements. \nCreated: " +
+                                       std::to_string(numBoundaryElements) + "\nExpected: " +
+                                       std::to_string(rNumExpectedBoundaryElements));
     }
 }
 
@@ -230,7 +252,8 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
     {
         nodes(0) = iElement;
         nodes(1) = iElement + 1;
-        s.ElementCreate(interpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(interpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                        NuTo::IpData::eIpDataType::STATICDATA);
     }
 
 
@@ -264,8 +287,8 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
 }
 
 
-
-void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType rSection, bool rUseRobinBoundaryElements)
+void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType rSection,
+                     bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(std::string(__FUNCTION__) + " " + NuTo::Interpolation::ShapeTypeToString(rShape));
 
@@ -281,7 +304,7 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
     s.SetShowTime(false);
     s.SetVerboseLevel(0);
 
-    //create nodes
+    // create nodes
     int numNodesX = numElementsX + 1;
     int numNodesY = numElementsY + 1;
     double deltaX = lX / (numElementsX);
@@ -302,7 +325,7 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
 
     int myInterpolationType = AddInterpolationType(s, rShape);
 
-    //create elements
+    // create elements
     for (int countY = 0; countY < numElementsY; countY++)
     {
         for (int countX = 0; countX < numElementsX; countX++)
@@ -314,7 +337,8 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
                 nodes(1) = countX + 1 + countY * numNodesX;
                 nodes(2) = countX + 1 + (countY + 1) * numNodesX;
                 nodes(3) = countX + (countY + 1) * numNodesX;
-                s.ElementCreate(myInterpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+                s.ElementCreate(myInterpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                                NuTo::IpData::eIpDataType::STATICDATA);
             }
             if (rShape == NuTo::Interpolation::eShapeType::TRIANGLE2D)
             {
@@ -322,12 +346,14 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
                 nodes(0) = countX + countY * numNodesX;
                 nodes(1) = countX + 1 + countY * numNodesX;
                 nodes(2) = countX + 1 + (countY + 1) * numNodesX;
-                s.ElementCreate(myInterpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+                s.ElementCreate(myInterpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                                NuTo::IpData::eIpDataType::STATICDATA);
 
                 nodes(0) = countX + countY * numNodesX;
                 nodes(1) = countX + 1 + (countY + 1) * numNodesX;
                 nodes(2) = countX + (countY + 1) * numNodesX;
-                s.ElementCreate(myInterpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+                s.ElementCreate(myInterpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                                NuTo::IpData::eIpDataType::STATICDATA);
             }
         }
     }
@@ -342,7 +368,7 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
 
     if (rUseRobinBoundaryElements)
     {
-        AddBoundaryElements(s, lX, 2*numElementsY);
+        AddBoundaryElements(s, lX, 2 * numElementsY);
     }
     CheckStiffnesses(s);
     Visualize(s, NuTo::Interpolation::ShapeTypeToString(rShape));
@@ -359,27 +385,28 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 
     double lX = 3, lY = 4, lZ = 5;
     NuTo::FullVector<int, Eigen::Dynamic> nodeIds(8);
-    nodeIds[0] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0, 0}));
-    nodeIds[1] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0, 0}));
-    nodeIds[2] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY, 0}));
-    nodeIds[3] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY, 0}));
-    nodeIds[4] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0,lZ}));
-    nodeIds[5] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0,lZ}));
-    nodeIds[6] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY,lZ}));
-    nodeIds[7] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY,lZ}));
+    nodeIds[0] = s.NodeCreate(NuTo::FullVector<double, 3>({0, 0, 0}));
+    nodeIds[1] = s.NodeCreate(NuTo::FullVector<double, 3>({lX, 0, 0}));
+    nodeIds[2] = s.NodeCreate(NuTo::FullVector<double, 3>({lX, lY, 0}));
+    nodeIds[3] = s.NodeCreate(NuTo::FullVector<double, 3>({0, lY, 0}));
+    nodeIds[4] = s.NodeCreate(NuTo::FullVector<double, 3>({0, 0, lZ}));
+    nodeIds[5] = s.NodeCreate(NuTo::FullVector<double, 3>({lX, 0, lZ}));
+    nodeIds[6] = s.NodeCreate(NuTo::FullVector<double, 3>({lX, lY, lZ}));
+    nodeIds[7] = s.NodeCreate(NuTo::FullVector<double, 3>({0, lY, lZ}));
 
     int myInterpolationType = AddInterpolationType(s, rShape);
 
     if (rShape == NuTo::Interpolation::eShapeType::BRICK3D)
-        s.ElementCreate(myInterpolationType, nodeIds, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(myInterpolationType, nodeIds, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                        NuTo::IpData::eIpDataType::STATICDATA);
     if (rShape == NuTo::Interpolation::eShapeType::TETRAHEDRON3D)
     {
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet0(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet1(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet2(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet3(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet4(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet5(4);
+        NuTo::FullVector<int, Eigen::Dynamic> nodesTet0(4);
+        NuTo::FullVector<int, Eigen::Dynamic> nodesTet1(4);
+        NuTo::FullVector<int, Eigen::Dynamic> nodesTet2(4);
+        NuTo::FullVector<int, Eigen::Dynamic> nodesTet3(4);
+        NuTo::FullVector<int, Eigen::Dynamic> nodesTet4(4);
+        NuTo::FullVector<int, Eigen::Dynamic> nodesTet5(4);
 
         nodesTet0 << nodeIds(0), nodeIds(1), nodeIds(3), nodeIds(7);
         nodesTet1 << nodeIds(0), nodeIds(1), nodeIds(7), nodeIds(4);
@@ -388,12 +415,18 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
         nodesTet4 << nodeIds(2), nodeIds(7), nodeIds(1), nodeIds(6);
         nodesTet5 << nodeIds(2), nodeIds(3), nodeIds(1), nodeIds(7);
 
-        s.ElementCreate(myInterpolationType, nodesTet0, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-        s.ElementCreate(myInterpolationType, nodesTet1, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-        s.ElementCreate(myInterpolationType, nodesTet2, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-        s.ElementCreate(myInterpolationType, nodesTet3, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-        s.ElementCreate(myInterpolationType, nodesTet4, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-        s.ElementCreate(myInterpolationType, nodesTet5, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(myInterpolationType, nodesTet0, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                        NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(myInterpolationType, nodesTet1, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                        NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(myInterpolationType, nodesTet2, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                        NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(myInterpolationType, nodesTet3, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                        NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(myInterpolationType, nodesTet4, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                        NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(myInterpolationType, nodesTet5, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                        NuTo::IpData::eIpDataType::STATICDATA);
     }
     int mySection = s.SectionCreate("VOLUME");
 
@@ -475,13 +508,17 @@ void Check1D2D3D()
     s3D.SetShowTime(false);
 
     int interpolationType1D = AddInterpolationType(s1D, NuTo::Interpolation::eShapeType::TRUSS1D);
-    s1D.InterpolationTypeSetIntegrationType(interpolationType1D, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::eIpDataType::STATICDATA);
+    s1D.InterpolationTypeSetIntegrationType(interpolationType1D, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip,
+                                            NuTo::IpData::eIpDataType::STATICDATA);
 
     int interpolationType2D = AddInterpolationType(s2D, NuTo::Interpolation::eShapeType::QUAD2D);
-    s2D.InterpolationTypeSetIntegrationType(interpolationType2D, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip, NuTo::IpData::eIpDataType::STATICDATA);
+    s2D.InterpolationTypeSetIntegrationType(interpolationType2D, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+                                            NuTo::IpData::eIpDataType::STATICDATA);
 
     int interpolationType3D = AddInterpolationType(s3D, NuTo::Interpolation::eShapeType::BRICK3D);
-    s3D.InterpolationTypeSetIntegrationType(interpolationType3D, NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip, NuTo::IpData::eIpDataType::STATICDATA);
+    s3D.InterpolationTypeSetIntegrationType(interpolationType3D,
+                                            NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip,
+                                            NuTo::IpData::eIpDataType::STATICDATA);
 
 
     NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
@@ -495,7 +532,8 @@ void Check1D2D3D()
     {
         elementIncidence(0) = iElement;
         elementIncidence(1) = iElement + 1;
-        s1D.ElementCreate(interpolationType1D, elementIncidence, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        s1D.ElementCreate(interpolationType1D, elementIncidence, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                          NuTo::IpData::eIpDataType::STATICDATA);
     }
 
     int nodeNum = 0;
@@ -509,7 +547,7 @@ void Check1D2D3D()
             nodeNum++;
         }
 
-    //create elements
+    // create elements
     for (int countX = 0; countX < numElements; countX++)
     {
         NuTo::FullVector<int, Eigen::Dynamic> nodes(4);
@@ -517,35 +555,37 @@ void Check1D2D3D()
         nodes(1) = countX + 1;
         nodes(2) = countX + 1 + numNodesX;
         nodes(3) = countX + numNodesX;
-        s2D.ElementCreate(interpolationType2D, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        s2D.ElementCreate(interpolationType2D, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                          NuTo::IpData::eIpDataType::STATICDATA);
     }
 
     nodeNum = 0;
-    for (int iZ=0; iZ<2; iZ++)
-        for (int iY=0; iY<2; iY++)
-            for (int iX=0; iX<numNodesX; iX++)
+    for (int iZ = 0; iZ < 2; iZ++)
+        for (int iY = 0; iY < 2; iY++)
+            for (int iX = 0; iX < numNodesX; iX++)
             {
-                NuTo::FullVector<double,Eigen::Dynamic> coordinates(3);
-                coordinates(0) = iX*lengthElementX;
-                coordinates(1) = iY*ly;
-                coordinates(2) = iZ*lz;
+                NuTo::FullVector<double, Eigen::Dynamic> coordinates(3);
+                coordinates(0) = iX * lengthElementX;
+                coordinates(1) = iY * ly;
+                coordinates(2) = iZ * lz;
                 s3D.NodeCreate(nodeNum, coordinates);
                 nodeNum++;
             }
 
-    for (int iX=0; iX<numElements; iX++)
+    for (int iX = 0; iX < numElements; iX++)
     {
-        NuTo::FullVector<int,Eigen::Dynamic> nodes(8);
+        NuTo::FullVector<int, Eigen::Dynamic> nodes(8);
         nodes(0) = iX;
-        nodes(1) = iX+1;
-        nodes(2) = iX+1 +  2 * numNodesX;
-        nodes(3) = iX   +  2 * numNodesX;
-        nodes(4) = iX                    + numNodesX;
-        nodes(5) = iX+1                  + numNodesX;
-        nodes(6) = iX+1 +  2 * numNodesX + numNodesX;
-        nodes(7) = iX   +  2 * numNodesX + numNodesX;
+        nodes(1) = iX + 1;
+        nodes(2) = iX + 1 + 2 * numNodesX;
+        nodes(3) = iX + 2 * numNodesX;
+        nodes(4) = iX + numNodesX;
+        nodes(5) = iX + 1 + numNodesX;
+        nodes(6) = iX + 1 + 2 * numNodesX + numNodesX;
+        nodes(7) = iX + 2 * numNodesX + numNodesX;
 
-        s3D.ElementCreate(interpolationType3D, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        s3D.ElementCreate(interpolationType3D, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                          NuTo::IpData::eIpDataType::STATICDATA);
     }
     s1D.ElementTotalConvertToInterpolationType();
     s2D.ElementTotalConvertToInterpolationType();
@@ -555,11 +595,11 @@ void Check1D2D3D()
     s2D.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s2D));
     s3D.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s3D));
 
-    int mySection1D  = s1D.SectionCreate("Truss");
-    int mySection2D  = s2D.SectionCreate("Plane_Stress");
-    int mySection3D  = s3D.SectionCreate("Volume");
+    int mySection1D = s1D.SectionCreate("Truss");
+    int mySection2D = s2D.SectionCreate("Plane_Stress");
+    int mySection3D = s3D.SectionCreate("Volume");
 
-    s1D.SectionSetArea(mySection1D, lz*ly);
+    s1D.SectionSetArea(mySection1D, lz * ly);
     s2D.SectionSetThickness(mySection2D, lz);
 
     s1D.ElementTotalSetSection(mySection1D);
@@ -619,7 +659,7 @@ void Check1D2D3D()
     s2D.ConstraintLinearSetDisplacementNode(0, NuTo::FullVector<double, 2>::UnitY(), 0.);
     s3D.ConstraintLinearSetDisplacementNode(0, NuTo::FullVector<double, 3>::UnitY(), 0.);
 
-    int nFixRotation = s3D.NodeGetIdAtCoordinate(NuTo::FullVector<double, 3>({0,0,lz}), 1.e-4);
+    int nFixRotation = s3D.NodeGetIdAtCoordinate(NuTo::FullVector<double, 3>({0, 0, lz}), 1.e-4);
     s3D.ConstraintLinearSetDisplacementNode(nFixRotation, NuTo::FullVector<double, 3>::UnitY(), 0.);
 
     Visualize(s1D, "tmp");
@@ -650,43 +690,45 @@ void Check1D2D3D()
 
     for (int i = 0; i < numElements; ++i)
     {
-        double stress1D = s1D.ElementGetEngineeringStress(i)(0,0);
-        double stress2D = s2D.ElementGetEngineeringStress(i)(0,0);
-        double stress3D = s3D.ElementGetEngineeringStress(i)(0,0);
+        double stress1D = s1D.ElementGetEngineeringStress(i)(0, 0);
+        double stress2D = s2D.ElementGetEngineeringStress(i)(0, 0);
+        double stress3D = s3D.ElementGetEngineeringStress(i)(0, 0);
 
-        double strain1D = s1D.ElementGetEngineeringStrain(i)(0,0);
-        double strain2D = s2D.ElementGetEngineeringStrain(i)(0,0);
-        double strain3D = s3D.ElementGetEngineeringStrain(i)(0,0);
+        double strain1D = s1D.ElementGetEngineeringStrain(i)(0, 0);
+        double strain2D = s2D.ElementGetEngineeringStrain(i)(0, 0);
+        double strain3D = s3D.ElementGetEngineeringStrain(i)(0, 0);
 
-        double damage1D = s1D.ElementGetDamage(i)(0,0);
-        double damage2D = s2D.ElementGetDamage(i)(0,0);
-        double damage3D = s3D.ElementGetDamage(i)(0,0);
+        double damage1D = s1D.ElementGetDamage(i)(0, 0);
+        double damage2D = s2D.ElementGetDamage(i)(0, 0);
+        double damage3D = s3D.ElementGetDamage(i)(0, 0);
 
         // assert that everything is almost equal
         auto notEqual = [](double a, double b) { return std::abs(a - b) > 1.e-3; };
 
-        if (notEqual(stress1D, stress2D) or notEqual(stress1D, stress3D) )
-            throw NuTo::MechanicsException("Stresses not equal. Better check the plots in " + myIntegrationScheme1D.GetResultDirectory());
+        if (notEqual(stress1D, stress2D) or notEqual(stress1D, stress3D))
+            throw NuTo::MechanicsException("Stresses not equal. Better check the plots in " +
+                                           myIntegrationScheme1D.GetResultDirectory());
 
-        if (notEqual(strain1D, strain2D) or notEqual(strain1D, strain3D) )
-            throw NuTo::MechanicsException("Strains not equal. Better check the plots in " + myIntegrationScheme1D.GetResultDirectory());
+        if (notEqual(strain1D, strain2D) or notEqual(strain1D, strain3D))
+            throw NuTo::MechanicsException("Strains not equal. Better check the plots in " +
+                                           myIntegrationScheme1D.GetResultDirectory());
 
-        if (notEqual(damage1D, damage2D) or notEqual(damage1D, damage3D) )
-            throw NuTo::MechanicsException("Damage not equal. Better check the plots in " + myIntegrationScheme1D.GetResultDirectory());
+        if (notEqual(damage1D, damage2D) or notEqual(damage1D, damage3D))
+            throw NuTo::MechanicsException("Damage not equal. Better check the plots in " +
+                                           myIntegrationScheme1D.GetResultDirectory());
     }
 
     return;
     timer.Reset(std::string(__FUNCTION__) + " Cleanup");
 }
 
-}  // namespace NuToTest
+} // namespace NuToTest
 
 void CheckBoundaryElements()
 {
-
 }
 
-}  // namespace GradientDamage
+} // namespace GradientDamage
 
 int main()
 {
@@ -701,14 +743,15 @@ int main()
         bool useRobinBoundaryElements = true;
 
         NuToTest::GradientDamage::TestStructure1D(useRobinBoundaryElements);
-        NuToTest::GradientDamage::TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D, NuTo::eSectionType::PLANE_STRESS, useRobinBoundaryElements);
-        NuToTest::GradientDamage::TestStructure2D(NuTo::Interpolation::eShapeType::TRIANGLE2D, NuTo::eSectionType::PLANE_STRAIN, useRobinBoundaryElements);
+        NuToTest::GradientDamage::TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D,
+                                                  NuTo::eSectionType::PLANE_STRESS, useRobinBoundaryElements);
+        NuToTest::GradientDamage::TestStructure2D(NuTo::Interpolation::eShapeType::TRIANGLE2D,
+                                                  NuTo::eSectionType::PLANE_STRAIN, useRobinBoundaryElements);
         NuToTest::GradientDamage::TestStructure3D(NuTo::Interpolation::eShapeType::BRICK3D, useRobinBoundaryElements);
-//      NuToTest::GradientDamage::TestStructure3D(NuTo::Interpolation::eShapeType::TETRAHEDRON3D, useRobinBoundaryElements);
+        NuToTest::GradientDamage::TestStructure3D(NuTo::Interpolation::eShapeType::TETRAHEDRON3D,
+                                                  useRobinBoundaryElements);
 
         NuToTest::GradientDamage::Check1D2D3D();
-
-
     }
     catch (NuTo::MechanicsException& e)
     {
@@ -728,5 +771,4 @@ int main()
     std::cout << "#####################################" << std::endl;
 
     return EXIT_SUCCESS;
-
 }

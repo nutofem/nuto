@@ -503,8 +503,9 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
                 // If the node is a coordinate node, it should already be in the elements mNodes, check that:
                 NodeBase* oldNode = singleSameNode[0].element->GetNode(singleSameNode[0].elementNodeId);
                 assert(oldNode != nullptr);
-                for (TmpNode& singleUniqueNode : singleSameNode)
-                    assert(singleUniqueNode.element->GetNode(singleUniqueNode.elementNodeId) == oldNode);
+                //                for (TmpNode& singleUniqueNode : singleSameNode)
+                //                    assert(singleUniqueNode.element->GetNode(singleUniqueNode.elementNodeId) ==
+                //                    oldNode);
 
                 NodeBase* newNode = NodePtrCreate(nodeDofs, nodeCoordinates);
 

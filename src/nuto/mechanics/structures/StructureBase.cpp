@@ -1036,12 +1036,17 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
 
     auto hessian0 = BuildGlobalHessian0();
 
+    auto testVec = BuildGlobalExternalLoadVector(rLoadCase) + BuildGlobalInternalGradient();
+
     auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector(rLoadCase) + BuildGlobalInternalGradient();
 
     hessian0.ApplyCMatrix(GetConstraintMatrix());
     residual.ApplyCMatrix(GetConstraintMatrix());
 
     // reuse deltaDof_dt0
+    Eigen::MatrixXd matrix(hessian0.JJ.ExportToFullMatrix());
+    Eigen::VectorXcd eivals = matrix.eigenvalues();
+    std::cout << eivals << std::endl;
 
     deltaDof_dt0.J = SolveBlockSystem(hessian0.JJ, residual.J);
 

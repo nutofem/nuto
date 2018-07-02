@@ -1033,13 +1033,16 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
 
                 rInternalGradient[dofRow] = gapMatrixScaled * mGlobalNodalPressure;
 
-                std::cout << "|force|_1: ";
                 double sum = 0.;
                 for (int i = 0; i < mNumSlaveDofs; i++)
                 {
                     sum += force(i);
                 }
-                std::cout << sum << std::endl;
+                if (sum > 1.e-8)
+                {
+                    std::cout << "|force|_1: ";
+                    std::cout << sum << std::endl;
+                }
             }
             else if (mContactType == 1)
             {

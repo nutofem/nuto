@@ -367,11 +367,13 @@ void NuTo::NURBSSurface::RefineKnots(const Eigen::VectorXd& rKnotsToInsert, int 
                 newKnots(k) = knots(i);
                 for (int row = 0; row < GetNumControlPoints(1); row++)
                     newControlPoints(row, k - mDegree(dir) - 1) = controlPointsProjected(row, i - mDegree(dir) - 1);
+
                 k--;
                 i--;
             }
             for (int row = 0; row < GetNumControlPoints(1); row++)
                 newControlPoints(row, k - mDegree(dir) - 1) = newControlPoints(row, k - mDegree(dir));
+
             for (int l = 1; l <= mDegree(dir); l++)
             {
                 int ind = k - mDegree(dir) + l;
@@ -472,6 +474,12 @@ void NuTo::NURBSSurface::DuplicateKnots(int dir)
         knotsToInsert(i) = (knots(beginID + 1) + knots(beginID)) / 2.;
     }
     RefineKnots(knotsToInsert, dir);
+    for (int i = 0; i < mControlPoints.rows(); i++)
+        for (int j = 0; j < mControlPoints.cols(); j++)
+            std::cout << mWeights(i, j) << " ::: " << mControlPoints(i, j).transpose() << std::endl << std::flush;
+
+    std::cout << "============================================================================" << std::endl
+              << std::flush;
 }
 
 Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic>

@@ -230,6 +230,9 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         while (curTime < rTimeDelta)
         {
 
+            std::cout << "==>curTime " << curTime << " (" << curTime / rTimeDelta
+                      << ") max Disp = " << dof_dt0.J[Node::eDof::DISPLACEMENTS].maxCoeff() << std::endl;
+
 
             //! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //! LEAVE IT OR FIX IT IF YOU CAN:
@@ -256,13 +259,13 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
             curTime += timeStep;
             SetTimeAndTimeStep(curTime, timeStep, rTimeDelta); // check whether harmonic excitation, check whether
-                                                               // curTime is too close to the time data
+            // curTime is too close to the time data
             mStructure->SetTime(curTime);
 
             deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
 
             unsigned int staggeredStepNumber = 0; // at the moment needed to do the postprocessing after the last step
-                                                  // and not after every step of a staggered solution.
+            // and not after every step of a staggered solution.
             for (const auto& activeDofs : mStepActiveDofs)
             {
                 ++staggeredStepNumber;
