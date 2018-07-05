@@ -2,6 +2,7 @@
 #include <fstream>
 #include <boost/math/tools/roots.hpp>
 
+#include "nuto/base/Logger.h"
 #include "nuto/math/EigenIO.h"
 #include "nuto/math/EigenCompanion.h"
 #include "nuto/mechanics/integrands/GradientDamage.h"
@@ -66,7 +67,6 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &TGdm::Update));
 
     QuasistaticSolver problem(equations, {d, eeq});
-    problem.SetQuiet();
     problem.mTolerance = 1.e-6;
     problem.SetConstraints(constraints);
 
@@ -78,7 +78,6 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     auto postProcessF = [&](double) { problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}); };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
-    adaptiveSolve.SetQuiet();
     adaptiveSolve.dt = 0.01;
     adaptiveSolve.dtMin = 1.e-10;
     adaptiveSolve.dtMax = 0.01;
@@ -120,8 +119,10 @@ double FindRootWithoutDerivative(std::function<double(double)> f, double guess, 
 
 int main()
 {
-    const double GlobalFractureEnergyParameter = 0.11;
+    NuTo::Log::Debug.SetQuiet(true);
+    const double GlobalFractureEnergyParameter = 0.10;
     Material::Softening material = Material::DefaultConcrete();
+    material.c = 1;
     material.fMin = 1.e-6;
 
     auto f = [&](double gf) {
@@ -131,15 +132,15 @@ int main()
         DofType d("Displacements", 1);
         ScalarDofType eeq("NonlocalEquivalentStrains");
 
-        NonlocalInteraction::Decreasing interaction(0.1, 5);
-        using Gdm = Integrands::GradientDamage<1, NonlocalInteraction::Decreasing>;
-        Gdm gdm(d, eeq, material, Laws::eDamageApplication::FULL, interaction);
+        // NonlocalInteraction::Decreasing interaction(0.10, 5);
+        using Gdm = Integrands::GradientDamage<1, NonlocalInteraction::Constant>;
+        Gdm gdm(d, eeq, material, Laws::eDamageApplication::FULL);
         double Gf = GlobalFractureEnergy(gdm, material, 100, 200, 1);
         std::cout << "gives global Gf = " << Gf << ".\n";
         return Gf - GlobalFractureEnergyParameter;
     };
 
-    double gfGuess = 0.05;
+    double gfGuess = 0.018;
     double gfCalibrated = FindRootWithoutDerivative(f, gfGuess);
     std::cout << "The fracture energy parameter gf (for GF = " << GlobalFractureEnergyParameter << ") is "
               << gfCalibrated << ".\n";

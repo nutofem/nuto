@@ -31,7 +31,8 @@ class LinearElasticDamage
 public:
     LinearElasticDamage(double E, double nu, eDamageApplication damageApplication = FULL,
                         ePlaneState planeState = ePlaneState::PLANE_STRAIN)
-        : m3K(3 * E / (3 - 6 * nu))
+        : mE(E)
+        , m3K(3 * E / (3 - 6 * nu))
         , m2G(2 * E / (2 + 2 * nu))
         , mDamageApplication(damageApplication)
         , mPlaneState(planeState)
@@ -99,6 +100,8 @@ public:
     }
 
 public:
+    double mE;
+
     //! three times the bulk modulus K
     double m3K;
 

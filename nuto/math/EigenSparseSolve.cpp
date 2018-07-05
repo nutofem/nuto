@@ -19,6 +19,9 @@
 namespace NuTo
 {
 
+bool Hack::Recalculate = true;
+Eigen::MUMPSLU<Eigen::SparseMatrix<double>> Hack::Factorized;
+
 template <typename TSolver>
 Eigen::VectorXd SolveWithSolver(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b)
 {
@@ -63,6 +66,8 @@ Eigen::VectorXd EigenSparseSolve(const Eigen::SparseMatrix<double>& A, const Eig
 #ifdef HAVE_MUMPS
     if (solver == "MumpsLU")
         return SolveWithSolver<Eigen::MUMPSLU<Eigen::SparseMatrix<double>>>(A, b);
+    if (solver == "MumpsLUFactorized")
+        return SolveWithSolver<Eigen::MUMPSLU<Eigen::SparseMatrix<double>>>(A, b);
     if (solver == "MumpsLDLT")
         return SolveWithSolver<Eigen::MUMPSLDLT<Eigen::SparseMatrix<double>, Eigen::Upper>>(A, b);
 #else
@@ -80,7 +85,17 @@ EigenSparseSolver::EigenSparseSolver(std::string solver)
 
 Eigen::VectorXd EigenSparseSolver::Solve(const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b) const
 {
-    return EigenSparseSolve(A, b, mSolver);
+    if (mSolver != "MumpsLUFactorized")
+        return EigenSparseSolve(A, b, mSolver);
+
+    if (Hack::Recalculate)
+    {
+        Log::Info << "Recalc tangent \n";
+        Hack::Factorized.analyzePattern(A);
+        Hack::Factorized.factorize(A);
+        Hack::Recalculate = false;
+    }
+    return Hack::Factorized.solve(b);
 }
 
 } // namespace NuTo

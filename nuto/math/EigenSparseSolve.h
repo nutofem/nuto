@@ -1,9 +1,16 @@
 #pragma once
 #include <string>
 #include "Eigen/Sparse"
+#include "/home/ttitsche/nuto/pde/external/EigenMumpsSupport/MUMPSSupport"
 
 namespace NuTo
 {
+
+struct Hack
+{
+    static bool Recalculate;
+    static Eigen::MUMPSLU<Eigen::SparseMatrix<double>> Factorized;
+};
 
 //! Solve a sparse linear system \f$A x = b\f$ made of Eigen types.
 //! @param A Sparse matrix.

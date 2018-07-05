@@ -6,6 +6,7 @@
 
 #include "nuto/base/Logger.h"
 #include "nuto/math/NewtonRaphson.h"
+#include "nuto/math/EigenSparseSolve.h"
 #include "nuto/mechanics/dofs/DofMatrix.h"
 #include "nuto/mechanics/dofs/DofVector.h"
 #include "nuto/mechanics/dofs/DofVectorConvertEigen.h"
@@ -73,7 +74,9 @@ DofVector<double> QuasistaticSolver::Residual(const DofVector<double>& u)
 
 DofMatrixSparse<double> QuasistaticSolver::Derivative(const DofVector<double>& u)
 {
-    return mProblem.Hessian0(u, mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    if (Hack::Recalculate)
+        return mProblem.Hessian0(u, mDofs, mGlobalTime + mTimeStep, mTimeStep);
+    return DofMatrixSparse<double>();
 }
 
 void QuasistaticSolver::UpdateHistory(const DofVector<double>& x)

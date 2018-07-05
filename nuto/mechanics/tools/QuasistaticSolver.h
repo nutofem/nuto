@@ -72,10 +72,10 @@ public:
     //! @param dofNumbers dof numbers that are considered
     void WriteTimeDofResidual(std::ostream& out, DofType dofType, std::vector<int> dofNumbers);
 
-private:
     //! @var mX last updated dof state
     DofVector<double> mX;
 
+private:
     TimeDependentProblem& mProblem;
     Constraint::Constraints mConstraints;
 

@@ -8,7 +8,6 @@ using namespace NuTo;
 DofVector<double> NuTo::Solve(const DofMatrixSparse<double>& K, const DofVector<double>& f,
                               Constraint::Constraints& bcs, std::vector<DofType> dofs, std::string solver)
 {
-    auto K_full = ToEigen(K, dofs);
     auto f_full = ToEigen(f, dofs);
 
     DofMatrixSparse<double> C_dof;
@@ -21,10 +20,16 @@ DofVector<double> NuTo::Solve(const DofMatrixSparse<double>& K, const DofVector<
                 C_dof(rdof, cdof) = Eigen::SparseMatrix<double>(C_dof(rdof, rdof).rows(), C_dof(cdof, cdof).cols());
 
     auto C = ToEigen(C_dof, dofs);
-    Eigen::SparseMatrix<double> Kmod = C.transpose() * K_full * C;
     Eigen::VectorXd fmod = C.transpose() * f_full;
 
-    Eigen::VectorXd u = EigenSparseSolve(Kmod, fmod, solver);
+    Eigen::SparseMatrix<double> Kmod;
+    if (Hack::Recalculate)
+    {
+        auto K_full = ToEigen(K, dofs);
+        Kmod = C.transpose() * K_full * C;
+    }
+    EigenSparseSolver s(solver);
+    Eigen::VectorXd u = s.Solve(Kmod, fmod);
     u = C * u;
 
     // TODO: for correct size
@@ -37,7 +42,6 @@ DofVector<double> NuTo::SolveTrialState(const DofMatrixSparse<double>& K, const 
                                         double newTime, Constraint::Constraints& bcs, std::vector<DofType> dofs,
                                         std::string solver)
 {
-    auto K_full = ToEigen(K, dofs);
     auto f_full = ToEigen(f, dofs);
 
     DofMatrixSparse<double> C_dof;
@@ -60,14 +64,23 @@ DofVector<double> NuTo::SolveTrialState(const DofMatrixSparse<double>& K, const 
                            bcs.GetSparseGlobalRhs(dof, f[dof].rows(), oldTime));
     }
 
-    Eigen::SparseMatrix<double> Kmod = C.transpose() * K_full * C;
-
+    Eigen::SparseMatrix<double> Kmod;
+    Eigen::VectorXd fmod;
     Eigen::VectorXd deltaBrhsEigen(ToEigen(deltaBrhs, dofs));
+    if (Hack::Recalculate)
+    {
+        auto K_full = ToEigen(K, dofs);
+        Kmod = C.transpose() * K_full * C;
+        fmod = C.transpose() * (f_full + K_full * deltaBrhsEigen);
+    }
+    else
+    {
+        fmod = C.transpose() * f_full;
+    }
 
     // this last operation should in theory be done with a sparse deltaBrhsVector
-    Eigen::VectorXd fmod = C.transpose() * (f_full + K_full * deltaBrhsEigen);
-
-    Eigen::VectorXd u = EigenSparseSolve(Kmod, fmod, solver);
+    EigenSparseSolver s(solver);
+    Eigen::VectorXd u = s.Solve(Kmod, fmod);
     // this is the negative increment
     // residual = gradient
     // hessian = dresidual / ddof
