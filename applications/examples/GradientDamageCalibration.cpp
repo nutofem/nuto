@@ -120,28 +120,36 @@ double FindRootWithoutDerivative(std::function<double(double)> f, double guess, 
 int main()
 {
     NuTo::Log::Debug.SetQuiet(true);
+    NuTo::Log::Info.SetQuiet(true);
     const double GlobalFractureEnergyParameter = 0.10;
-    Material::Softening material = Material::DefaultConcrete();
-    material.c = 1;
-    material.fMin = 1.e-6;
+    Material::Softening m = Material::DefaultConcrete();
+    m.c = 1.00;
+    m.fMin = 1.e-6;
+
+    m.E = 20000;
+    m.nu = 0.18;
+    m.ft = 2.6;
+    m.fc = 26.;
 
     auto f = [&](double gf) {
         std::cout << "Calculating for local gf = " << gf << " ... ";
-        material.gf = gf;
+        m.gf = gf;
         std::cout << std::flush;
         DofType d("Displacements", 1);
         ScalarDofType eeq("NonlocalEquivalentStrains");
 
-        // NonlocalInteraction::Decreasing interaction(0.10, 5);
+        NonlocalInteraction::Decreasing interaction(0.25, 5);
         using Gdm = Integrands::GradientDamage<1, NonlocalInteraction::Constant>;
-        Gdm gdm(d, eeq, material, Laws::eDamageApplication::FULL);
-        double Gf = GlobalFractureEnergy(gdm, material, 100, 200, 1);
+        Gdm gdm(d, eeq, m, Laws::eDamageApplication::FULL);
+        double Gf = GlobalFractureEnergy(gdm, m, 100, 200, -10);
         std::cout << "gives global Gf = " << Gf << ".\n";
         return Gf - GlobalFractureEnergyParameter;
     };
 
-    double gfGuess = 0.018;
+    double gfGuess = 0.0180533;
     double gfCalibrated = FindRootWithoutDerivative(f, gfGuess);
     std::cout << "The fracture energy parameter gf (for GF = " << GlobalFractureEnergyParameter << ") is "
               << gfCalibrated << ".\n";
+    std::cout << "The fracture energy parameter beta (for GF = " << GlobalFractureEnergyParameter << ") is "
+              << m.ft / gfCalibrated << ".\n";
 }

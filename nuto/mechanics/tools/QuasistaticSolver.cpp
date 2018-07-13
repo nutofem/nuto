@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <boost/range/numeric.hpp>
 
+#include "nuto/base/Timer.h"
 #include "nuto/base/Logger.h"
 #include "nuto/math/NewtonRaphson.h"
 #include "nuto/math/EigenSparseSolve.h"
@@ -118,6 +119,7 @@ void QuasistaticSolver::WriteTimeDofResidual(std::ostream& out, DofType dofType,
 
 int QuasistaticSolver::DoStep(double newGlobalTime, std::string solverType)
 {
+    NuTo::Timer timer(__FUNCTION__, true, NuTo::Log::Debug);
     // allocate constraint system solver
     ConstrainedSystemSolver solver(mConstraints, mDofs, solverType);
 

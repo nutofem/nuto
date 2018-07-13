@@ -1,5 +1,7 @@
 #include "nuto/mechanics/tools/TimeDependentProblem.h"
 #include "nuto/mechanics/dofs/DofNumbering.h"
+#include "nuto/base/Logger.h"
+#include "nuto/base/Timer.h"
 
 using namespace NuTo;
 
@@ -9,7 +11,7 @@ TimeDependentProblem::TimeDependentProblem(MeshFem* rMesh)
 }
 
 DofVector<double> TimeDependentProblem::RenumberDofs(Constraint::Constraints constraints, std::vector<DofType> dofTypes,
-                                                   DofVector<double> oldDofValues)
+                                                     DofVector<double> oldDofValues)
 {
     DofInfo dofInfos;
 
@@ -53,9 +55,10 @@ TCellInterfaceFunction Apply(TTimeDepFunction& f, double t, double dt)
     return std::bind(f, _1, t, dt);
 }
 
-DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
-                                               double dt)
+DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofValues, std::vector<DofType> dofs,
+                                                 double t, double dt)
 {
+    Timer timer(__FUNCTION__, true, Log::Debug);
     mMerger.Merge(dofValues, dofs);
     DofVector<double> gradient;
     for (auto& gradientFunction : mGradientFunctions)
@@ -65,8 +68,9 @@ DofVector<double> TimeDependentProblem::Gradient(const DofVector<double>& dofVal
 }
 
 DofMatrixSparse<double> TimeDependentProblem::Hessian0(const DofVector<double>& dofValues, std::vector<DofType> dofs,
-                                                     double t, double dt)
+                                                       double t, double dt)
 {
+    Timer timer(__FUNCTION__, true, Log::Debug);
     mMerger.Merge(dofValues, dofs);
     DofMatrixSparse<double> hessian0;
     for (auto& hessian0Function : mHessian0Functions)
@@ -78,6 +82,7 @@ DofMatrixSparse<double> TimeDependentProblem::Hessian0(const DofVector<double>& 
 void TimeDependentProblem::UpdateHistory(const DofVector<double>& dofValues, std::vector<DofType> dofs, double t,
                                          double dt)
 {
+    Timer timer(__FUNCTION__, true, Log::Debug);
     mMerger.Merge(dofValues, dofs);
     for (auto& updateFunction : mUpdateFunctions)
         for (auto& cell : updateFunction.first)
