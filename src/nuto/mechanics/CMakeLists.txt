@@ -247,7 +247,9 @@ timeIntegration/RungeKutta2.cpp
 timeIntegration/RungeKutta3.cpp
 timeIntegration/RungeKutta38.cpp
 timeIntegration/RungeKutta4.cpp
+timeIntegration/ROW_Shampine.cpp
 timeIntegration/RungeKuttaCashKarp.cpp
+timeIntegration/RungeKuttaFehlberg.cpp
 timeIntegration/RungeKuttaDormandPrince.cpp
 timeIntegration/RungeKuttaBase.cpp
 timeIntegration/TimeDependencyBase.cpp

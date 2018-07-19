@@ -139,6 +139,8 @@ public:
 
     void CalculateElementOutputContactForceDerivative(BlockFullMatrix<double>& rGapMatrix);
 
+    void CalculateElementOutputContactForceDerivative(Eigen::MatrixXd& der);
+
     void GetGlobalIntegrationPointCoordinatesAndParameters(
             int rIpNum, Eigen::VectorXd& rCoordinatesIPSlave, Eigen::VectorXd& rParamsIPSlave,
             const std::pair<const ContinuumElement<TDimSlave>*, int>& rElementAndSurfaceId) const;
@@ -159,6 +161,10 @@ public:
         return ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mGlobalNodalPressure;
     }
 
+    std::unordered_map<int, int> GetDofMapping()
+    {
+        return mMappingGlobal2LocalDof;
+    }
 
     const ContinuumContactElement<1, 1>& AsContinuumContactElement11() const override
     {
@@ -194,6 +200,7 @@ public:
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumContactElement<3,2>.");
     }
+
 
 protected:
     std::vector<std::pair<const ContinuumElement<TDimSlave>*, int>> mElementsSlave;

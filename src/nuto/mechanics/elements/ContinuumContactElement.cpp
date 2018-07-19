@@ -1069,37 +1069,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
             {
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
             {
-                for (int i = 0; i < mNumSlaveNodes; i++)
-                    if (fabs(mSlaveShapeFunctionsWeight(i)) < 1.e-10)
-                        mSlaveShapeFunctionsWeight(i) = 1.;
-
-                Eigen::MatrixXd gapMatrixScaledWithIntegrals =
-                        mGapMatrix * ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal());
-
-                if (mContactType == 0)
-                {
-                    Eigen::VectorXd globalNodalPressureDerivative(mNumSlaveNodes);
-                    for (int i = 0; i < mNumSlaveNodes; i++)
-                        globalNodalPressureDerivative(i) =
-                                mConstitutiveContactLaw->GetContactForceDerivative(mMortarGlobalGapVector(i));
-
-                    Eigen::MatrixXd gapMatrixScaledWithForceDers =
-                            mGapMatrix * (globalNodalPressureDerivative.asDiagonal());
-
-                    // Eigen::MatrixXd mat =
-                    // gapMatrixScaledWithIntegrals*(gapMatrixScaledWithForceDers.transpose());
-
-                    rGapMatrix(dofRow, dofCol) =
-                            gapMatrixScaledWithIntegrals * (gapMatrixScaledWithForceDers.transpose());
-                    //                    rGapMatrix(dofRow, dofCol) =
-                    //                    mGapMatrix*((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal())*mGapMatrix*(globalNodalPressureDerivative.asDiagonal());
-                }
-                else if (mContactType == 1)
-                {
-                    rGapMatrix(dofRow, dofCol) = gapMatrixScaledWithIntegrals * (mGapMatrixPenalty.transpose());
-                    //                    rGapMatrix(dofRow, dofCol) =
-                    //                    mGapMatrix*((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal())*(mGapMatrixPenalty.transpose());
-                }
+                CalculateElementOutputContactForceDerivative(rGapMatrix(dofRow, dofCol));
                 break;
             }
             default:
@@ -1107,6 +1077,41 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                                                                       Node::DofToString(dofRow) + " not implemented.");
             }
         }
+    }
+}
+
+template <int TDimSlave, int TDimMaster>
+void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutputContactForceDerivative(
+        Eigen::MatrixXd& der)
+{
+    for (int i = 0; i < mNumSlaveNodes; i++)
+        if (fabs(mSlaveShapeFunctionsWeight(i)) < 1.e-10)
+            mSlaveShapeFunctionsWeight(i) = 1.;
+
+    Eigen::MatrixXd gapMatrixScaledWithIntegrals =
+            mGapMatrix * ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal());
+
+    if (mContactType == 0)
+    {
+        Eigen::VectorXd globalNodalPressureDerivative(mNumSlaveNodes);
+        for (int i = 0; i < mNumSlaveNodes; i++)
+            globalNodalPressureDerivative(i) =
+                    mConstitutiveContactLaw->GetContactForceDerivative(mMortarGlobalGapVector(i));
+
+        Eigen::MatrixXd gapMatrixScaledWithForceDers = mGapMatrix * (globalNodalPressureDerivative.asDiagonal());
+
+        // Eigen::MatrixXd mat =
+        // gapMatrixScaledWithIntegrals*(gapMatrixScaledWithForceDers.transpose());
+
+        der = gapMatrixScaledWithIntegrals * (gapMatrixScaledWithForceDers.transpose());
+        //                    rGapMatrix(dofRow, dofCol) =
+        //                    mGapMatrix*((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal())*mGapMatrix*(globalNodalPressureDerivative.asDiagonal());
+    }
+    else if (mContactType == 1)
+    {
+        der = gapMatrixScaledWithIntegrals * (mGapMatrixPenalty.transpose());
+        //                    rGapMatrix(dofRow, dofCol) =
+        //                    mGapMatrix*((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal())*(mGapMatrixPenalty.transpose());
     }
 }
 

@@ -70,13 +70,6 @@ public:
            const NuTo::StructureOutputBlockVector& rAcceleration0, const NuTo::StructureOutputBlockVector& rVelocity0,
            NuTo::StructureOutputBlockVector& rAcceleration, NuTo::StructureOutputBlockVector& rVelocity);
 
-    void f_mod(NuTo::StructureBase* mStructure, const StructureOutputBlockMatrix& hessian2,
-               const NuTo::StructureOutputBlockVector& extLoad, const NuTo::StructureOutputBlockVector& dof_dt0,
-               const NuTo::StructureOutputBlockVector& dof_dt1, double factor,
-               const NuTo::StructureOutputBlockVector& rAcceleration0,
-               const NuTo::StructureOutputBlockVector& rVelocity0, NuTo::StructureOutputBlockVector& rAcceleration,
-               NuTo::StructureOutputBlockVector& rVelocity);
-
     NuTo::eError RK4_DoStep(double rTimeDelta, int rLoadCase, double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
                             std::vector<StructureOutputBlockVector>& kAcc,
                             std::vector<StructureOutputBlockVector>& kVel, StructureOutputBlockVector& extLoad,

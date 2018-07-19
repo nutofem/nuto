@@ -159,30 +159,6 @@ double NuTo::RungeKutta4::GetStageWeights(int rStage) const
     }
     return s;
 }
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::RungeKutta4::serialize(boost::archive::binary_oarchive& ar, const unsigned int version);
-template void NuTo::RungeKutta4::serialize(boost::archive::xml_oarchive& ar, const unsigned int version);
-template void NuTo::RungeKutta4::serialize(boost::archive::text_oarchive& ar, const unsigned int version);
-template void NuTo::RungeKutta4::serialize(boost::archive::binary_iarchive& ar, const unsigned int version);
-template void NuTo::RungeKutta4::serialize(boost::archive::xml_iarchive& ar, const unsigned int version);
-template void NuTo::RungeKutta4::serialize(boost::archive::text_iarchive& ar, const unsigned int version);
-template <class Archive>
-void NuTo::RungeKutta4::serialize(Archive& ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialization of RungeKutta4"
-              << "\n";
-#endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(RungeKuttaBase);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialization of RungeKutta4"
-              << "\n";
-#endif
-}
-
-#endif // ENABLE_SERIALIZATION
-
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the
 //! file      in case of restoring from a file with the wrong object type, the file id is printed
@@ -224,43 +200,6 @@ void NuTo::RungeKutta4::f(NuTo::StructureBase* mStructure, NuTo::SparseDirectSol
     NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
     mySolver.Solution(residual_mod.Export(), resultForSolver);
     rAcceleration.J = NuTo::BlockFullVector<double>(resultForSolver, mStructure->GetDofStatus());
-    rAcceleration.K = mStructure->NodeCalculateDependentDofValues(rAcceleration.J);
-
-    rVelocity = mStructure->NodeExtractDofValues(1);
-}
-
-void NuTo::RungeKutta4::f_mod(NuTo::StructureBase* mStructure, const StructureOutputBlockMatrix& hessian2,
-                              const NuTo::StructureOutputBlockVector& extLoad,
-                              const NuTo::StructureOutputBlockVector& dof_dt0,
-                              const NuTo::StructureOutputBlockVector& dof_dt1, double factor,
-                              const NuTo::StructureOutputBlockVector& acceleration0,
-                              const NuTo::StructureOutputBlockVector& velocity0,
-                              NuTo::StructureOutputBlockVector& rAcceleration,
-                              NuTo::StructureOutputBlockVector& rVelocity)
-{
-    NuTo::StructureOutputBlockVector dof_dt0_temp(mStructure->GetDofStatus(), true);
-    NuTo::StructureOutputBlockVector dof_dt1_temp(mStructure->GetDofStatus(), true);
-    NuTo::StructureOutputBlockVector residual(mStructure->GetDofStatus(), true);
-    NuTo::BlockFullVector<double> residual_mod(mStructure->GetDofStatus());
-    const auto& cmat = mStructure->GetConstraintMatrix();
-
-    dof_dt0_temp.J = dof_dt0.J + factor * mTimeStep * velocity0.J; // u
-    dof_dt1_temp.J = dof_dt1.J + factor * mTimeStep * acceleration0.J; // v
-
-    dof_dt0_temp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_temp.J);
-    mStructure->NodeMergeDofValues(0, dof_dt0_temp);
-
-    dof_dt1_temp.K = mStructure->NodeCalculateDependentDofValues(dof_dt1_temp.J);
-    mStructure->NodeMergeDofValues(1, dof_dt1_temp);
-
-    NuTo::StructureOutputBlockVector intForce = mStructure->BuildGlobalInternalGradient();
-
-    residual = extLoad - intForce;
-    residual.ApplyCMatrix(residual_mod, cmat);
-
-    rAcceleration.J = mStructure->SolveBlockSystem(hessian2.JJ, -1 * residual_mod);
-    // rAcceleration.J = hessian2.JJ * (extLoad.J - intForce.J);
-
     rAcceleration.K = mStructure->NodeCalculateDependentDofValues(rAcceleration.J);
 
     rVelocity = mStructure->NodeExtractDofValues(1);
@@ -415,10 +354,6 @@ NuTo::RungeKutta4::RK4_DoStep(double rTimeDelta, int rLoadCase, double curTime, 
 
             f(mStructure, mySolver, extLoad, dof_dt0, dof_dt1, this->GetStageTimeFactor(i), kAcc[i], kVel[i],
               kAcc[i + 1], kVel[i + 1]);
-
-            //                f_mod(mStructure, hessian2, extLoad, dof_dt0, dof_dt1, this->GetStageTimeFactor(i),
-            //                kAcc[i], kVel[i],
-            //                      kAcc[i + 1], kVel[i + 1]);
         }
 
         // update
@@ -451,123 +386,3 @@ NuTo::RungeKutta4::RK4_DoStep(double rTimeDelta, int rLoadCase, double curTime, 
 
     return NuTo::eError::SUCCESSFUL;
 }
-
-
-#ifdef ENABLE_SERIALIZATION
-//! @brief ... restore the object from a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-//! @brief ... save the object to a file
-void NuTo::RungeKutta4::Restore(const std::string& filename, std::string rType)
-{
-    try
-    {
-        // transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-        std::ifstream ifs(filename.c_str(), std::ios_base::binary);
-        std::string tmpString;
-        if (rType == "BINARY")
-        {
-            boost::archive::binary_iarchive oba(ifs, std::ios::binary);
-            oba& boost::serialization::make_nvp("Object_type", tmpString);
-            if (tmpString != GetTypeId())
-                throw MechanicsException("[RungeKutta4::Restore]Data type of object in file (" + tmpString +
-                                         ") is not identical to data type of object to read (" + GetTypeId() + ").");
-            oba& boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else if (rType == "XML")
-        {
-            boost::archive::xml_iarchive oxa(ifs, std::ios::binary);
-            oxa& boost::serialization::make_nvp("Object_type", tmpString);
-            if (tmpString != GetTypeId())
-                throw MechanicsException("[RungeKutta4::Restore]Data type of object in file (" + tmpString +
-                                         ") is not identical to data type of object to read (" + GetTypeId() + ").");
-            oxa& boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else if (rType == "TEXT")
-        {
-            boost::archive::text_iarchive ota(ifs, std::ios::binary);
-            ota& boost::serialization::make_nvp("Object_type", tmpString);
-            if (tmpString != GetTypeId())
-                throw MechanicsException("[RungeKutta4::Restore]Data type of object in file (" + tmpString +
-                                         ") is not identical to data type of object to read (" + GetTypeId() + ").");
-            ota& boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else
-        {
-            throw MathException("[Matrix::Restore]File type not implemented");
-        }
-    }
-    catch (MechanicsException& e)
-    {
-        throw e;
-    }
-    catch (std::exception& e)
-    {
-        throw MechanicsException(e.what());
-    }
-    catch (...)
-    {
-        throw MechanicsException("[RungeKutta4::Restore]Unhandled exception.");
-    }
-}
-
-//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::RungeKutta4::Save(const std::string& filename, std::string rType) const
-{
-    try
-    {
-        // transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-        std::ofstream ofs(filename.c_str(), std::ios_base::binary);
-        std::string tmpStr(GetTypeId());
-        std::string baseClassStr = tmpStr.substr(4, 100);
-        if (rType == "BINARY")
-        {
-            boost::archive::binary_oarchive oba(ofs, std::ios::binary);
-            oba& boost::serialization::make_nvp("Object_type", tmpStr);
-            oba& boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else if (rType == "XML")
-        {
-            boost::archive::xml_oarchive oxa(ofs, std::ios::binary);
-            oxa& boost::serialization::make_nvp("Object_type", tmpStr);
-            oxa& boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else if (rType == "TEXT")
-        {
-            boost::archive::text_oarchive ota(ofs, std::ios::binary);
-            ota& boost::serialization::make_nvp("Object_type", tmpStr);
-            ota& boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else
-        {
-            throw MechanicsException("[RungeKutta4::Save]File type not implemented.");
-        }
-    }
-    catch (boost::archive::archive_exception e)
-    {
-        std::string s(std::string("[RungeKutta4::Save]File save exception in boost - ") + std::string(e.what()));
-        std::cout << s << "\n";
-        throw MathException(s);
-    }
-    catch (MechanicsException& e)
-    {
-        throw e;
-    }
-    catch (std::exception& e)
-    {
-        throw MechanicsException(e.what());
-    }
-    catch (...)
-    {
-        throw MechanicsException("[RungeKutta4::Save] Unhandled exception.");
-    }
-}
-
-#ifndef SWIG
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::RungeKutta4)
-#endif // SWIG
-#endif // ENABLE_SERIALIZATION

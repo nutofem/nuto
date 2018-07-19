@@ -36,6 +36,13 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 
+
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+
+#include "nuto/mechanics/elements/ContinuumContactElement.h"
+
 #include "nuto/visualize/VisualizeEnum.h"
 
 
@@ -1648,6 +1655,160 @@ double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 
 //! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem
 //! Ku=lambda Mu
+double NuTo::StructureBase::ElementGroupCalculateLargestElementEigenvalue_Group(int elementGroup, int contactElementID)
+{
+    boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(elementGroup);
+    if (itGroupElements == mGroupMap.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+    if (itGroupElements->second->GetType() != NuTo::eGroupId::Elements)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Group is not an element group.");
+
+    Group<ElementBase>& elementVector = *(itGroupElements->second->AsGroupElement());
+
+    eError errorGlobal(eError::SUCCESSFUL);
+    double maxGlobalEigenValue(0);
+
+    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+
+    elementOutput[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] =
+            std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
+
+    elementOutput[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
+            std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+
+    Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> eigenSolver;
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% dof numbering AND assembly %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    std::unordered_map<int, int> dofs;
+    std::vector<Eigen::VectorXi> dofsPerElement;
+
+    int gobaldofs = 0;
+    for (auto itElement : elementVector)
+    {
+        ElementBase* element = itElement.second;
+        Node::eDof dof = NuTo::Node::eDof::DISPLACEMENTS;
+        const InterpolationBase& interpolationType = element->GetInterpolationType()->Get(dof);
+        const int numNodes = interpolationType.GetNumNodes();
+
+        unsigned int numDofsPerType = element->GetNode(interpolationType.GetNodeIndex(0))->GetNum(dof);
+
+        Eigen::VectorXi indices(numNodes * numDofsPerType);
+
+        for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
+        {
+            const NodeBase* nodePtr = element->GetNode(interpolationType.GetNodeIndex(iNodeDof));
+
+            for (unsigned iDof = 0; iDof < numDofsPerType; ++iDof)
+            {
+                int dofId = nodePtr->GetDof(dof, iDof);
+
+                std::unordered_map<int, int>::const_iterator got = dofs.find(dofId);
+                if (got == dofs.end()) // not found => insert a new one
+                {
+                    dofs.insert(std::make_pair(dofId, gobaldofs));
+                    indices(numDofsPerType * iNodeDof + iDof) = gobaldofs;
+                    gobaldofs++;
+                }
+                else
+                    indices(numDofsPerType * iNodeDof + iDof) = got->second;
+            }
+        }
+        dofsPerElement.push_back(indices);
+    }
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%% assembly %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    Eigen::MatrixXd K(dofs.size(), dofs.size());
+    Eigen::VectorXd M(dofs.size());
+
+    K.setZero(dofs.size(), dofs.size());
+    M.setZero(dofs.size());
+
+    int countElement = 0;
+    for (auto itElement : elementVector)
+    {
+        ElementBase* element = itElement.second;
+
+        eError error = element->Evaluate(elementOutput);
+        if (error == eError::NOT_IMPLEMENTED)
+            continue;
+        if (error != eError::SUCCESSFUL)
+            errorGlobal = error;
+
+        auto lumpedMass = elementOutput.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)
+                                  ->GetBlockFullVectorDouble()
+                                  .Export();
+        auto stiffness =
+                elementOutput.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble().Export();
+
+        Eigen::VectorXi& indices = dofsPerElement[countElement];
+
+        for (int i = 0; i < indices.rows(); i++)
+        {
+            M(indices(i)) += lumpedMass(i);
+            for (int j = 0; j < indices.rows(); j++)
+            {
+                K(indices(i), indices(j)) += stiffness(i, j);
+            }
+        }
+
+        countElement++;
+    }
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%% contact element %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputContact;
+    elementOutputContact[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] =
+            std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+
+    NuTo::ContinuumContactElement<2, 1>& contactElement =
+            this->ElementGetElementPtr(contactElementID)->AsContinuumContactElement21();
+
+    this->ElementGetElementPtr(contactElementID)->Evaluate(elementOutputContact);
+
+    std::unordered_map<int, int> dofMapping = contactElement.GetDofMapping();
+
+
+    Eigen::MatrixXd fc_der;
+    contactElement.CalculateElementOutputContactForceDerivative(fc_der);
+
+
+    std::unordered_map<int, int> dofsContact;
+
+    // new global numbering
+    int countContact = 0;
+    for (auto& it : dofMapping)
+    {
+        std::unordered_map<int, int>::const_iterator got = dofs.find(it.first);
+        if (got == dofs.end()) // not found => insert a new one
+        {
+            // master
+        }
+        else
+        {
+            dofsContact.insert(std::make_pair(countContact, got->second));
+        }
+        countContact++;
+    }
+
+
+    for (auto& itRow : dofsContact)
+    {
+        for (auto& itCol : dofsContact)
+        {
+            K(itRow.second, itCol.second) += fc_der(itRow.first, itCol.first);
+        }
+    }
+
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%% max eigenvalue %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    eigenSolver.compute(K, M.asDiagonal());
+    // std::cout << "eigenvalues in element routine\n" <<  eigenSolver.eigenvalues() << std::endl;
+
+    double maxGroupEigenValue = eigenSolver.eigenvalues().maxCoeff();
+
+    return maxGroupEigenValue;
+}
+
+//! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem
+//! Ku=lambda Mu
 double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::vector<ElementBase*>& rElementVector)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -1762,8 +1923,8 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
     }
     if (errorGlobal != eError::SUCCESSFUL)
     {
-        throw MechanicsException(
-                "[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] error calculating critical time step.");
+        throw MechanicsException("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] error calculating "
+                                 "critical time step.");
     }
 
     return maxGlobalEigenValue;

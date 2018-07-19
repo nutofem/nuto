@@ -29,7 +29,6 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 
-
 namespace NuTo
 {
 class ConstitutiveBase;
@@ -1916,6 +1915,8 @@ public:
     //! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem
     //! Ku=lambda Mu
     double ElementCalculateLargestElementEigenvalue(const std::vector<ElementBase*>& rElementVector);
+
+    double ElementGroupCalculateLargestElementEigenvalue_Group(int elementGroup, int contactElementID);
 
     //! @brief returns whether or not the dof is constitutive input at least in one InrepolationType
     //! @param rInterpolationTypeId ... interpolation type id
