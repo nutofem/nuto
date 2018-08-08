@@ -70,10 +70,11 @@ public:
            const NuTo::StructureOutputBlockVector& rAcceleration0, const NuTo::StructureOutputBlockVector& rVelocity0,
            NuTo::StructureOutputBlockVector& rAcceleration, NuTo::StructureOutputBlockVector& rVelocity);
 
-    NuTo::eError RK4_DoStep(double rTimeDelta, int rLoadCase, double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
+    NuTo::eError RK4_DoStep(int rLoadCase, double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
                             std::vector<StructureOutputBlockVector>& kAcc,
                             std::vector<StructureOutputBlockVector>& kVel, StructureOutputBlockVector& extLoad,
-                            NuTo::StructureOutputBlockVector& dof_dt0, NuTo::StructureOutputBlockVector& dof_dt1);
+                            NuTo::StructureOutputBlockVector& dof_dt0, NuTo::StructureOutputBlockVector& dof_dt1,
+                            double simulationTime);
 
     NuTo::eError SolveRK4(double rTimeDelta, int rLoadCase);
 

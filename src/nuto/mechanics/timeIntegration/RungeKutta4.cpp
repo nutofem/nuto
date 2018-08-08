@@ -334,23 +334,25 @@ NuTo::eError NuTo::RungeKutta4::SolveRK4(double rTimeDelta, int rLoadCase)
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
-NuTo::eError
-NuTo::RungeKutta4::RK4_DoStep(double rTimeDelta, int rLoadCase, double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
-                              std::vector<StructureOutputBlockVector>& kAcc,
-                              std::vector<StructureOutputBlockVector>& kVel, StructureOutputBlockVector& extLoad,
-                              NuTo::StructureOutputBlockVector& dof_dt0, NuTo::StructureOutputBlockVector& dof_dt1)
+NuTo::eError NuTo::RungeKutta4::RK4_DoStep(int rLoadCase, double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
+                                           std::vector<StructureOutputBlockVector>& kAcc,
+                                           std::vector<StructureOutputBlockVector>& kVel,
+                                           StructureOutputBlockVector& extLoad,
+                                           NuTo::StructureOutputBlockVector& dof_dt0,
+                                           NuTo::StructureOutputBlockVector& dof_dt1, double simulationTime)
 {
     NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     try
     {
-        std::cout << "==>curTime " << curTime << " (" << curTime / rTimeDelta
+        std::cout << "==>curTime " << curTime << " (" << curTime / simulationTime
                   << ") max Disp = " << dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() << std::endl;
 
         for (int i = 0; i < this->GetNumStages(); i++)
         {
-            extLoad = mStructure->BuildGlobalExternalLoadVector(rLoadCase);
-            extLoad.ApplyCMatrix(mStructure->GetConstraintMatrix());
+            // no time dependent load
+            // extLoad = mStructure->BuildGlobalExternalLoadVector(rLoadCase);
+            // extLoad.ApplyCMatrix(mStructure->GetConstraintMatrix());
 
             f(mStructure, mySolver, extLoad, dof_dt0, dof_dt1, this->GetStageTimeFactor(i), kAcc[i], kVel[i],
               kAcc[i + 1], kVel[i + 1]);
