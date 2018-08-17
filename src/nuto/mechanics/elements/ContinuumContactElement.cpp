@@ -79,7 +79,7 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(
 
     mKnots.push_back(knotsX);
 
-    std::cout << "KnotsX: " << mKnots[0].transpose() << std::endl;
+    // std::cout << "KnotsX: " << mKnots[0].transpose() << std::endl;
 
     // initialize the knot values in y direction
     if (TDimSlave == 3)
@@ -697,6 +697,7 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
 
             rParameterMinMaster += increment;
 
+            // !!! update element
             indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(0), 0, mKnots[0]); // x
             indexMasterElement(0) = ShapeFunctionsIGA::FindSpan(rParameterMinMaster(1), 0, mKnots[1]); // y
         }
@@ -1018,7 +1019,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                 //                }
                 //                std::cout << numForces << std::endl;
 
-                Eigen::VectorXd force = gapMatrixScaled * mGlobalNodalPressure;
+                //                Eigen::VectorXd force = gapMatrixScaled * mGlobalNodalPressure;
 
                 //                Eigen::VectorXd forceTemp =
                 //                        mGapMatrixTemp * ((mWeightsVectorTemp.cwiseInverse()).asDiagonal()) *
@@ -1033,16 +1034,16 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
 
                 rInternalGradient[dofRow] = gapMatrixScaled * mGlobalNodalPressure;
 
-                double sum = 0.;
-                for (int i = 0; i < mNumSlaveDofs; i++)
-                {
-                    sum += force(i);
-                }
-                if (sum > 1.e-8)
-                {
-                    std::cout << "|force|_1: ";
-                    std::cout << sum << std::endl;
-                }
+                //                double sum = 0.;
+                //                for (int i = 0; i < mNumSlaveDofs; i++)
+                //                {
+                //                    sum += force(i);
+                //                }
+                //                if (sum > 1.e-8)
+                //                {
+                //                    std::cout << "|force|_1: ";
+                //                    std::cout << sum << std::endl;
+                //                }
             }
             else if (mContactType == 1)
             {

@@ -1054,8 +1054,9 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
-std::vector<NuTo::StructureOutputBlockVector>
-NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar& tol, int rMaxNumIter, int rLoadCase)
+std::vector<NuTo::StructureOutputBlockVector> NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(
+        const BlockScalar& tol, int rMaxNumIter, double& conditionNumberSkalar, int rLoadCase,
+        const std::function<double(const NuTo::BlockSparseMatrix&)>& conditionNumber)
 {
     if (GetNumTimeDerivatives() > 0)
         throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +
@@ -1113,6 +1114,11 @@ NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar& to
         hessian0.ApplyCMatrix(cmat);
         std::cout << "Solve - start\n" << std::flush;
         delta_dof_dt0.J = SolveBlockSystem(hessian0.JJ, residual_mod);
+
+        double condIteration = conditionNumber(hessian0.JJ);
+        if (condIteration > conditionNumberSkalar)
+            conditionNumberSkalar = condIteration;
+
         std::cout << "Solve - end\n" << std::flush;
         delta_dof_dt0.K = cmat * delta_dof_dt0.J * (-1.);
 
@@ -1135,6 +1141,9 @@ NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar& to
 
         iteration++;
     }
+
+    std::cout << "Condition number: " << conditionNumberSkalar << std::endl;
+
     std::vector<NuTo::StructureOutputBlockVector> vectorReturn;
     vectorReturn.push_back(residual);
     vectorReturn.push_back(extForce);

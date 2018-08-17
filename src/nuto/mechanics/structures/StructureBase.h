@@ -284,8 +284,11 @@ public:
 
 #ifndef SWIG
 
-    std::vector<StructureOutputBlockVector> SolveGlobalSystemStaticElasticContact(const BlockScalar& tol,
-                                                                                  int rMaxNumIter, int rLoadCase = 0);
+    std::vector<StructureOutputBlockVector>
+    SolveGlobalSystemStaticElasticContact(const BlockScalar& tol, int rMaxNumIter, double& conditionNumberSkalar,
+                                          int rLoadCase = 0,
+                                          const std::function<double(const NuTo::BlockSparseMatrix&)>& conditionNumber =
+                                                  [](const NuTo::BlockSparseMatrix&) { return 0.; });
 
 #endif // SWIG
 

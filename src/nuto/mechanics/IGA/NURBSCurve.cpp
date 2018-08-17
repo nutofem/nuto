@@ -565,7 +565,7 @@ void NuTo::NURBSCurve::DuplicateKnots()
 void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd& rCoordinatesSlave,
                                            double& rParameterStartMaster) const
 {
-    double tol = 1.e-10;
+    double tol = 1.e-12;
     double error = 1.;
     int maxNumIter = 100;
     int numIter = 0;
