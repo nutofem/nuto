@@ -290,10 +290,6 @@ NuTo::eError NuTo::RungeKutta4::SolveRK4(double rTimeDelta, int rLoadCase)
 
                 f(mStructure, mySolver, extLoad, dof_dt0, dof_dt1, this->GetStageTimeFactor(i), kAcc[i], kVel[i],
                   kAcc[i + 1], kVel[i + 1]);
-
-                //                f_mod(mStructure, hessian2, extLoad, dof_dt0, dof_dt1, this->GetStageTimeFactor(i),
-                //                kAcc[i], kVel[i],
-                //                      kAcc[i + 1], kVel[i + 1]);
             }
 
             // update
