@@ -1136,13 +1136,15 @@ std::vector<NuTo::StructureOutputBlockVector> NuTo::StructureBase::SolveGlobalSy
 
         dof_dt0 = trial_dof_dt0;
 
+        std::cout << "Condition number: " << conditionNumberSkalar << std::endl;
+
         std::cout << "Iteration: " << iteration
                   << ", StructureBase::SolveGlobalSystemStaticElasticContact Error: " << normResidual << std::endl;
 
         iteration++;
     }
 
-    std::cout << "Condition number: " << conditionNumberSkalar << std::endl;
+    std::cout << "Condition number final: " << conditionNumberSkalar << std::endl;
 
     std::vector<NuTo::StructureOutputBlockVector> vectorReturn;
     vectorReturn.push_back(residual);
