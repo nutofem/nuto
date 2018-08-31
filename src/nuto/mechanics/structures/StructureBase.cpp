@@ -1115,9 +1115,7 @@ std::vector<NuTo::StructureOutputBlockVector> NuTo::StructureBase::SolveGlobalSy
         std::cout << "Solve - start\n" << std::flush;
         delta_dof_dt0.J = SolveBlockSystem(hessian0.JJ, residual_mod);
 
-        double condIteration = conditionNumber(hessian0.JJ);
-        if (condIteration > conditionNumberSkalar)
-            conditionNumberSkalar = condIteration;
+        conditionNumberSkalar = conditionNumber(hessian0.JJ);
 
         std::cout << "Solve - end\n" << std::flush;
         delta_dof_dt0.K = cmat * delta_dof_dt0.J * (-1.);
@@ -1136,15 +1134,13 @@ std::vector<NuTo::StructureOutputBlockVector> NuTo::StructureBase::SolveGlobalSy
 
         dof_dt0 = trial_dof_dt0;
 
-        std::cout << "Condition number: " << std::setprecision(10) << condIteration << std::endl;
+        std::cout << "Condition number: " << std::setprecision(10) << conditionNumberSkalar << std::endl;
 
         std::cout << "Iteration: " << iteration
                   << ", StructureBase::SolveGlobalSystemStaticElasticContact Error: " << normResidual << std::endl;
 
         iteration++;
     }
-
-    std::cout << "Condition number final: " << conditionNumberSkalar << std::endl;
 
     std::vector<NuTo::StructureOutputBlockVector> vectorReturn;
     vectorReturn.push_back(residual);
