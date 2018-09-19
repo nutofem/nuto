@@ -28,7 +28,7 @@ NuTo::Math::CubicSplineInterpolation::CubicSplineInterpolation(std::vector<std::
     }
 }
 
-double NuTo::Math::CubicSplineInterpolation::operator()(double x)
+double NuTo::Math::CubicSplineInterpolation::operator()(double x) const
 {
     if (x < mData[0][0] or x > mData.back()[0])
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Input x is not within data range of supplied array");
@@ -42,7 +42,7 @@ double NuTo::Math::CubicSplineInterpolation::operator()(double x)
     return y;
 }
 
-double NuTo::Math::CubicSplineInterpolation::derivative(double x)
+double NuTo::Math::CubicSplineInterpolation::derivative(double x) const
 {
     if (x < mData[0][0] or x > mData.back()[0])
         throw NuTo::Exception(__PRETTY_FUNCTION__, "Input x is not within data range of supplied array");
