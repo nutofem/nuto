@@ -9,13 +9,18 @@ BOOST_AUTO_TEST_CASE(CellIpDataMemoizationB)
     Eigen::VectorXd nodalValues(6);
     nodalValues << 0, 0, 1, 0, 0, 1;
 
-    fakeit::Mock<NuTo::ElementInterface> mockElement;
+    fakeit::Mock<NuTo::CoordinateElementInterface> mockElement;
     Method(mockElement, GetDerivativeShapeFunctions) = dNdXi;
     Method(mockElement, GetNMatrix) = Eigen::MatrixXd::Ones(2, 6);
-    Method(mockElement, ExtractNodeValues) = nodalValues;
+    Method(mockElement, ExtractCoordinates) = nodalValues;
+
+    fakeit::Mock<NuTo::DofElementInterface> mockDofElement;
+    Method(mockDofElement, ExtractNodeValues) = nodalValues;
+    Method(mockDofElement, GetDerivativeShapeFunctions) = dNdXi;
+    Method(mockDofElement, GetNMatrix) = Eigen::MatrixXd::Ones(2, 6);
 
     fakeit::Mock<NuTo::ElementCollection> elements;
-    Method(elements, DofElement) = mockElement.get();
+    Method(elements, DofElement) = mockDofElement.get();
     Method(elements, CoordinateElement) = mockElement.get();
 
     fakeit::Mock<NuTo::Nabla::Interface> mockGradientOperator;

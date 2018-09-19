@@ -16,13 +16,13 @@ const DofType d("stuff", 2);
 BOOST_AUTO_TEST_CASE(DofNumberingTest)
 {
     // Add three 2d nodes, one of them constrained in x and y.
-    NodeSimple nodeUnconstrained0(Eigen::Vector2d::Zero());
-    NodeSimple nodeUnconstrained1(Eigen::Vector2d::Zero());
-    NodeSimple nodeConstrained(Eigen::Vector2d::Zero());
+    DofNode nodeUnconstrained0(Eigen::Vector2d::Zero());
+    DofNode nodeUnconstrained1(Eigen::Vector2d::Zero());
+    DofNode nodeConstrained(Eigen::Vector2d::Zero());
 
     Constraint::Constraints constraints;
 
-    Group<NodeSimple> group({nodeConstrained, nodeUnconstrained0, nodeUnconstrained1});
+    Group<DofNode> group({nodeConstrained, nodeUnconstrained0, nodeUnconstrained1});
 
     constraints.Add(d, {nodeConstrained, 1, rhs}); // 1st equation for component 1 --> expected number 4
     constraints.Add(d, {nodeConstrained, 0, rhs}); // 2nd equation for component 0 --> expected number 5
@@ -40,8 +40,8 @@ BOOST_AUTO_TEST_CASE(DofNumberingTest)
 
 BOOST_AUTO_TEST_CASE(InvalidDofTypes)
 {
-    NodeSimple n0(0);
-    NodeSimple n1(1);
+    DofNode n0(0);
+    DofNode n1(1);
 
     Constraint::Constraints constraints;
     constraints.Add(d, {n0, 0, rhs});
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(InvalidDofTypes)
 
 BOOST_AUTO_TEST_CASE(Extract)
 {
-    NodeSimple n0(Eigen::Vector2d::Zero());
+    DofNode n0(Eigen::Vector2d::Zero());
     n0.SetDofNumber(0, 42);
     n0.SetDofNumber(1, 4);
 

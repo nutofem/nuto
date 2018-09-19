@@ -5,7 +5,7 @@
 BOOST_AUTO_TEST_CASE(CacheNodeValues)
 {
     constexpr int cellID = 1337;
-    fakeit::Mock<NuTo::ElementInterface> mockElement;
+    fakeit::Mock<NuTo::DofElementInterface> mockElement;
     Method(mockElement, ExtractNodeValues).Using(0) = Eigen::Vector2d({42, 6174});
     Method(mockElement, ExtractNodeValues).Using(1) = Eigen::Vector2d({.42, .6174});
 

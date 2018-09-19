@@ -1,15 +1,15 @@
 #pragma once
 
 #include <vector>
-#include "nuto/mechanics/nodes/NodeSimple.h"
-#include "nuto/mechanics/elements/ElementInterface.h"
+#include "nuto/mechanics/nodes/DofNode.h"
+#include "nuto/mechanics/elements/DofElementInterface.h"
 #include "nuto/mechanics/iga/Nurbs.h"
 #include "nuto/mechanics/cell/Matrix.h"
 
 namespace NuTo
 {
 template <int TDimParameter>
-class ElementIga : public ElementInterface
+class ElementIga : public DofElementInterface
 {
 public:
     ElementIga(const std::array<int, TDimParameter>& knotIDs, const Nurbs<TDimParameter>& NurbsGeometry)
@@ -31,8 +31,7 @@ public:
     }
 
     //! @brief extracts all node values of this element
-    //! @remark virtual to make it testable
-    virtual Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
+    Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
     {
         return NurbsGeometry().GetControlPointsElement(mKnotIDs, instance);
     }

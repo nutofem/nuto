@@ -1,28 +1,27 @@
 #pragma once
 
 #include <vector>
-#include "nuto/mechanics/nodes/NodeSimple.h"
-#include "nuto/mechanics/elements/ElementInterface.h"
+#include "nuto/mechanics/nodes/DofNode.h"
+#include "nuto/mechanics/elements/DofElementInterface.h"
 #include "nuto/mechanics/interpolation/InterpolationSimple.h"
 #include "nuto/mechanics/cell/Matrix.h"
 
 namespace NuTo
 {
-
-class ElementFem : public ElementInterface
+class DofElementFem : public DofElementInterface
 {
 public:
-    ElementFem(std::vector<NodeSimple*> nodes, const InterpolationSimple& interpolation)
+    DofElementFem(std::vector<DofNode*> nodes, const InterpolationSimple& interpolation)
         : mInterpolation(interpolation)
         , mShape(interpolation.GetShape())
     {
-        for (NodeSimple* node : nodes)
+        for (DofNode* node : nodes)
             mNodes.push_back(*node);
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
-    ElementFem(std::initializer_list<std::reference_wrapper<NuTo::NodeSimple>> nodes,
-               const InterpolationSimple& interpolation)
+    DofElementFem(std::initializer_list<std::reference_wrapper<DofNode>> nodes,
+                  const InterpolationSimple& interpolation)
         : mNodes(nodes)
         , mInterpolation(interpolation)
         , mShape(interpolation.GetShape())
@@ -30,7 +29,7 @@ public:
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
     }
 
-    virtual Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
+    Eigen::VectorXd ExtractNodeValues(int instance = 0) const override
     {
         const int dim = GetDofDimension();
         Eigen::VectorXd nodeValues(GetNumNodes() * dim);
@@ -79,19 +78,20 @@ public:
         return mNodes.size();
     }
 
+
     const InterpolationSimple& Interpolation() const
     {
         return mInterpolation;
     }
 
-    NodeSimple& GetNode(int i)
+    DofNode& GetNode(int i)
     {
         assert(i < static_cast<int>(mNodes.size()));
         return mNodes[i];
     }
 
 
-    const NodeSimple& GetNode(int i) const
+    const DofNode& GetNode(int i) const
     {
         assert(i < static_cast<int>(mNodes.size()));
         return mNodes[i];
@@ -103,8 +103,9 @@ public:
     }
 
 private:
-    std::vector<std::reference_wrapper<NodeSimple>> mNodes;
+    std::vector<std::reference_wrapper<DofNode>> mNodes;
     std::reference_wrapper<const InterpolationSimple> mInterpolation;
     const Shape& mShape;
 };
+
 } /* NuTo */

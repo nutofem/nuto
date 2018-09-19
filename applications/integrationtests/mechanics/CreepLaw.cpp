@@ -15,9 +15,10 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLinear.h"
 #include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 
 #include <cassert>
 #include <functional>
@@ -220,7 +221,8 @@ using namespace std::placeholders;
 BOOST_AUTO_TEST_CASE(History_Data)
 {
     // Create mesh %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    MeshFem mesh = UnitMeshFem::CreateLines(numElements);
+    GeometryMeshFem geoMesh = UnitMeshFem::CreateLines(numElements);
+    MeshFem mesh(geoMesh);
 
     DofType displ("displacements", 1);
     const auto& interpolation = mesh.CreateInterpolation(InterpolationTrussLinear());
@@ -280,9 +282,10 @@ BOOST_AUTO_TEST_CASE(History_Data)
 
     // Build external Force %%%%%%%%%%%%%%%%%%%%%
     constexpr double rhsForce = 2000.;
+
     DofVector<double> extF;
     extF[displ].setZero(dofInfo.numIndependentDofs[displ] + dofInfo.numDependentDofs[displ]);
-    NodeSimple& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
+    DofNode& nodeRight = mesh.NodeAtCoordinate(Eigen::VectorXd::Ones(1) * SpecimenLength, displ);
     extF[displ][nodeRight.GetDofNumber(0)] = rhsForce;
 
     // Post processing stuff %%%%%%%%%%%%%%%%%%%%
@@ -325,7 +328,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
             solution[displ] += deltaDisplacements;
 
             // Merge dof values %%%%%%%%%%%%%%%%%
-            for (NodeSimple& node : mesh.NodesTotal(displ))
+            for (DofNode& node : mesh.NodesTotal(displ))
             {
                 int dofNumber = node.GetDofNumber(0);
                 node.SetValue(0, solution[displ][dofNumber]);

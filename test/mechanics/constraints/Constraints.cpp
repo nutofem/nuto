@@ -1,7 +1,7 @@
 #include <iostream>
 #include "BoostUnitTest.h"
 #include "nuto/base/Exception.h"
-#include "nuto/mechanics/nodes/NodeSimple.h"
+#include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/mechanics/constraints/Constraints.h"
 
 using namespace NuTo;
@@ -12,7 +12,7 @@ auto rhs = [](double) { return 42; };
 
 BOOST_AUTO_TEST_CASE(ConstraintUnnumbered)
 {
-    NodeSimple node(Eigen::Vector2d::Zero());
+    DofNode node(Eigen::Vector2d::Zero());
     Constraints c;
     c.Add(dof, Equation(node, 0, rhs));
     // the dofs are not numbered.
@@ -21,10 +21,10 @@ BOOST_AUTO_TEST_CASE(ConstraintUnnumbered)
 
 BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
 {
-    NodeSimple node0(0);
-    NodeSimple node1(0);
-    NodeSimple node2(0);
-    NodeSimple node3(0);
+    DofNode node0(0);
+    DofNode node1(0);
+    DofNode node2(0);
+    DofNode node3(0);
 
     /*
      *  n0 ---- n1 ---- n2 ---- n3
@@ -49,12 +49,12 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrix)
 
 BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
 {
-    NodeSimple node0(0);
-    NodeSimple node1(0);
-    NodeSimple node2(0);
-    NodeSimple node3(0);
-    NodeSimple node4(0);
-    NodeSimple node5(0);
+    DofNode node0(0);
+    DofNode node1(0);
+    DofNode node2(0);
+    DofNode node3(0);
+    DofNode node4(0);
+    DofNode node5(0);
 
     /*
      *     n0 ---- n1 ---- n2 ---- n3 --- n4 --- n5
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(ConstraintCMatrixInteracting)
 BOOST_AUTO_TEST_CASE(ConstraintRhs)
 {
     Constraints c;
-    NodeSimple dummyNode(Eigen::Vector2d::Zero());
+    DofNode dummyNode(Eigen::Vector2d::Zero());
     c.Add(dof, Equation(dummyNode, 0, [](double) { return 1; }));
     c.Add(dof, Equation(dummyNode, 1, [](double time) { return time * 42; }));
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(ConstraintRhs)
 
 BOOST_AUTO_TEST_CASE(ConstraintUnavailableComponent)
 {
-    NodeSimple dummyNode(Eigen::Vector2d::Zero()); // node with two components
+    DofNode dummyNode(Eigen::Vector2d::Zero()); // node with two components
     BOOST_CHECK_THROW(Term(dummyNode, 42, 1), Exception);
     BOOST_CHECK_THROW(Term(dummyNode, 2, 1), Exception);
     BOOST_CHECK_NO_THROW(Term(dummyNode, 1, 1));
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(ConstraintUnavailableComponent)
 BOOST_AUTO_TEST_CASE(ConstraintDoubleConstrained)
 {
     Constraints constraints;
-    NodeSimple node(Eigen::Vector2d::Zero());
+    DofNode node(Eigen::Vector2d::Zero());
 
     constraints.Add(dof, {node, 0, rhs});
     BOOST_CHECK_THROW(constraints.Add(dof, {node, 0, rhs}), Exception);
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(ConstraintDoubleConstrained)
 BOOST_AUTO_TEST_CASE(ConstraintTwoDependentDofsInOneEquation)
 {
     Constraint::Constraints constraints;
-    NodeSimple node(Eigen::Vector2d::Zero());
+    DofNode node(Eigen::Vector2d::Zero());
 
     constraints.Add(dof, {node, 0, rhs}); // node.dof0 * 1.0 = rhs
 

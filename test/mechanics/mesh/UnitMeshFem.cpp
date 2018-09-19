@@ -1,23 +1,24 @@
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
 #include "nuto/mechanics/cell/Jacobian.h"
 #include "BoostUnitTest.h"
 
-void CheckJacobians(NuTo::MeshFem& mesh)
+void CheckJacobians(NuTo::GeometryMeshFem& mesh)
 {
-    int dim = mesh.Elements[0].CoordinateElement().GetNode(0).GetValues().rows();
+    int dim = mesh.Elements[0].GetNode(0).GetCoordinates().rows();
     Eigen::VectorXd ip = Eigen::VectorXd::Zero(dim);
     for (auto& element : mesh.Elements)
     {
-        auto d_dxi = element.CoordinateElement().GetDerivativeShapeFunctions(ip);
-        auto x = element.CoordinateElement().ExtractNodeValues();
+        auto d_dxi = element.GetDerivativeShapeFunctions(ip);
+        auto x = element.ExtractCoordinates();
         auto J = NuTo::Jacobian(x, d_dxi);
         BOOST_CHECK_GT(J.Det(), 0.);
     }
 }
 
-void Check2DMesh(NuTo::MeshFem& mesh)
+void Check2DMesh(NuTo::GeometryMeshFem& mesh)
 {
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 3 * 8);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), 3 * 8);
 
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0., 0.)));
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(1., 1.)));
@@ -35,7 +36,7 @@ void Check2DMesh(NuTo::MeshFem& mesh)
         return newCoords;
     };
 
-    NuTo::MeshFem transformedMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
+    NuTo::GeometryMeshFem transformedMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
 
     BOOST_CHECK_NO_THROW(transformedMesh.NodeAtCoordinate(Eigen::Vector2d(42., 4.)));
     BOOST_CHECK_NO_THROW(transformedMesh.NodeAtCoordinate(Eigen::Vector2d(44., 11.)));
@@ -49,21 +50,20 @@ BOOST_AUTO_TEST_CASE(MeshTrusses)
     constexpr int numElements = 15;
     auto mesh = NuTo::UnitMeshFem::CreateLines(numElements);
     BOOST_CHECK_EQUAL(mesh.Elements.Size(), numElements);
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), numElements + 1);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), numElements + 1);
 
     auto IsWholeNumber = [](double d, double eps = 1.e-12) { return std::abs(d - std::floor(d)) < eps; };
 
-    for (const auto& node : mesh.Nodes)
+    for (const auto& node : mesh.CoordinateNodes)
     {
-        BOOST_CHECK(IsWholeNumber(node.GetValues()[0] * numElements));
-        BOOST_CHECK_LE(node.GetValues()[0], 1.0);
-        BOOST_CHECK_GE(node.GetValues()[0], 0.0);
+        BOOST_CHECK(IsWholeNumber(node.GetCoordinates()[0] * numElements));
+        BOOST_CHECK_LE(node.GetCoordinates()[0], 1.0);
+        BOOST_CHECK_GE(node.GetCoordinates()[0], 0.0);
     }
 
     for (const auto& element : mesh.Elements)
     {
-        BOOST_CHECK_LT(element.CoordinateElement().GetNode(0).GetValues()[0],
-                       element.CoordinateElement().GetNode(1).GetValues()[0]);
+        BOOST_CHECK_LT(element.GetNode(0).GetCoordinates()[0], element.GetNode(1).GetCoordinates()[0]);
     }
 }
 
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(MeshBrick)
 {
     auto mesh = NuTo::UnitMeshFem::CreateBricks(2, 7, 3);
     BOOST_CHECK_EQUAL(mesh.Elements.Size(), 2 * 7 * 3);
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), 3 * 8 * 4);
+    BOOST_CHECK_EQUAL(mesh.CoordinateNodes.Size(), 3 * 8 * 4);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector3d(0, 0, 0)));
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector3d(1, 1, 1)));
     CheckJacobians(mesh);
@@ -97,29 +97,29 @@ BOOST_AUTO_TEST_CASE(MeshValidAfterTransform)
     Eigen::VectorXd expected(8);
     expected << 0, 0, 1, 0, 1, 1, 0, 1;
 
-    auto& coordinateElement = mesh.Elements[0].CoordinateElement();
-    BoostUnitTest::CheckEigenMatrix(coordinateElement.ExtractNodeValues(), expected);
+    auto& coordinateElement = mesh.Elements[0];
+    BoostUnitTest::CheckEigenMatrix(coordinateElement.ExtractCoordinates(), expected);
 
     auto f = [](Eigen::VectorXd coords) { return Eigen::Vector2d(coords[0] * 4, coords[1] * 42); };
 
-    NuTo::MeshFem transformedMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
-    auto& transformedCoordinateElement = transformedMesh.Elements[0].CoordinateElement();
+    NuTo::GeometryMeshFem transformedMesh = NuTo::UnitMeshFem::Transform(std::move(mesh), f);
+    auto& transformedCoordinateElement = transformedMesh.Elements[0];
     expected << 0, 0, 4, 0, 4, 42, 0, 42;
-    BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
+    BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractCoordinates(), expected);
 
-    transformedMesh.Nodes[0].SetValue(0, 6174);
+    transformedMesh.CoordinateNodes[0].SetCoordinate(0, 6174);
     expected << 6174, 0, 4, 0, 4, 42, 0, 42;
-    BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractNodeValues(), expected);
+    BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractCoordinates(), expected);
 }
 
 // This test is related to our github issue #148. Visit github to read about the details
 BOOST_AUTO_TEST_CASE(MeshMovabilityError)
 {
-    NuTo::MeshFem mesh = NuTo::UnitMeshFem::CreateLines(1);
+    NuTo::GeometryMeshFem mesh = NuTo::UnitMeshFem::CreateLines(1);
     {
-        NuTo::MeshFem tempMesh = NuTo::UnitMeshFem::CreateLines(1);
+        NuTo::GeometryMeshFem tempMesh = NuTo::UnitMeshFem::CreateLines(1);
         mesh = std::move(tempMesh);
     }
-    auto& coordinateElement = mesh.Elements[0].CoordinateElement();
+    auto& coordinateElement = mesh.Elements[0];
     coordinateElement.GetDofDimension();
 }

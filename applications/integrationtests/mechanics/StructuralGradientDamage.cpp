@@ -44,8 +44,10 @@ BOOST_AUTO_TEST_CASE(Integrand)
     Gdm gdm(d, eeq, material);
 
     /* mesh, interpolations, constraints */
-    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(80),
-                                          [&](Eigen::VectorXd x) { return Eigen::VectorXd::Constant(1, x[0] * L); });
+    GeometryMeshFem geoMesh = UnitMeshFem::Transform(
+            UnitMeshFem::CreateLines(80), [&](Eigen::VectorXd x) { return Eigen::VectorXd::Constant(1, x[0] * L); });
+
+    MeshFem mesh(geoMesh);
 
     InterpolationTrussLobatto interpolationD(2);
     AddDofInterpolation(&mesh, d, interpolationD);
@@ -172,9 +174,22 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
 
     MeshGmsh gmsh(meshFile);
 
-    auto& mesh = gmsh.GetMeshFEM();
-    auto& matrixElements = gmsh.GetPhysicalGroup("matrix");
-    auto& leftElements = gmsh.GetPhysicalGroup("left");
+    auto& geoMesh = gmsh.GetMeshFEM();
+    MeshFem mesh(geoMesh);
+    auto& matrixElementsGeo = gmsh.GetPhysicalGroup("matrix");
+    auto& leftElementsGeo = gmsh.GetPhysicalGroup("left");
+
+    Group<ElementCollectionFem> matrixElements;
+    for (auto& cElm : matrixElementsGeo)
+    {
+        matrixElements.Add(mesh.Elements.Add(ElementCollectionFem(cElm)));
+    }
+    Group<ElementCollectionFem> leftElements;
+    for (auto& cElm : leftElementsGeo)
+    {
+        leftElements.Add(mesh.Elements.Add(ElementCollectionFem(cElm)));
+    }
+
     AddDofInterpolation(&mesh, d, matrixElements);
     AddDofInterpolation(&mesh, d, leftElements);
     AddDofInterpolation(&mesh, eeq, matrixElements);

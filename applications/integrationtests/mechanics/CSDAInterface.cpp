@@ -43,19 +43,20 @@ void CheckFractureEnergy2D(int angleDegree, double interfaceThickness)
     std::cout << "interfaceLength " << interfaceLength << '\n';
 
     // lower nodes
-    NuTo::NodeSimple n0(Eigen::Vector2d({-xInterfaceOffset - projectedThickness / 2., -ly2}));
-    NuTo::NodeSimple n1(Eigen::Vector2d({-xInterfaceOffset + projectedThickness / 2., -ly2}));
+    NuTo::CoordinateNode n0(Eigen::Vector2d({-xInterfaceOffset - projectedThickness / 2., -ly2}));
+    NuTo::CoordinateNode n1(Eigen::Vector2d({-xInterfaceOffset + projectedThickness / 2., -ly2}));
     // upper nodes
-    NuTo::NodeSimple n2(Eigen::Vector2d({+xInterfaceOffset + projectedThickness / 2., ly2}));
-    NuTo::NodeSimple n3(Eigen::Vector2d({+xInterfaceOffset - projectedThickness / 2., ly2}));
+    NuTo::CoordinateNode n2(Eigen::Vector2d({+xInterfaceOffset + projectedThickness / 2., ly2}));
+    NuTo::CoordinateNode n3(Eigen::Vector2d({+xInterfaceOffset - projectedThickness / 2., ly2}));
 
-    NuTo::NodeSimple nd0(Eigen::Vector2d::Zero());
-    NuTo::NodeSimple nd1(Eigen::Vector2d::Zero());
-    NuTo::NodeSimple nd2(Eigen::Vector2d::Zero());
-    NuTo::NodeSimple nd3(Eigen::Vector2d::Zero());
+    NuTo::DofNode nd0(Eigen::Vector2d::Zero());
+    NuTo::DofNode nd1(Eigen::Vector2d::Zero());
+    NuTo::DofNode nd2(Eigen::Vector2d::Zero());
+    NuTo::DofNode nd3(Eigen::Vector2d::Zero());
     NuTo::InterpolationQuadLinear interpolation;
 
-    NuTo::ElementCollectionFem element({{n0, n1, n2, n3}, interpolation});
+    NuTo::CoordinateElementFem cElm{{n0, n1, n2, n3}, interpolation};
+    NuTo::ElementCollectionFem element(cElm);
     NuTo::DofType d("Displ", 2);
     element.AddDofElement(d, {{nd0, nd1, nd2, nd3}, interpolation});
 

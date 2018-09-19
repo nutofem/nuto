@@ -7,6 +7,7 @@
 #include "nuto/mechanics/integrands/GradientDamage.h"
 #include "nuto/mechanics/constitutive/damageLaws/DamageLawExponential.h"
 #include "nuto/mechanics/mesh/UnitMeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 #include "nuto/mechanics/interpolation/InterpolationTrussLobatto.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
@@ -38,8 +39,10 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     DofType d = gdm.mDisp;
     ScalarDofType eeq = gdm.mEeq;
 
-    MeshFem mesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(nElements),
-                                          [&](Eigen::VectorXd x) { return Eigen::VectorXd::Constant(1, x[0] * L); });
+    GeometryMeshFem geoMesh = UnitMeshFem::Transform(UnitMeshFem::CreateLines(nElements), [&](Eigen::VectorXd x) {
+        return Eigen::VectorXd::Constant(1, x[0] * L);
+    });
+    MeshFem mesh(geoMesh);
 
     InterpolationTrussLobatto interpolationD(2);
     AddDofInterpolation(&mesh, d, interpolationD);
@@ -66,7 +69,6 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     equations.AddUpdateFunction(cells, TimeDependentProblem::Bind(gdm, &TGdm::Update));
 
     QuasistaticSolver problem(equations, {d, eeq});
-    problem.SetQuiet();
     problem.mTolerance = 1.e-6;
     problem.SetConstraints(constraints);
 
@@ -78,7 +80,6 @@ double GlobalFractureEnergy(TGdm& gdm, Material::Softening material, double L = 
     auto postProcessF = [&](double) { problem.WriteTimeDofResidual(loadDisplacement, d, {dofLeft}); };
 
     AdaptiveSolve adaptiveSolve(doStep, postProcessF);
-    adaptiveSolve.SetQuiet();
     adaptiveSolve.dt = 0.01;
     adaptiveSolve.dtMin = 1.e-10;
     adaptiveSolve.dtMax = 0.01;

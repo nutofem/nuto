@@ -1,9 +1,21 @@
 #include "nuto/mechanics/mesh/MeshFem.h"
 
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
+
 #include <sstream>
 #include "nuto/base/Exception.h"
 
+
 using namespace NuTo;
+
+MeshFem::MeshFem(GeometryMeshFem& geometryMesh)
+    : mGeometryMesh(geometryMesh)
+{
+    for (auto& cElm : geometryMesh.Elements)
+    {
+        Elements.Add(ElementCollectionFem(cElm));
+    }
+}
 
 InterpolationSimple& MeshFem::CreateInterpolation(const InterpolationSimple& interpolation)
 {
@@ -11,7 +23,7 @@ InterpolationSimple& MeshFem::CreateInterpolation(const InterpolationSimple& int
     return *mInterpolations.rbegin()->get();
 }
 
-NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol /* = 1.e-10 */)
+DofNode& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, double tol /* = 1.e-10 */)
 {
     for (auto& element : this->Elements)
     {
@@ -34,44 +46,10 @@ NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, DofType dofType, d
                           "There is no node for dof type " + dofType.GetName() + " at " + coordsString.str());
 }
 
-NodeSimple& MeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
+Group<DofNode> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, double axisOffset /* = 0.*/,
+                                    double tol /* = 1.e-10 */)
 {
-    for (auto& element : this->Elements)
-    {
-        auto& coordinateElement = element.CoordinateElement();
-        for (int iNode = 0; iNode < coordinateElement.Interpolation().GetNumNodes(); ++iNode)
-        {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetValues();
-            if ((globalNodeCoords - coords).isMuchSmallerThan(tol, 1))
-                return coordinateElement.GetNode(iNode);
-        }
-    }
-    std::stringstream coordsString;
-    coordsString << coords.transpose();
-    throw NuTo::Exception(__PRETTY_FUNCTION__, "There is no coordinate node at " + coordsString.str());
-}
-
-Group<NodeSimple> MeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/, double tol /* = 1.e-10 */)
-{
-    Group<NodeSimple> group;
-    const int directionComponent = ToComponentIndex(direction);
-    for (auto& element : this->Elements)
-    {
-        auto& coordinateElement = element.CoordinateElement();
-        for (int iNode = 0; iNode < coordinateElement.GetNumNodes(); ++iNode)
-        {
-            Eigen::VectorXd globalNodeCoords = coordinateElement.GetNode(iNode).GetValues();
-            if (std::abs(globalNodeCoords[directionComponent] - axisOffset) < tol)
-                group.Add(coordinateElement.GetNode(iNode));
-        }
-    }
-    return group;
-}
-
-Group<NodeSimple> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, double axisOffset /* = 0.*/,
-                                       double tol /* = 1.e-10 */)
-{
-    Group<NodeSimple> group;
+    Group<DofNode> group;
     const int directionComponent = ToComponentIndex(direction);
     for (auto& element : this->Elements)
     {
@@ -92,18 +70,9 @@ Group<NodeSimple> MeshFem::NodesAtAxis(eDirection direction, DofType dofType, do
     return group;
 }
 
-Group<NodeSimple> MeshFem::NodesTotal()
+Group<DofNode> MeshFem::NodesTotal(DofType d)
 {
-    Group<NodeSimple> group;
-    for (auto& element : this->Elements)
-        for (int iNode = 0; iNode < element.CoordinateElement().Interpolation().GetNumNodes(); ++iNode)
-            group.Add(element.CoordinateElement().GetNode(iNode));
-    return group;
-}
-
-Group<NodeSimple> MeshFem::NodesTotal(DofType d)
-{
-    Group<NodeSimple> group;
+    Group<DofNode> group;
     for (auto& element : this->Elements)
     {
         if (!element.Has(d))

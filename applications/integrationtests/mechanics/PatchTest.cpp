@@ -10,6 +10,7 @@
 #include "nuto/mechanics/dofs/DofNumbering.h"
 
 #include "nuto/mechanics/mesh/MeshFem.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
 
 #include "nuto/mechanics/integrationtypes/IntegrationTypeTensorProduct.h"
@@ -37,7 +38,7 @@
 
 using namespace NuTo;
 
-MeshFem QuadPatchTestMesh()
+MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
 {
     /* Something like this:
      *
@@ -55,24 +56,30 @@ MeshFem QuadPatchTestMesh()
      *   ///
      *              (c) ttitsche :)
      */
-    MeshFem mesh;
-    NodeSimple& n0 = mesh.Nodes.Add(Eigen::Vector2d(0, 0));
-    NodeSimple& n1 = mesh.Nodes.Add(Eigen::Vector2d(10, 0));
-    NodeSimple& n2 = mesh.Nodes.Add(Eigen::Vector2d(10, 10));
-    NodeSimple& n3 = mesh.Nodes.Add(Eigen::Vector2d(0, 10));
+    MeshFem mesh(geoMesh);
+    CoordinateNode& n0 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
+    CoordinateNode& n1 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
+    CoordinateNode& n2 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(10, 10));
+    CoordinateNode& n3 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 10));
 
-    NodeSimple& n4 = mesh.Nodes.Add(Eigen::Vector2d(2, 2));
-    NodeSimple& n5 = mesh.Nodes.Add(Eigen::Vector2d(8, 3));
-    NodeSimple& n6 = mesh.Nodes.Add(Eigen::Vector2d(8, 7));
-    NodeSimple& n7 = mesh.Nodes.Add(Eigen::Vector2d(4, 7));
+    CoordinateNode& n4 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(2, 2));
+    CoordinateNode& n5 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(8, 3));
+    CoordinateNode& n6 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(8, 7));
+    CoordinateNode& n7 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(4, 7));
 
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
-    mesh.Elements.Add({{{n0, n1, n5, n4}, interpolation}});
-    mesh.Elements.Add({{{n1, n2, n6, n5}, interpolation}});
-    mesh.Elements.Add({{{n7, n6, n2, n3}, interpolation}});
-    mesh.Elements.Add({{{n4, n5, n6, n7}, interpolation}});
-    mesh.Elements.Add({{{n0, n4, n7, n3}, interpolation}});
+    auto& cElm0 = geoMesh.Elements.Add({{n0, n1, n5, n4}, interpolation});
+    auto& cElm1 = geoMesh.Elements.Add({{n1, n2, n6, n5}, interpolation});
+    auto& cElm2 = geoMesh.Elements.Add({{n7, n6, n2, n3}, interpolation});
+    auto& cElm3 = geoMesh.Elements.Add({{n4, n5, n6, n7}, interpolation});
+    auto& cElm4 = geoMesh.Elements.Add({{n0, n4, n7, n3}, interpolation});
+
+    mesh.Elements.Add(cElm0);
+    mesh.Elements.Add(cElm1);
+    mesh.Elements.Add(cElm2);
+    mesh.Elements.Add(cElm3);
+    mesh.Elements.Add(cElm4);
 
     return mesh;
 }
@@ -81,8 +88,8 @@ Constraint::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
 {
     Constraint::Constraints constraints;
 
-    Group<NodeSimple> nodesConstrainedInX = rMesh->NodesAtAxis(eDirection::X, dof);
-    Group<NodeSimple> nodesConstrainedInY = Group<NodeSimple>(rMesh->NodeAtCoordinate(Eigen::Vector2d(0, 0), dof));
+    Group<DofNode> nodesConstrainedInX = rMesh->NodesAtAxis(eDirection::X, dof);
+    Group<DofNode> nodesConstrainedInY = Group<DofNode>(rMesh->NodeAtCoordinate(Eigen::Vector2d(0, 0), dof));
 
     constraints.Add(dof, Constraint::Component(nodesConstrainedInX, {eDirection::X}));
     constraints.Add(dof, Constraint::Component(nodesConstrainedInY, {eDirection::Y}));
@@ -92,7 +99,8 @@ Constraint::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
 
 BOOST_AUTO_TEST_CASE(PatchTestForce)
 {
-    MeshFem mesh = QuadPatchTestMesh();
+    GeometryMeshFem geoMesh;
+    MeshFem mesh = QuadPatchTestMesh(geoMesh);
     DofType displ("displacements", 2);
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
@@ -130,16 +138,17 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     const InterpolationSimple& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear());
 
     // extract existing nodes
-    Group<NodeSimple> boundaryCoordNodes = mesh.NodesAtAxis(eDirection::X, 10);
-    NodeSimple& nc1 = *boundaryCoordNodes.begin();
-    NodeSimple& nc2 = *(boundaryCoordNodes.begin() + 1);
+    Group<CoordinateNode> boundaryCoordNodes = geoMesh.NodesAtAxis(eDirection::X, 10);
+    CoordinateNode& nc1 = *boundaryCoordNodes.begin();
+    CoordinateNode& nc2 = *(boundaryCoordNodes.begin() + 1);
 
-    Group<NodeSimple> boundaryDisplNodes = mesh.NodesAtAxis(eDirection::X, displ, 10);
-    NodeSimple& nd1 = *boundaryDisplNodes.begin();
-    NodeSimple& nd2 = *(boundaryDisplNodes.begin() + 1);
+    Group<DofNode> boundaryDisplNodes = mesh.NodesAtAxis(eDirection::X, displ, 10);
+    DofNode& nd1 = *boundaryDisplNodes.begin();
+    DofNode& nd2 = *(boundaryDisplNodes.begin() + 1);
 
     // add the boundary element
-    ElementCollectionFem& boundaryElement = mesh.Elements.Add({{{nc1, nc2}, interpolationBc}});
+    auto& cElmB = geoMesh.Elements.Add({{nc1, nc2}, interpolationBc});
+    ElementCollectionFem& boundaryElement = mesh.Elements.Add(cElmB);
     boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
 
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
@@ -163,7 +172,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     DofVector<double> solution = Solve(hessian, -1.0 * gradient, constraints, {displ});
 
     // Merge dof values %%%%%%%%%%%%%%%%%
-    for (NodeSimple& node : mesh.NodesTotal(displ))
+
+    for (DofNode& node : mesh.NodesTotal(displ))
     {
         int dofNumber = node.GetDofNumber(0);
         node.SetValue(0, solution[displ][dofNumber]);
@@ -191,10 +201,10 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
         return Eigen::Vector2d(pressureBC[0] / E * coord[0], -nu * pressureBC[0] / E * coord[1]);
     };
 
-    for (NodeSimple& node : mesh.NodesTotal())
+    for (CoordinateNode& node : geoMesh.NodesTotal())
     {
-        Eigen::VectorXd coord = node.GetValues();
-        NodeSimple& displNode = mesh.NodeAtCoordinate(coord, displ);
+        Eigen::VectorXd coord = node.GetCoordinates();
+        DofNode& displNode = mesh.NodeAtCoordinate(coord, displ);
 
         Eigen::VectorXd analyticSolution = analyticDisplacementField(coord);
 
@@ -208,14 +218,15 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
 BOOST_AUTO_TEST_CASE(PatchTestDispl)
 {
-    MeshFem mesh = QuadPatchTestMesh();
+    GeometryMeshFem geoMesh;
+    MeshFem mesh = QuadPatchTestMesh(geoMesh);
     DofType displ("displacements", 2);
     const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
     AddDofInterpolation(&mesh, displ, interpolation);
 
     auto constraints = DefineConstraints(&mesh, displ); // fixed boundary conditions
-    Group<NodeSimple> rightBoundary = mesh.NodesAtAxis(eDirection::X, displ, 10);
+    Group<DofNode> rightBoundary = mesh.NodesAtAxis(eDirection::X, displ, 10);
     const double boundaryDisplacement = 1.;
     constraints.Add(displ, Constraint::Component(rightBoundary, {eDirection::X}, boundaryDisplacement));
 
@@ -311,9 +322,9 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
     // ************************************************************************
     auto analyticDisplacementField = [=](Eigen::Vector2d coord) { return Eigen::Vector2d(coord[0] * 0.1, 0); };
 
-    for (auto& node : mesh.NodesTotal())
+    for (auto& node : geoMesh.NodesTotal())
     {
-        auto coord = node.GetValues();
+        auto coord = node.GetCoordinates();
         auto& displNode = mesh.NodeAtCoordinate(coord, displ);
 
         auto analyticSolution = analyticDisplacementField(coord);
