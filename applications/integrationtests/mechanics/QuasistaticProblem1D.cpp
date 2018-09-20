@@ -59,7 +59,7 @@ public:
 
     void SetImperfection(double kappaImperfection)
     {
-        const int imperfectionCell = mMesh.GetElements().Size() / 2;
+        const int imperfectionCell = mMesh.NumElements() / 2;
         mLaw.mEvolution.mKappas(imperfectionCell, 0) = kappaImperfection;
     }
 

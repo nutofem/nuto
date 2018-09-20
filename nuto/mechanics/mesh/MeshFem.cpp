@@ -14,7 +14,7 @@ MeshFem::MeshFem(GeometryMeshFem& geometryMesh)
     for (size_t i = 0; i < geometryMesh.NumElements(); i++)
     {
         auto& cElm = geometryMesh.GetElement(i);
-        Elements.Add(ElementCollectionFem(cElm));
+        AddElement(cElm);
     }
 }
 

@@ -75,11 +75,11 @@ MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
     auto& cElm3 = geoMesh.AddElement({n4, n5, n6, n7}, interpolation);
     auto& cElm4 = geoMesh.AddElement({n0, n4, n7, n3}, interpolation);
 
-    mesh.GetElements().Add(cElm0);
-    mesh.GetElements().Add(cElm1);
-    mesh.GetElements().Add(cElm2);
-    mesh.GetElements().Add(cElm3);
-    mesh.GetElements().Add(cElm4);
+    mesh.AddElement(cElm0);
+    mesh.AddElement(cElm1);
+    mesh.AddElement(cElm2);
+    mesh.AddElement(cElm3);
+    mesh.AddElement(cElm4);
 
     return mesh;
 }
@@ -124,8 +124,9 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     Group<CellInterface> momentumBalanceCells;
     int cellId = 0;
-    for (ElementCollection& element : mesh.GetElements())
+    for (size_t i = 0; i < mesh.NumElements(); i++)
     {
+        ElementCollection& element = mesh.GetElement(i);
         cellContainer.push_back(new Cell(element, integrationType, cellId++));
         momentumBalanceCells.Add(cellContainer.back());
     }
@@ -148,7 +149,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     // add the boundary element
     auto& cElmB = geoMesh.AddElement({nc1, nc2}, interpolationBc);
-    ElementCollectionFem& boundaryElement = mesh.GetElements().Add(cElmB);
+    ElementCollectionFem& boundaryElement = mesh.AddElement(cElmB);
     boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
 
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
@@ -252,8 +253,9 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
 
     Group<CellInterface> cellGroup;
     int cellId = 0;
-    for (auto& element : mesh.GetElements())
+    for (size_t i = 0; i < mesh.NumElements(); i++)
     {
+        auto& element = mesh.GetElement(i);
         cellContainer.push_back(new Cell(element, integrationType, cellId++));
         cellGroup.Add(cellContainer.back());
     }

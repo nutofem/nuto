@@ -86,19 +86,14 @@ public:
         return mGeometryMesh;
     }
 
-    ValueVector<ElementCollectionFem>& GetElements()
-    {
-        return Elements;
-    }
-
     ElementCollectionFem& GetElement(int i)
     {
         return Elements[i];
     }
 
-    const ElementCollectionFem& GetElement(int i) const
+    ElementCollectionFem& AddElement(CoordinateElementFem& cElm)
     {
-        return Elements[i];
+        return Elements.Add({cElm});
     }
 
     size_t NumElements() const

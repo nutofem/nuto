@@ -145,8 +145,9 @@ std::vector<NodePoint> NodePointsTotal(NuTo::MeshFem* rMesh, NuTo::DofType dofTy
 {
     std::vector<NodePoint> nodePoints;
 
-    for (auto& elementCollection : rMesh->GetElements())
+    for (size_t i = 0; i < rMesh->NumElements(); i++)
     {
+        auto& elementCollection = rMesh->GetElement(i);
         const NuTo::CoordinateElementFem& coordinateElement = elementCollection.CoordinateElement();
 
         if (!elementCollection.Has(dofType))

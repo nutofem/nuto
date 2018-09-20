@@ -182,12 +182,12 @@ BOOST_AUTO_TEST_CASE(Integrand2D)
     Group<ElementCollectionFem> matrixElements;
     for (auto& cElm : matrixElementsGeo)
     {
-        matrixElements.Add(mesh.GetElements().Add(ElementCollectionFem(cElm)));
+        matrixElements.Add(mesh.AddElement(cElm));
     }
     Group<ElementCollectionFem> leftElements;
     for (auto& cElm : leftElementsGeo)
     {
-        leftElements.Add(mesh.GetElements().Add(ElementCollectionFem(cElm)));
+        leftElements.Add(mesh.AddElement(cElm));
     }
 
     AddDofInterpolation(&mesh, d, matrixElements);
