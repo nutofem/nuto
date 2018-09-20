@@ -108,12 +108,13 @@ struct NodePoint : Eigen::Vector3d // to inherit operator[]
 
 SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int numBoxesPerDirection, double eps)
 {
-    Eigen::VectorXd start = mesh.GetGeometryMesh().GetElements()[0].GetNode(0).GetCoordinates();
+    Eigen::VectorXd start = mesh.GetGeometryMesh().GetElement(0).GetNode(0).GetCoordinates();
     Eigen::VectorXd end = start;
 
     unsigned long numNodesTotal = 0;
-    for (auto& cElm : mesh.GetGeometryMesh().GetElements())
+    for (size_t i = 0; i < mesh.GetGeometryMesh().NumElements(); i++)
     {
+        auto& cElm = mesh.GetGeometryMesh().GetElement(i);
         const int numNodes = cElm.GetNumNodes();
         numNodesTotal += numNodes;
 

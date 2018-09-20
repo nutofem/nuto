@@ -42,7 +42,7 @@ GeometryMeshFem UnitMeshFem::CreateLines(int numX)
     {
         auto& nl = mesh.GetNode(i);
         auto& nr = mesh.GetNode(i + 1);
-        mesh.GetElements().Add({{nl, nr}, interpolation});
+        mesh.AddElement({nl, nr}, interpolation);
     }
     return mesh;
 }
@@ -59,8 +59,8 @@ GeometryMeshFem UnitMeshFem::CreateTriangles(int numX, int numY)
             auto& node1 = mesh.GetNode(iX + 1 + iY * (numX + 1));
             auto& node2 = mesh.GetNode(iX + 1 + (iY + 1) * (numX + 1));
             auto& node3 = mesh.GetNode(iX + (iY + 1) * (numX + 1));
-            mesh.GetElements().Add({{node0, node1, node2}, interpolation});
-            mesh.GetElements().Add({{node0, node2, node3}, interpolation});
+            mesh.AddElement({node0, node1, node2}, interpolation);
+            mesh.AddElement({node0, node2, node3}, interpolation);
         }
     return mesh;
 }
@@ -76,7 +76,7 @@ GeometryMeshFem UnitMeshFem::CreateQuads(int numX, int numY)
             auto& node1 = mesh.GetNode(iX + 1 + iY * (numX + 1));
             auto& node2 = mesh.GetNode(iX + 1 + (iY + 1) * (numX + 1));
             auto& node3 = mesh.GetNode(iX + (iY + 1) * (numX + 1));
-            mesh.GetElements().Add({{node0, node1, node2, node3}, interpolation});
+            mesh.AddElement({node0, node1, node2, node3}, interpolation);
         }
     return mesh;
 }
@@ -109,7 +109,7 @@ GeometryMeshFem UnitMeshFem::CreateBricks(int numX, int numY, int numZ)
                 auto& node5 = mesh.GetNode(iX + 1 + iY * numXe + (iZ + 1) * numXe * numYe);
                 auto& node6 = mesh.GetNode(iX + 1 + (iY + 1) * numXe + (iZ + 1) * numXe * numYe);
                 auto& node7 = mesh.GetNode(iX + (iY + 1) * numXe + (iZ + 1) * numXe * numYe);
-                mesh.GetElements().Add({{node0, node1, node2, node3, node4, node5, node6, node7}, interpolation});
+                mesh.AddElement({node0, node1, node2, node3, node4, node5, node6, node7}, interpolation);
             }
     return mesh;
 }

@@ -91,6 +91,21 @@ public:
         return Elements;
     }
 
+    ElementCollectionFem& GetElement(int i)
+    {
+        return Elements[i];
+    }
+
+    const ElementCollectionFem& GetElement(int i) const
+    {
+        return Elements[i];
+    }
+
+    size_t NumElements() const
+    {
+        return Elements.Size();
+    }
+
 private:
     ValueVector<ElementCollectionFem> Elements;
     GeometryMeshFem& mGeometryMesh;

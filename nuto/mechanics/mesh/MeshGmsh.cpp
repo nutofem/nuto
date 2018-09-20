@@ -493,7 +493,7 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
                             .first;
         auto elementNodes = GetElementNodes(nodePtrs, gmshElement);
 
-        NuTo::CoordinateElementFem& element = mMesh.GetElements().Add({elementNodes, *(interpolationIter->second)});
+        NuTo::CoordinateElementFem& element = mMesh.AddElement(elementNodes, *(interpolationIter->second));
         CheckJacobian(element);
         AddElementToPhysicalGroup(fileContent, element, gmshElement.tags[0]);
     }

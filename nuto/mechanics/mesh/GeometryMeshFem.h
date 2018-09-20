@@ -73,9 +73,25 @@ public:
         return CoordinateNodes.Size();
     }
 
-    ValueVector<CoordinateElementFem>& GetElements()
+    CoordinateElementFem& GetElement(int i)
     {
-        return Elements;
+        return Elements[i];
+    }
+
+    CoordinateElementFem& AddElement(std::vector<CoordinateNode*> nodes, const InterpolationSimple& interpolation)
+    {
+        return Elements.Add({nodes, interpolation});
+    }
+
+    CoordinateElementFem& AddElement(std::initializer_list<std::reference_wrapper<CoordinateNode>> nodes,
+                                     const InterpolationSimple& interpolation)
+    {
+        return Elements.Add({nodes, interpolation});
+    }
+
+    size_t NumElements()
+    {
+        return Elements.Size();
     }
 
 private:

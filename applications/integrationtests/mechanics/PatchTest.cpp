@@ -69,11 +69,11 @@ MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
 
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
-    auto& cElm0 = geoMesh.GetElements().Add({{n0, n1, n5, n4}, interpolation});
-    auto& cElm1 = geoMesh.GetElements().Add({{n1, n2, n6, n5}, interpolation});
-    auto& cElm2 = geoMesh.GetElements().Add({{n7, n6, n2, n3}, interpolation});
-    auto& cElm3 = geoMesh.GetElements().Add({{n4, n5, n6, n7}, interpolation});
-    auto& cElm4 = geoMesh.GetElements().Add({{n0, n4, n7, n3}, interpolation});
+    auto& cElm0 = geoMesh.AddElement({n0, n1, n5, n4}, interpolation);
+    auto& cElm1 = geoMesh.AddElement({n1, n2, n6, n5}, interpolation);
+    auto& cElm2 = geoMesh.AddElement({n7, n6, n2, n3}, interpolation);
+    auto& cElm3 = geoMesh.AddElement({n4, n5, n6, n7}, interpolation);
+    auto& cElm4 = geoMesh.AddElement({n0, n4, n7, n3}, interpolation);
 
     mesh.GetElements().Add(cElm0);
     mesh.GetElements().Add(cElm1);
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     DofNode& nd2 = *(boundaryDisplNodes.begin() + 1);
 
     // add the boundary element
-    auto& cElmB = geoMesh.GetElements().Add({{nc1, nc2}, interpolationBc});
+    auto& cElmB = geoMesh.AddElement({nc1, nc2}, interpolationBc);
     ElementCollectionFem& boundaryElement = mesh.GetElements().Add(cElmB);
     boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
 
