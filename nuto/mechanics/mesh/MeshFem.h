@@ -91,9 +91,19 @@ public:
         return Elements[i];
     }
 
-    ElementCollectionFem& AddElement(const CoordinateElementFem& cElm)
+    ElementCollectionFem& AddDofElement(int i, DofType dof, std::vector<DofNode*> nodes,
+                                        const InterpolationSimple& interpolation)
     {
-        return Elements.Add({cElm});
+        Elements[i].AddDofElement(dof, {nodes, interpolation});
+        return Elements[i];
+    }
+
+    ElementCollectionFem& AddDofElement(int i, DofType dof,
+                                        std::initializer_list<std::reference_wrapper<DofNode>> nodes,
+                                        const InterpolationSimple& interpolation)
+    {
+        Elements[i].AddDofElement(dof, {nodes, interpolation});
+        return Elements[i];
     }
 
     size_t NumElements() const
@@ -102,6 +112,11 @@ public:
     }
 
 private:
+    ElementCollectionFem& AddElementCollection(const CoordinateElementFem& cElm)
+    {
+        return Elements.Add({cElm});
+    }
+
     ValueVector<ElementCollectionFem> Elements;
     GeometryMeshFem& mGeometryMesh;
     ValueVector<DofNode> Nodes;

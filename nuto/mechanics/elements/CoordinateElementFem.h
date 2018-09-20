@@ -19,6 +19,7 @@ public:
         for (CoordinateNode* node : nodes)
             mNodes.push_back(*node);
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
+        SetId(-1);
     }
 
     CoordinateElementFem(std::initializer_list<std::reference_wrapper<CoordinateNode>> nodes,
@@ -28,6 +29,7 @@ public:
         , mShape(interpolation.GetShape())
     {
         assert(static_cast<int>(mNodes.size()) == interpolation.GetNumNodes());
+        SetId(-1);
     }
 
     Eigen::VectorXd ExtractCoordinates() const override
@@ -64,6 +66,15 @@ public:
         return mNodes.size();
     }
 
+    int GetId() const
+    {
+        return id;
+    }
+
+    void SetId(int i)
+    {
+        id = i;
+    }
 
     const InterpolationSimple& Interpolation() const
     {
@@ -91,6 +102,7 @@ public:
 private:
     std::vector<std::reference_wrapper<CoordinateNode>> mNodes;
     std::reference_wrapper<const InterpolationSimple> mInterpolation;
+    int id;
     const Shape& mShape;
 };
 

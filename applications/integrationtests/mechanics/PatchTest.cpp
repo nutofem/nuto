@@ -38,7 +38,7 @@
 
 using namespace NuTo;
 
-MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
+GeometryMeshFem QuadPatchTestMesh()
 {
     /* Something like this:
      *
@@ -56,7 +56,8 @@ MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
      *   ///
      *              (c) ttitsche :)
      */
-    MeshFem mesh(geoMesh);
+    GeometryMeshFem geoMesh;
+
     CoordinateNode& n0 = geoMesh.AddNode(Eigen::Vector2d(0, 0));
     CoordinateNode& n1 = geoMesh.AddNode(Eigen::Vector2d(10, 0));
     CoordinateNode& n2 = geoMesh.AddNode(Eigen::Vector2d(10, 10));
@@ -67,21 +68,17 @@ MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
     CoordinateNode& n6 = geoMesh.AddNode(Eigen::Vector2d(8, 7));
     CoordinateNode& n7 = geoMesh.AddNode(Eigen::Vector2d(4, 7));
 
-    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
+    const InterpolationSimple& interpolation = geoMesh.CreateInterpolation(InterpolationQuadLinear());
 
-    auto& cElm0 = geoMesh.AddElement({n0, n1, n5, n4}, interpolation);
-    auto& cElm1 = geoMesh.AddElement({n1, n2, n6, n5}, interpolation);
-    auto& cElm2 = geoMesh.AddElement({n7, n6, n2, n3}, interpolation);
-    auto& cElm3 = geoMesh.AddElement({n4, n5, n6, n7}, interpolation);
-    auto& cElm4 = geoMesh.AddElement({n0, n4, n7, n3}, interpolation);
+    geoMesh.AddElement({n0, n1, n5, n4}, interpolation);
+    geoMesh.AddElement({n1, n2, n6, n5}, interpolation);
+    geoMesh.AddElement({n7, n6, n2, n3}, interpolation);
+    geoMesh.AddElement({n4, n5, n6, n7}, interpolation);
+    geoMesh.AddElement({n0, n4, n7, n3}, interpolation);
 
-    mesh.AddElement(cElm0);
-    mesh.AddElement(cElm1);
-    mesh.AddElement(cElm2);
-    mesh.AddElement(cElm3);
-    mesh.AddElement(cElm4);
+    geoMesh.CreateInterpolation(InterpolationQuadLinear());
 
-    return mesh;
+    return geoMesh;
 }
 
 Constraint::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
@@ -99,12 +96,25 @@ Constraint::Constraints DefineConstraints(MeshFem* rMesh, DofType dof)
 
 BOOST_AUTO_TEST_CASE(PatchTestForce)
 {
-    GeometryMeshFem geoMesh;
-    MeshFem mesh = QuadPatchTestMesh(geoMesh);
-    DofType displ("displacements", 2);
-    const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
+    GeometryMeshFem geoMesh = QuadPatchTestMesh();
 
-    AddDofInterpolation(&mesh, displ, interpolation);
+    // manually add the boundary element
+    const InterpolationSimple& interpolationBc = geoMesh.CreateInterpolation(InterpolationTrussLinear());
+    const InterpolationSimple& interpolation = geoMesh.CreateInterpolation(InterpolationQuadLinear());
+
+    // extract existing nodes
+    Group<CoordinateNode> boundaryCoordNodes = geoMesh.NodesAtAxis(eDirection::X, 10);
+    CoordinateNode& nc1 = *boundaryCoordNodes.begin();
+    CoordinateNode& nc2 = *(boundaryCoordNodes.begin() + 1);
+
+    // add the boundary element
+    auto& cElmB = geoMesh.AddElement({nc1, nc2}, interpolationBc);
+
+    MeshFem mesh(geoMesh);
+
+    DofType displ("displacements", 2);
+
+    AddDofInterpolation(&mesh, displ);
 
     Constraint::Constraints constraints = DefineConstraints(&mesh, displ);
     DofInfo dofInfo = DofNumbering::Build(mesh.NodesTotal(displ), displ, constraints);
@@ -127,37 +137,23 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     for (size_t i = 0; i < mesh.NumElements(); i++)
     {
         ElementCollection& element = mesh.GetElement(i);
-        cellContainer.push_back(new Cell(element, integrationType, cellId++));
-        momentumBalanceCells.Add(cellContainer.back());
+        if (element.GetShape().Enum() == NuTo::eShape::Quadrilateral)
+        {
+            cellContainer.push_back(new Cell(element, integrationType, cellId++));
+            momentumBalanceCells.Add(cellContainer.back());
+        }
     }
 
     // ************************************************************************
     //                 add boundary cells
     // ************************************************************************
 
-    // manually add the boundary element
-    const InterpolationSimple& interpolationBc = mesh.CreateInterpolation(InterpolationTrussLinear());
-
-    // extract existing nodes
-    Group<CoordinateNode> boundaryCoordNodes = geoMesh.NodesAtAxis(eDirection::X, 10);
-    CoordinateNode& nc1 = *boundaryCoordNodes.begin();
-    CoordinateNode& nc2 = *(boundaryCoordNodes.begin() + 1);
-
-    Group<DofNode> boundaryDisplNodes = mesh.NodesAtAxis(eDirection::X, displ, 10);
-    DofNode& nd1 = *boundaryDisplNodes.begin();
-    DofNode& nd2 = *(boundaryDisplNodes.begin() + 1);
-
-    // add the boundary element
-    auto& cElmB = geoMesh.AddElement({nc1, nc2}, interpolationBc);
-    ElementCollectionFem& boundaryElement = mesh.AddElement(cElmB);
-    boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
-
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
     Eigen::Vector2d pressureBC(1, 0);
     Integrands::NeumannBc<2> neumannBc(displ, pressureBC);
     auto NeumannLoad = Bind(neumannBc, &Integrands::NeumannBc<2>::ExternalLoad);
 
-    cellContainer.push_back(new Cell(boundaryElement, integrationTypeBc, cellId++));
+    cellContainer.push_back(new Cell(mesh.GetElement(cElmB.GetId()), integrationTypeBc, cellId++));
     auto& neumannCell = cellContainer.back();
 
     // ************************************************************************
@@ -219,8 +215,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
 BOOST_AUTO_TEST_CASE(PatchTestDispl)
 {
-    GeometryMeshFem geoMesh;
-    MeshFem mesh = QuadPatchTestMesh(geoMesh);
+    GeometryMeshFem geoMesh = QuadPatchTestMesh();
+    MeshFem mesh(geoMesh);
     DofType displ("displacements", 2);
     const auto& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 

@@ -4,6 +4,7 @@
 #include "nuto/mechanics/DirectionEnum.h"
 #include "nuto/mechanics/nodes/DofNode.h"
 #include "nuto/mechanics/elements/ElementCollection.h"
+#include "nuto/mechanics/elements/CoordinateElementFem.h"
 
 #include <memory>
 #include <vector>
@@ -80,13 +81,17 @@ public:
 
     const CoordinateElementFem& AddElement(std::vector<CoordinateNode*> nodes, const InterpolationSimple& interpolation)
     {
-        return Elements.Add({nodes, interpolation});
+        auto& elm = Elements.Add({nodes, interpolation});
+        elm.SetId(Elements.Size() - 1);
+        return elm;
     }
 
     const CoordinateElementFem& AddElement(std::initializer_list<std::reference_wrapper<CoordinateNode>> nodes,
                                            const InterpolationSimple& interpolation)
     {
-        return Elements.Add({nodes, interpolation});
+        auto& elm = Elements.Add({nodes, interpolation});
+        elm.SetId(Elements.Size() - 1);
+        return elm;
     }
 
     size_t NumElements() const
