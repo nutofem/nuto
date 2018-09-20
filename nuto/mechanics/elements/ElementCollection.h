@@ -118,7 +118,7 @@ using ElementCollectionIga = ElementCollectionImpl<NuTo::ElementIga<TDimParamete
 class ElementCollectionFem : public ElementCollection
 {
 public:
-    ElementCollectionFem(CoordinateElementFem& coordinateElement)
+    ElementCollectionFem(const CoordinateElementFem& coordinateElement)
         : mCoordinateElement(coordinateElement)
         , mShape(coordinateElement.GetShape())
     {
@@ -142,14 +142,6 @@ public:
     //! @return reference to a the CoordinateElementFem. This is implicitly casted to a reference
     //! CoordinateElementInterface when accessed via ElementCollection
     const CoordinateElementFem& CoordinateElement() const override
-    {
-        return mCoordinateElement;
-    }
-
-    //! @brief nonconst Getter for CoordinateElement
-    //! @return reference to a the CoordinateElementFem. This is implicitly casted to a reference
-    //! CoordinateElementInterface when accessed via ElementCollection
-    CoordinateElementFem& CoordinateElement()
     {
         return mCoordinateElement;
     }
@@ -183,7 +175,7 @@ public:
     }
 
 private:
-    CoordinateElementFem& mCoordinateElement;
+    const CoordinateElementFem& mCoordinateElement;
     DofContainer<DofElementFem> mDofElements;
     const Shape& mShape;
 };

@@ -85,7 +85,7 @@ void ExpectNextLineToBe(std::ifstream& rFile, std::string expected)
 // Helper functions (cpp only)
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-void CheckJacobian(NuTo::CoordinateElementFem& elm)
+void CheckJacobian(const NuTo::CoordinateElementFem& elm)
 {
     int n = elm.GetDofDimension();
     NuTo::Jacobian jac(elm.ExtractCoordinates(), elm.GetDerivativeShapeFunctions(Eigen::VectorXd::Zero(n)));
@@ -443,7 +443,7 @@ NuTo::MeshGmsh::MeshGmsh(const std::string& fileName)
     ReadGmshFile(fileName);
 }
 
-const NuTo::Group<NuTo::CoordinateElementFem>& NuTo::MeshGmsh::GetPhysicalGroup(std::string physicalName) const
+const NuTo::Group<const NuTo::CoordinateElementFem>& NuTo::MeshGmsh::GetPhysicalGroup(std::string physicalName) const
 {
     std::transform(physicalName.begin(), physicalName.end(), physicalName.begin(), ::toupper);
     auto physGroupIt = mNamedPhysicalGroups.find(physicalName);
@@ -452,7 +452,7 @@ const NuTo::Group<NuTo::CoordinateElementFem>& NuTo::MeshGmsh::GetPhysicalGroup(
     return *(physGroupIt->second);
 }
 
-const NuTo::Group<NuTo::CoordinateElementFem>& NuTo::MeshGmsh::GetPhysicalGroup(int physicalGroupId) const
+const NuTo::Group<const NuTo::CoordinateElementFem>& NuTo::MeshGmsh::GetPhysicalGroup(int physicalGroupId) const
 {
     auto physGroupIt = mPhysicalGroups.find(physicalGroupId);
     if (physGroupIt == mPhysicalGroups.end())
@@ -493,15 +493,15 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
                             .first;
         auto elementNodes = GetElementNodes(nodePtrs, gmshElement);
 
-        NuTo::CoordinateElementFem& element = mMesh.AddElement(elementNodes, *(interpolationIter->second));
+        const NuTo::CoordinateElementFem& element = mMesh.AddElement(elementNodes, *(interpolationIter->second));
         CheckJacobian(element);
         AddElementToPhysicalGroup(fileContent, element, gmshElement.tags[0]);
     }
 }
 
 
-void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileContent, NuTo::CoordinateElementFem& rElement,
-                                               int physicalGroupId)
+void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileContent,
+                                               const NuTo::CoordinateElementFem& rElement, int physicalGroupId)
 {
     // Regarding the map/iterator stuff: https://stackoverflow.com/questions/97050/stdmap-insert-or-stdmap-find
     auto physGroupIt = mPhysicalGroups.lower_bound(physicalGroupId);
@@ -511,8 +511,8 @@ void NuTo::MeshGmsh::AddElementToPhysicalGroup(const GmshFileContent& fileConten
     else
     {
         // Create new group
-        physGroupIt =
-                mPhysicalGroups.emplace_hint(physGroupIt, physicalGroupId, NuTo::Group<CoordinateElementFem>(rElement));
+        physGroupIt = mPhysicalGroups.emplace_hint(physGroupIt, physicalGroupId,
+                                                   NuTo::Group<const CoordinateElementFem>(rElement));
 
         // Create new named group, if a physicalName is defined
         std::string physicalName = GetPhysicalGroupName(fileContent, physicalGroupId);

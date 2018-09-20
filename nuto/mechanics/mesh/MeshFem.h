@@ -91,7 +91,7 @@ public:
         return Elements[i];
     }
 
-    ElementCollectionFem& AddElement(CoordinateElementFem& cElm)
+    ElementCollectionFem& AddElement(const CoordinateElementFem& cElm)
     {
         return Elements.Add({cElm});
     }

@@ -46,10 +46,10 @@ Group<CoordinateNode> GeometryMeshFem::NodesTotal()
     return group;
 }
 
-Group<CoordinateElementFem> GeometryMeshFem::ElementsTotal()
+Group<const CoordinateElementFem> GeometryMeshFem::ElementsTotal()
 {
-    Group<CoordinateElementFem> elements;
-    for (auto& element : this->Elements)
-        elements.Add(element);
+    Group<const CoordinateElementFem> elements;
+    for (size_t i = 0; i < NumElements(); i++)
+        elements.Add(GetElement(i));
     return elements;
 }

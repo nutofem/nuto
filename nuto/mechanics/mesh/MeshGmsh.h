@@ -44,13 +44,13 @@ public:
     //! @brief Gets an element collection group associated to the physical name defined in gmsh
     //! @param physicalName Group name (defined in gmsh)
     //! @return Desired element collection group
-    const NuTo::Group<CoordinateElementFem>& GetPhysicalGroup(std::string physicalName) const;
+    const NuTo::Group<const CoordinateElementFem>& GetPhysicalGroup(std::string physicalName) const;
 
 
     //! @brief Gets an element collection group associated to the physical ID defined in gmsh
     //! @param physicalGroupId gmsh ID
     //! @return Desired element collection group
-    const NuTo::Group<CoordinateElementFem>& GetPhysicalGroup(int physicalGroupId) const;
+    const NuTo::Group<const CoordinateElementFem>& GetPhysicalGroup(int physicalGroupId) const;
 
     //! @brief Gets the MeshFem
     GeometryMeshFem& GetMeshFEM()
@@ -64,7 +64,7 @@ private:
     //! @param fileContent Special structure (see MeshGmsh.cpp) that holds the read file content
     //! @param rElement Current element
     //! @param physicalGroupId Id of the elements physical group
-    void AddElementToPhysicalGroup(const GmshFileContent& fileContent, CoordinateElementFem& rElement,
+    void AddElementToPhysicalGroup(const GmshFileContent& fileContent, const CoordinateElementFem& rElement,
                                    int physicalGroupId);
 
     //! @brief Creates all nodes defined in the gmsh file
@@ -93,9 +93,9 @@ private:
     GeometryMeshFem mMesh;
 
     //! @brief Physical groups of the mesh
-    std::map<int, Group<CoordinateElementFem>> mPhysicalGroups;
+    std::map<int, Group<const CoordinateElementFem>> mPhysicalGroups;
 
     //! @brief Named physical groups of the mesh
-    std::map<std::string, Group<CoordinateElementFem>*> mNamedPhysicalGroups;
+    std::map<std::string, Group<const CoordinateElementFem>*> mNamedPhysicalGroups;
 };
 }

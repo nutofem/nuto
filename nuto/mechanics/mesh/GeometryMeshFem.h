@@ -49,7 +49,7 @@ public:
 
     //! @brief selects all element collections
     //! @return group containing all element collections
-    Group<CoordinateElementFem> ElementsTotal();
+    Group<const CoordinateElementFem> ElementsTotal();
 
     CoordinateNode& AddNode(Eigen::VectorXd data)
     {
@@ -73,23 +73,23 @@ public:
         return CoordinateNodes.Size();
     }
 
-    CoordinateElementFem& GetElement(int i)
+    const CoordinateElementFem& GetElement(int i)
     {
         return Elements[i];
     }
 
-    CoordinateElementFem& AddElement(std::vector<CoordinateNode*> nodes, const InterpolationSimple& interpolation)
+    const CoordinateElementFem& AddElement(std::vector<CoordinateNode*> nodes, const InterpolationSimple& interpolation)
     {
         return Elements.Add({nodes, interpolation});
     }
 
-    CoordinateElementFem& AddElement(std::initializer_list<std::reference_wrapper<CoordinateNode>> nodes,
-                                     const InterpolationSimple& interpolation)
+    const CoordinateElementFem& AddElement(std::initializer_list<std::reference_wrapper<CoordinateNode>> nodes,
+                                           const InterpolationSimple& interpolation)
     {
         return Elements.Add({nodes, interpolation});
     }
 
-    size_t NumElements()
+    size_t NumElements() const
     {
         return Elements.Size();
     }
