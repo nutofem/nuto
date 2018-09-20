@@ -24,7 +24,7 @@ int main()
     IntegrationTypeTensorProduct<2> integrationType(2, eIntegrationMethod::GAUSS);
     int cellId = 0;
     Group<CellInterface> visualizationCells;
-    for (auto& element : mesh.Elements)
+    for (auto& element : mesh.GetElements())
     {
         cells.push_back(new Cell(element, integrationType, cellId++));
         visualizationCells.Add(cells.back());

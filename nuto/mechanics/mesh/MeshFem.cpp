@@ -11,7 +11,7 @@ using namespace NuTo;
 MeshFem::MeshFem(GeometryMeshFem& geometryMesh)
     : mGeometryMesh(geometryMesh)
 {
-    for (auto& cElm : geometryMesh.Elements)
+    for (auto& cElm : geometryMesh.GetElements())
     {
         Elements.Add(ElementCollectionFem(cElm));
     }

@@ -9,7 +9,7 @@
 
 void SetStuff(NuTo::MeshFem& m)
 {
-    m.Nodes[0].SetValue(0, 0);
+    m.GetNode(0).SetValue(0, 0);
 }
 
 NuTo::MeshFem DummyMesh(NuTo::GeometryMeshFem& geoMesh, NuTo::DofType dofType)
@@ -17,25 +17,25 @@ NuTo::MeshFem DummyMesh(NuTo::GeometryMeshFem& geoMesh, NuTo::DofType dofType)
     NuTo::MeshFem mesh(geoMesh);
     auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
 
-    auto& n0 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d({1, 0}));
-    auto& n1 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d({2, 0}));
-    auto& n2 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d({0, 3}));
+    auto& n0 = geoMesh.AddNode(Eigen::Vector2d({1, 0}));
+    auto& n1 = geoMesh.AddNode(Eigen::Vector2d({2, 0}));
+    auto& n2 = geoMesh.AddNode(Eigen::Vector2d({0, 3}));
 
-    auto& nd0 = mesh.Nodes.Add(42);
-    auto& nd1 = mesh.Nodes.Add(4);
-    auto& nd2 = mesh.Nodes.Add(6174);
+    auto& nd0 = mesh.AddNode(42);
+    auto& nd1 = mesh.AddNode(4);
+    auto& nd2 = mesh.AddNode(6174);
 
-    auto& cElm = geoMesh.Elements.Add({{n0, n1, n2}, interpolation});
+    auto& cElm = geoMesh.GetElements().Add({{n0, n1, n2}, interpolation});
 
-    auto& e0 = mesh.Elements.Add(cElm);
+    auto& e0 = mesh.GetElements().Add(cElm);
     e0.AddDofElement(dofType, {{nd0, nd1, nd2}, interpolation});
 
     // Add another element without a interpolation for `dofType`. This must not
     // trigger exceptions in node select methods, when they try to find
     // the missing DofElement.
 
-    auto& cElm2 = geoMesh.Elements.Add({{n0, n1, n2}, interpolation});
-    mesh.Elements.Add(cElm2);
+    auto& cElm2 = geoMesh.GetElements().Add({{n0, n1, n2}, interpolation});
+    mesh.GetElements().Add(cElm2);
 
     return mesh;
 }
@@ -122,21 +122,23 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
      * 0-----1
      */
     NuTo::GeometryMeshFem geoMesh;
+    auto& n0 = geoMesh.AddNode(Eigen::Vector2d(0, 0));
+    auto& n1 = geoMesh.AddNode(Eigen::Vector2d(1, 0));
+    auto& n2 = geoMesh.AddNode(Eigen::Vector2d(0, 1));
+    auto& n3 = geoMesh.AddNode(Eigen::Vector2d(1, 1));
+
+    auto& interpolation = geoMesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
+    auto& cElm0 = geoMesh.GetElements().Add({{n0, n1, n2}, interpolation});
+    auto& cElm1 = geoMesh.GetElements().Add({{n1, n3, n2}, interpolation});
+
     NuTo::MeshFem mesh(geoMesh);
-    auto& n0 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
-    auto& n2 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
-    auto& n3 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(1, 1));
+    mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
 
-    auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
-    auto& cElm0 = geoMesh.Elements.Add({{n0, n1, n2}, interpolation});
-    auto& cElm1 = geoMesh.Elements.Add({{n1, n3, n2}, interpolation});
-
-    mesh.Elements.Add(cElm0);
-    mesh.Elements.Add(cElm1);
+    mesh.GetElements().Add(cElm0);
+    mesh.GetElements().Add(cElm1);
 
     int expectedNumCoordinateNodes = 4;
-    BOOST_CHECK_EQUAL(geoMesh.CoordinateNodes.Size(), expectedNumCoordinateNodes);
+    BOOST_CHECK_EQUAL(geoMesh.NumNodes(), expectedNumCoordinateNodes);
 
 
     // add linear dof type
@@ -146,8 +148,8 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
 
     int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
 
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumDof0Nodes);
-    BOOST_CHECK_EQUAL(geoMesh.CoordinateNodes.Size(), expectedNumCoordinateNodes);
+    BOOST_CHECK_EQUAL(mesh.NumNodes(), expectedNumDof0Nodes);
+    BOOST_CHECK_EQUAL(geoMesh.NumNodes(), expectedNumCoordinateNodes);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
 
 
@@ -168,7 +170,7 @@ BOOST_AUTO_TEST_CASE(MeshConvert)
     NuTo::AddDofInterpolation(&mesh, dof1, interpolationQuadratic);
 
     int expectedNumDof1Nodes = 9;
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumDof0Nodes + expectedNumDof1Nodes);
+    BOOST_CHECK_EQUAL(mesh.NumNodes(), expectedNumDof0Nodes + expectedNumDof1Nodes);
 }
 
 BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
@@ -186,22 +188,22 @@ BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
      */
     NuTo::GeometryMeshFem geoMesh;
     NuTo::MeshFem mesh(geoMesh);
-    auto& n0 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
-    auto& n2 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
-    auto& n3 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(1, 1));
-    auto& n4 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(2, 0));
-    auto& n5 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(2, 1));
+    auto& n0 = geoMesh.AddNode(Eigen::Vector2d(0, 0));
+    auto& n1 = geoMesh.AddNode(Eigen::Vector2d(1, 0));
+    auto& n2 = geoMesh.AddNode(Eigen::Vector2d(0, 1));
+    auto& n3 = geoMesh.AddNode(Eigen::Vector2d(1, 1));
+    auto& n4 = geoMesh.AddNode(Eigen::Vector2d(2, 0));
+    auto& n5 = geoMesh.AddNode(Eigen::Vector2d(2, 1));
 
     auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
     auto& interpolationQuad = mesh.CreateInterpolation(NuTo::InterpolationQuadLinear());
-    auto& cElm0 = geoMesh.Elements.Add({{n0, n1, n2}, interpolationTriangle});
-    auto& cElm1 = geoMesh.Elements.Add({{n1, n4, n5, n3}, interpolationQuad});
-    mesh.Elements.Add(cElm0);
-    mesh.Elements.Add(cElm1);
+    auto& cElm0 = geoMesh.GetElements().Add({{n0, n1, n2}, interpolationTriangle});
+    auto& cElm1 = geoMesh.GetElements().Add({{n1, n4, n5, n3}, interpolationQuad});
+    mesh.GetElements().Add(cElm0);
+    mesh.GetElements().Add(cElm1);
 
     int expectedNumCoordinateNodes = 6;
-    BOOST_CHECK_EQUAL(geoMesh.CoordinateNodes.Size(), expectedNumCoordinateNodes);
+    BOOST_CHECK_EQUAL(geoMesh.NumNodes(), expectedNumCoordinateNodes);
 
 
     // add linear dof type
@@ -211,7 +213,7 @@ BOOST_AUTO_TEST_CASE(MeshConvertFromCoordinates)
 
     int expectedNumDof0Nodes = expectedNumCoordinateNodes; // same interpolation
 
-    BOOST_CHECK_EQUAL(mesh.Nodes.Size(), expectedNumDof0Nodes);
+    BOOST_CHECK_EQUAL(mesh.NumNodes(), expectedNumDof0Nodes);
     BOOST_CHECK_NO_THROW(mesh.NodeAtCoordinate(Eigen::Vector2d(0, 0), dof0));
 }
 
@@ -219,30 +221,30 @@ BOOST_AUTO_TEST_CASE(MeshNodesTotalDof)
 {
     NuTo::GeometryMeshFem geoMesh;
     NuTo::MeshFem mesh(geoMesh);
-    auto& n0 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
-    auto& n2 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
+    auto& n0 = geoMesh.AddNode(Eigen::Vector2d(0, 0));
+    auto& n1 = geoMesh.AddNode(Eigen::Vector2d(1, 0));
+    auto& n2 = geoMesh.AddNode(Eigen::Vector2d(0, 1));
 
     auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
     auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
 
     // Add coordinate elements
-    auto& cElm0 = geoMesh.Elements.Add({{n0, n1}, interpolationTruss});
-    auto& line1 = mesh.Elements.Add(cElm0);
+    auto& cElm0 = geoMesh.GetElements().Add({{n0, n1}, interpolationTruss});
+    auto& line1 = mesh.GetElements().Add(cElm0);
 
-    auto& cElm1 = geoMesh.Elements.Add({{n0, n1, n2}, interpolationTriangle});
-    auto& cElm2 = geoMesh.Elements.Add({{n1, n2}, interpolationTruss});
-    auto& cElm3 = geoMesh.Elements.Add({{n2, n0}, interpolationTruss});
+    auto& cElm1 = geoMesh.GetElements().Add({{n0, n1, n2}, interpolationTriangle});
+    auto& cElm2 = geoMesh.GetElements().Add({{n1, n2}, interpolationTruss});
+    auto& cElm3 = geoMesh.GetElements().Add({{n2, n0}, interpolationTruss});
 
-    mesh.Elements.Add(cElm1);
-    mesh.Elements.Add(cElm2);
-    mesh.Elements.Add(cElm3);
+    mesh.GetElements().Add(cElm1);
+    mesh.GetElements().Add(cElm2);
+    mesh.GetElements().Add(cElm3);
 
     // Add a dof element
     NuTo::DofType dof1("dof1", 1);
 
-    auto& nD0 = mesh.Nodes.Add(1.2);
-    auto& nD1 = mesh.Nodes.Add(2.2);
+    auto& nD0 = mesh.AddNode(1.2);
+    auto& nD1 = mesh.AddNode(2.2);
 
     line1.AddDofElement(dof1, {{nD0, nD1}, interpolationTruss});
 
@@ -253,23 +255,23 @@ BOOST_AUTO_TEST_CASE(PartialAddDofConvert)
 {
     NuTo::GeometryMeshFem geoMesh;
     NuTo::MeshFem mesh(geoMesh);
-    auto& n0 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
-    auto& n1 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(1, 0));
-    auto& n2 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 1));
+    auto& n0 = geoMesh.AddNode(Eigen::Vector2d(0, 0));
+    auto& n1 = geoMesh.AddNode(Eigen::Vector2d(1, 0));
+    auto& n2 = geoMesh.AddNode(Eigen::Vector2d(0, 1));
 
     auto& interpolationTriangle = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
     auto& interpolationTruss = mesh.CreateInterpolation(NuTo::InterpolationTrussLinear());
 
     // Add coordinate elements
-    auto& cElm1 = geoMesh.Elements.Add({{n0, n1, n2}, interpolationTriangle});
-    auto& cElm2 = geoMesh.Elements.Add({{n0, n1}, interpolationTruss});
-    auto& cElm3 = geoMesh.Elements.Add({{n1, n2}, interpolationTruss});
-    auto& cElm4 = geoMesh.Elements.Add({{n2, n0}, interpolationTruss});
+    auto& cElm1 = geoMesh.GetElements().Add({{n0, n1, n2}, interpolationTriangle});
+    auto& cElm2 = geoMesh.GetElements().Add({{n0, n1}, interpolationTruss});
+    auto& cElm3 = geoMesh.GetElements().Add({{n1, n2}, interpolationTruss});
+    auto& cElm4 = geoMesh.GetElements().Add({{n2, n0}, interpolationTruss});
 
-    auto& tri = mesh.Elements.Add(cElm1);
-    auto& line1 = mesh.Elements.Add(cElm2);
-    auto& line2 = mesh.Elements.Add(cElm3);
-    auto& line3 = mesh.Elements.Add(cElm4);
+    auto& tri = mesh.GetElements().Add(cElm1);
+    auto& line1 = mesh.GetElements().Add(cElm2);
+    auto& line2 = mesh.GetElements().Add(cElm3);
+    auto& line3 = mesh.GetElements().Add(cElm4);
 
     // Add dof element in steps
     NuTo::DofType dof1("dof1", 1);

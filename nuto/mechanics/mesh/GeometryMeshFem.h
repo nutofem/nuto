@@ -11,7 +11,8 @@
 namespace NuTo
 {
 //! @brief contains the nodes, elements and interpolations for a classic finite element mesh
-//! @remark Elements contain references to nodes. Thus, a copy of GeometryMeshFem is not trivially possible and only move is
+//! @remark Elements contain references to nodes. Thus, a copy of GeometryMeshFem is not trivially possible and only
+//! move is
 //! allowed
 class GeometryMeshFem
 {
@@ -50,11 +51,36 @@ public:
     //! @return group containing all element collections
     Group<CoordinateElementFem> ElementsTotal();
 
-public:
-    ValueVector<CoordinateNode> CoordinateNodes;
-    ValueVector<CoordinateElementFem> Elements;
+    CoordinateNode& AddNode(Eigen::VectorXd data)
+    {
+        auto& nd = CoordinateNodes.Add(data);
+        return nd;
+    }
+
+    CoordinateNode& AddNode(double data)
+    {
+        auto& nd = CoordinateNodes.Add(data);
+        return nd;
+    }
+
+    CoordinateNode& GetNode(int i)
+    {
+        return CoordinateNodes[i];
+    }
+
+    size_t NumNodes() const
+    {
+        return CoordinateNodes.Size();
+    }
+
+    ValueVector<CoordinateElementFem>& GetElements()
+    {
+        return Elements;
+    }
 
 private:
+    ValueVector<CoordinateNode> CoordinateNodes;
+    ValueVector<CoordinateElementFem> Elements;
     std::vector<std::unique_ptr<InterpolationSimple>> mInterpolations;
 };
 } /* NuTo */

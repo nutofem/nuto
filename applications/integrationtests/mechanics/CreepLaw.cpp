@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE(History_Data)
     boost::ptr_vector<CellInterface> cellContainer;
     Group<CellInterface> momentumBalanceCells;
     int cellId = 0;
-    for (ElementCollection& element : mesh.Elements)
+    for (ElementCollection& element : mesh.GetElements())
     {
         cellContainer.push_back(new Cell(element, integrationType, cellId++));
         momentumBalanceCells.Add(cellContainer.back());

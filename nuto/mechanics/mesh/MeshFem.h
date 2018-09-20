@@ -59,12 +59,42 @@ public:
     //! @param dofType dof type
     void AllocateDofInstances(DofType dofType, int numInstances);
 
-public:
-    GeometryMeshFem& mGeometryMesh;
-    ValueVector<DofNode> Nodes;
-    ValueVector<ElementCollectionFem> Elements;
+    DofNode& AddNode(Eigen::VectorXd data)
+    {
+        auto& nd = Nodes.Add(data);
+        return nd;
+    }
+
+    DofNode& AddNode(double data)
+    {
+        auto& nd = Nodes.Add(data);
+        return nd;
+    }
+
+    DofNode& GetNode(int i)
+    {
+        return Nodes[i];
+    }
+
+    size_t NumNodes() const
+    {
+        return Nodes.Size();
+    }
+
+    GeometryMeshFem& GetGeometryMesh() const
+    {
+        return mGeometryMesh;
+    }
+
+    ValueVector<ElementCollectionFem>& GetElements()
+    {
+        return Elements;
+    }
 
 private:
+    ValueVector<ElementCollectionFem> Elements;
+    GeometryMeshFem& mGeometryMesh;
+    ValueVector<DofNode> Nodes;
     std::vector<std::unique_ptr<InterpolationSimple>> mInterpolations;
 };
 } /* NuTo */

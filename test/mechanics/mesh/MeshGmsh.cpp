@@ -25,8 +25,8 @@ void CheckMesh(std::string meshFile, int numNodesExpected)
     BOOST_CHECK_NO_THROW(MeshGmsh{meshFile});
     MeshGmsh m(meshFile);
     auto& meshFem = m.GetMeshFEM();
-    BOOST_CHECK_EQUAL(meshFem.CoordinateNodes.Size(), numNodesExpected);
-    const CoordinateElementFem& element = *meshFem.Elements.begin();
+    BOOST_CHECK_EQUAL(meshFem.NumNodes(), numNodesExpected);
+    const CoordinateElementFem& element = *meshFem.GetElements().begin();
     const auto& interpolation = element.Interpolation();
     BOOST_CHECK_EQUAL(interpolation.GetNumNodes(), numNodesExpected);
 
@@ -48,9 +48,9 @@ BOOST_AUTO_TEST_CASE(BinaryImport)
 {
     MeshGmsh m("meshes/binary.msh");
     auto& meshFem = m.GetMeshFEM();
-    BOOST_CHECK_EQUAL(meshFem.CoordinateNodes.Size(), 8);
-    BOOST_CHECK_EQUAL(meshFem.Elements.Size(), 7);
-    BOOST_CHECK_EQUAL(meshFem.Elements.begin()->Interpolation().GetNumNodes(), 3);
+    BOOST_CHECK_EQUAL(meshFem.NumNodes(), 8);
+    BOOST_CHECK_EQUAL(meshFem.GetElements().Size(), 7);
+    BOOST_CHECK_EQUAL(meshFem.GetElements().begin()->Interpolation().GetNumNodes(), 3);
 }
 
 BOOST_AUTO_TEST_CASE(QuadLinear)

@@ -469,7 +469,7 @@ std::unordered_map<int, NuTo::CoordinateNode*> NuTo::MeshGmsh::CreateNodes(const
     {
         for (int i = 0; i < fileContent.dimension; ++i)
             coords[i] = gmshNode.coordinates[i];
-        nodePtrs[gmshNode.id] = &(mMesh.CoordinateNodes.Add(coords));
+        nodePtrs[gmshNode.id] = &(mMesh.AddNode(coords));
     }
     return nodePtrs;
 }
@@ -493,7 +493,7 @@ void NuTo::MeshGmsh::CreateElements(const GmshFileContent& fileContent,
                             .first;
         auto elementNodes = GetElementNodes(nodePtrs, gmshElement);
 
-        NuTo::CoordinateElementFem& element = mMesh.Elements.Add({elementNodes, *(interpolationIter->second)});
+        NuTo::CoordinateElementFem& element = mMesh.GetElements().Add({elementNodes, *(interpolationIter->second)});
         CheckJacobian(element);
         AddElementToPhysicalGroup(fileContent, element, gmshElement.tags[0]);
     }

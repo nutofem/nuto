@@ -57,29 +57,29 @@ MeshFem QuadPatchTestMesh(GeometryMeshFem& geoMesh)
      *              (c) ttitsche :)
      */
     MeshFem mesh(geoMesh);
-    CoordinateNode& n0 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 0));
-    CoordinateNode& n1 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(10, 0));
-    CoordinateNode& n2 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(10, 10));
-    CoordinateNode& n3 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(0, 10));
+    CoordinateNode& n0 = geoMesh.AddNode(Eigen::Vector2d(0, 0));
+    CoordinateNode& n1 = geoMesh.AddNode(Eigen::Vector2d(10, 0));
+    CoordinateNode& n2 = geoMesh.AddNode(Eigen::Vector2d(10, 10));
+    CoordinateNode& n3 = geoMesh.AddNode(Eigen::Vector2d(0, 10));
 
-    CoordinateNode& n4 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(2, 2));
-    CoordinateNode& n5 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(8, 3));
-    CoordinateNode& n6 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(8, 7));
-    CoordinateNode& n7 = geoMesh.CoordinateNodes.Add(Eigen::Vector2d(4, 7));
+    CoordinateNode& n4 = geoMesh.AddNode(Eigen::Vector2d(2, 2));
+    CoordinateNode& n5 = geoMesh.AddNode(Eigen::Vector2d(8, 3));
+    CoordinateNode& n6 = geoMesh.AddNode(Eigen::Vector2d(8, 7));
+    CoordinateNode& n7 = geoMesh.AddNode(Eigen::Vector2d(4, 7));
 
     const InterpolationSimple& interpolation = mesh.CreateInterpolation(InterpolationQuadLinear());
 
-    auto& cElm0 = geoMesh.Elements.Add({{n0, n1, n5, n4}, interpolation});
-    auto& cElm1 = geoMesh.Elements.Add({{n1, n2, n6, n5}, interpolation});
-    auto& cElm2 = geoMesh.Elements.Add({{n7, n6, n2, n3}, interpolation});
-    auto& cElm3 = geoMesh.Elements.Add({{n4, n5, n6, n7}, interpolation});
-    auto& cElm4 = geoMesh.Elements.Add({{n0, n4, n7, n3}, interpolation});
+    auto& cElm0 = geoMesh.GetElements().Add({{n0, n1, n5, n4}, interpolation});
+    auto& cElm1 = geoMesh.GetElements().Add({{n1, n2, n6, n5}, interpolation});
+    auto& cElm2 = geoMesh.GetElements().Add({{n7, n6, n2, n3}, interpolation});
+    auto& cElm3 = geoMesh.GetElements().Add({{n4, n5, n6, n7}, interpolation});
+    auto& cElm4 = geoMesh.GetElements().Add({{n0, n4, n7, n3}, interpolation});
 
-    mesh.Elements.Add(cElm0);
-    mesh.Elements.Add(cElm1);
-    mesh.Elements.Add(cElm2);
-    mesh.Elements.Add(cElm3);
-    mesh.Elements.Add(cElm4);
+    mesh.GetElements().Add(cElm0);
+    mesh.GetElements().Add(cElm1);
+    mesh.GetElements().Add(cElm2);
+    mesh.GetElements().Add(cElm3);
+    mesh.GetElements().Add(cElm4);
 
     return mesh;
 }
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     Group<CellInterface> momentumBalanceCells;
     int cellId = 0;
-    for (ElementCollection& element : mesh.Elements)
+    for (ElementCollection& element : mesh.GetElements())
     {
         cellContainer.push_back(new Cell(element, integrationType, cellId++));
         momentumBalanceCells.Add(cellContainer.back());
@@ -147,8 +147,8 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
     DofNode& nd2 = *(boundaryDisplNodes.begin() + 1);
 
     // add the boundary element
-    auto& cElmB = geoMesh.Elements.Add({{nc1, nc2}, interpolationBc});
-    ElementCollectionFem& boundaryElement = mesh.Elements.Add(cElmB);
+    auto& cElmB = geoMesh.GetElements().Add({{nc1, nc2}, interpolationBc});
+    ElementCollectionFem& boundaryElement = mesh.GetElements().Add(cElmB);
     boundaryElement.AddDofElement(displ, {{nd1, nd2}, interpolationBc});
 
     IntegrationTypeTensorProduct<1> integrationTypeBc(1, eIntegrationMethod::GAUSS);
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE(PatchTestDispl)
 
     Group<CellInterface> cellGroup;
     int cellId = 0;
-    for (auto& element : mesh.Elements)
+    for (auto& element : mesh.GetElements())
     {
         cellContainer.push_back(new Cell(element, integrationType, cellId++));
         cellGroup.Add(cellContainer.back());

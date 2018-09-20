@@ -1,4 +1,5 @@
 #include "nuto/mechanics/mesh/MeshFemDofConvert.h"
+#include "nuto/mechanics/mesh/GeometryMeshFem.h"
 #include "nuto/math/EigenCompanion.h"
 
 using namespace NuTo::EigenCompanion;
@@ -107,18 +108,18 @@ struct NodePoint : Eigen::Vector3d // to inherit operator[]
 
 SubBoxes<NodePoint>::Domain SetupSubBoxDomain(const NuTo::MeshFem& mesh, int numBoxesPerDirection, double eps)
 {
-    Eigen::VectorXd start = mesh.Elements[0].CoordinateElement().GetNode(0).GetCoordinates();
+    Eigen::VectorXd start = mesh.GetGeometryMesh().GetElements()[0].GetNode(0).GetCoordinates();
     Eigen::VectorXd end = start;
 
     unsigned long numNodesTotal = 0;
-    for (auto& elementCollection : mesh.Elements)
+    for (auto& cElm : mesh.GetGeometryMesh().GetElements())
     {
-        const int numNodes = elementCollection.CoordinateElement().GetNumNodes();
+        const int numNodes = cElm.GetNumNodes();
         numNodesTotal += numNodes;
 
         for (int iNode = 0; iNode < numNodes; ++iNode)
         {
-            Eigen::VectorXd coords = elementCollection.CoordinateElement().GetNode(iNode).GetCoordinates();
+            Eigen::VectorXd coords = cElm.GetNode(iNode).GetCoordinates();
             start = start.array().min(coords.array()); // array view (.array()) allows coeffwise operations
             end = end.array().max(coords.array());
         }
@@ -143,7 +144,7 @@ std::vector<NodePoint> NodePointsTotal(NuTo::MeshFem* rMesh, NuTo::DofType dofTy
 {
     std::vector<NodePoint> nodePoints;
 
-    for (auto& elementCollection : rMesh->Elements)
+    for (auto& elementCollection : rMesh->GetElements())
     {
         const NuTo::CoordinateElementFem& coordinateElement = elementCollection.CoordinateElement();
 
@@ -200,7 +201,7 @@ void NuTo::AddDofInterpolation(NuTo::MeshFem* rMesh, DofType dofType, Group<Elem
             }
             else
             {
-                auto& node = rMesh->Nodes.Add(Eigen::VectorXd::Zero(dofType.GetNum()));
+                auto& node = rMesh->AddNode(Eigen::VectorXd::Zero(dofType.GetNum()));
                 subBoxes.Add(NodePoint(coord, node));
                 nodesForTheNewlyCreatedElement.push_back(&node);
             }

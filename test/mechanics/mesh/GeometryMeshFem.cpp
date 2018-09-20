@@ -10,11 +10,11 @@ NuTo::GeometryMeshFem DummyMesh()
     NuTo::GeometryMeshFem mesh;
     auto& interpolation = mesh.CreateInterpolation(NuTo::InterpolationTriangleLinear());
 
-    auto& n0 = mesh.CoordinateNodes.Add(Eigen::Vector2d({1, 0}));
-    auto& n1 = mesh.CoordinateNodes.Add(Eigen::Vector2d({2, 0}));
-    auto& n2 = mesh.CoordinateNodes.Add(Eigen::Vector2d({0, 3}));
+    auto& n0 = mesh.AddNode(Eigen::Vector2d({1, 0}));
+    auto& n1 = mesh.AddNode(Eigen::Vector2d({2, 0}));
+    auto& n2 = mesh.AddNode(Eigen::Vector2d({0, 3}));
 
-    mesh.Elements.Add({{n0, n1, n2}, interpolation});
+    mesh.GetElements().Add({{n0, n1, n2}, interpolation});
 
     return mesh;
 }
@@ -23,15 +23,15 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
 {
     NuTo::GeometryMeshFem mesh = DummyMesh();
 
-    auto& e0 = mesh.Elements[0];
+    auto& e0 = mesh.GetElements()[0];
     BoostUnitTest::CheckVector(e0.ExtractCoordinates(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
 
-    mesh.CoordinateNodes[0].SetCoordinate(0, 4);
+    mesh.GetNode(0).SetCoordinate(0, 4);
     BoostUnitTest::CheckVector(e0.ExtractCoordinates(), std::vector<double>({4, 0, 2, 0, 0, 3}), 6);
 
     NuTo::GeometryMeshFem meshMoved = std::move(mesh);
-    meshMoved.CoordinateNodes[0].SetCoordinate(0, 42);
-    auto& e0FromMove = meshMoved.Elements[0];
+    meshMoved.GetNode(0).SetCoordinate(0, 42);
+    auto& e0FromMove = meshMoved.GetElements()[0];
     BoostUnitTest::CheckVector(e0FromMove.ExtractCoordinates(), std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
 }
 
