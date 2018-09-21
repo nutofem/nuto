@@ -83,6 +83,12 @@ BOOST_AUTO_TEST_CASE(Adjacency)
     BOOST_CHECK(edgesOfFace0.Contains(edge1));
     BOOST_CHECK_EQUAL(edgesOfFace0.Size(), 2);
 
+    auto edgesOfedge1 = meshTopo.GetAdjacentEdges(edge1);
+    BOOST_CHECK(edgesOfedge1.Contains(edge0));
+    BOOST_CHECK(edgesOfedge1.Contains(edge1));
+    BOOST_CHECK(edgesOfedge1.Contains(edge2));
+    BOOST_CHECK_EQUAL(edgesOfedge1.Size(), 3);
+
     auto volumesOfFace0 = meshTopo.GetAdjacentVolumes(face0);
     BOOST_CHECK_EQUAL(volumesOfFace0.Size(), 2);
     BOOST_CHECK(volumesOfFace0.Contains(vol0));

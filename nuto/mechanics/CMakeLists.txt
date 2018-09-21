@@ -6,6 +6,7 @@ add_sources(cell/SimpleAssembler.cpp
     mesh/MeshFem.cpp
     mesh/MeshFemDofConvert.cpp
     mesh/MeshGmsh.cpp
+    mesh/MeshTopology.cpp
     mesh/UnitMeshFem.cpp
 
     solver/Solve.cpp
