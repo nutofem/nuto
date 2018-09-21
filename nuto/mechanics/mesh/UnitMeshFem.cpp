@@ -119,8 +119,10 @@ GeometryMeshFem UnitMeshFem::Transform(GeometryMeshFem&& oldMesh, std::function<
 {
     // Build a group (MeshFem::NodesTotal() selects all coordinate nodes) to avoid duplicates. Otherwise, the
     // transformation is applied multiple times. This is, however, a bit of a bottleneck for big meshes.
-    for (auto& node : oldMesh.NodesTotal())
-        node.SetCoordinates(f(node.GetCoordinates()));
-
+    for (size_t i = 0; i < oldMesh.NumNodes(); i++)
+    {
+        auto& node = oldMesh.GetNode(i);
+        oldMesh.ChangeNode(i, f(node.GetCoordinates()));
+    }
     return std::move(oldMesh);
 }

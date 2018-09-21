@@ -35,36 +35,52 @@ public:
     //! @param coords global coordinates
     //! @param tol selection tolerance
     //! @return reference to the selected node, throws, if no node is found
-    CoordinateNode& NodeAtCoordinate(Eigen::VectorXd coords, double tol = 1.e-10);
+    const CoordinateNode& NodeAtCoordinate(Eigen::VectorXd coords, double tol = 1.e-10);
 
     //! @brief selects all coordinate nodes where the `coord` in `direction` is within `tol`
     //! @param direction ::X, ::Y, or ::Z
     //! @param axisOffset distance of the node to the axis
     //! @param tol selection tolerance
     //! @return group with selected nodes, the group may be empty if no nodes were found
-    Group<CoordinateNode> NodesAtAxis(eDirection direction, double axisOffset = 0., double tol = 1.e-10);
+    Group<const CoordinateNode> NodesAtAxis(eDirection direction, double axisOffset = 0., double tol = 1.e-10);
 
     //! @brief selects all coordinate nodes
     //! @return group containing all selected nodes
-    Group<CoordinateNode> NodesTotal();
+    Group<const CoordinateNode> NodesTotal();
 
     //! @brief selects all element collections
     //! @return group containing all element collections
     Group<const CoordinateElementFem> ElementsTotal();
 
-    CoordinateNode& AddNode(Eigen::VectorXd data)
+    const CoordinateNode& AddNode(Eigen::VectorXd data)
     {
-        auto& nd = CoordinateNodes.Add(data);
+        auto& nd = CoordinateNodes.Add(data, CoordinateNodes.Size());
         return nd;
     }
 
-    CoordinateNode& AddNode(double data)
+    const CoordinateNode& AddNode(double data)
     {
-        auto& nd = CoordinateNodes.Add(data);
+        auto& nd = CoordinateNodes.Add(data, CoordinateNodes.Size());
         return nd;
     }
 
-    CoordinateNode& GetNode(int i)
+    //! @brief change coordinates of node i
+    //! @return const ref to node
+    const CoordinateNode& ChangeNode(int i, Eigen::VectorXd data)
+    {
+        CoordinateNodes[i].SetCoordinates(data);
+        return CoordinateNodes[i];
+    }
+
+    //! @brief change component d of coordinates of node i
+    //! @return const ref to node
+    const CoordinateNode& ChangeNode(int i, int d, double data)
+    {
+        CoordinateNodes[i].SetCoordinate(d, data);
+        return CoordinateNodes[i];
+    }
+
+    const CoordinateNode& GetNode(int i)
     {
         return CoordinateNodes[i];
     }
@@ -79,16 +95,35 @@ public:
         return Elements[i];
     }
 
-    const CoordinateElementFem& AddElement(std::vector<CoordinateNode*> nodes, const InterpolationSimple& interpolation)
+    const CoordinateElementFem& AddElement(std::vector<const CoordinateNode*> cnodes,
+                                           const InterpolationSimple& interpolation)
     {
+        std::vector<CoordinateNode*> nodes;
+        for (const CoordinateNode* cnode : cnodes)
+        {
+            CoordinateNode* node = &CoordinateNodes[cnode->Id()];
+            if (node == cnode)
+            {
+                nodes.push_back(node);
+            }
+        }
         auto& elm = Elements.Add({nodes, interpolation});
         elm.SetId(Elements.Size() - 1);
         return elm;
     }
 
-    const CoordinateElementFem& AddElement(std::initializer_list<std::reference_wrapper<CoordinateNode>> nodes,
+    const CoordinateElementFem& AddElement(std::initializer_list<std::reference_wrapper<const CoordinateNode>> cnodes,
                                            const InterpolationSimple& interpolation)
     {
+        std::vector<CoordinateNode*> nodes;
+        for (const CoordinateNode& cnode : cnodes)
+        {
+            CoordinateNode* node = &CoordinateNodes[cnode.Id()];
+            if (node == &cnode)
+            {
+                nodes.push_back(node);
+            }
+        }
         auto& elm = Elements.Add({nodes, interpolation});
         elm.SetId(Elements.Size() - 1);
         return elm;

@@ -11,7 +11,7 @@ InterpolationSimple& GeometryMeshFem::CreateInterpolation(const InterpolationSim
     return *mInterpolations.rbegin()->get();
 }
 
-CoordinateNode& GeometryMeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
+const CoordinateNode& GeometryMeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double tol /* = 1.e-10 */)
 {
     for (auto& node : this->CoordinateNodes)
     {
@@ -24,10 +24,10 @@ CoordinateNode& GeometryMeshFem::NodeAtCoordinate(Eigen::VectorXd coords, double
     throw NuTo::Exception(__PRETTY_FUNCTION__, message.str());
 }
 
-Group<CoordinateNode> GeometryMeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/,
-                                                   double tol /* = 1.e-10 */)
+Group<const CoordinateNode> GeometryMeshFem::NodesAtAxis(eDirection direction, double axisOffset /* = 0.*/,
+                                                         double tol /* = 1.e-10 */)
 {
-    Group<CoordinateNode> group;
+    Group<const CoordinateNode> group;
     const int directionComponent = ToComponentIndex(direction);
     for (auto& node : this->CoordinateNodes)
     {
@@ -38,9 +38,9 @@ Group<CoordinateNode> GeometryMeshFem::NodesAtAxis(eDirection direction, double 
     return group;
 }
 
-Group<CoordinateNode> GeometryMeshFem::NodesTotal()
+Group<const CoordinateNode> GeometryMeshFem::NodesTotal()
 {
-    Group<CoordinateNode> group;
+    Group<const CoordinateNode> group;
     for (auto& node : this->CoordinateNodes)
         group.Add(node);
     return group;

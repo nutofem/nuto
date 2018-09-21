@@ -58,15 +58,15 @@ GeometryMeshFem QuadPatchTestMesh()
      */
     GeometryMeshFem geoMesh;
 
-    CoordinateNode& n0 = geoMesh.AddNode(Eigen::Vector2d(0, 0));
-    CoordinateNode& n1 = geoMesh.AddNode(Eigen::Vector2d(10, 0));
-    CoordinateNode& n2 = geoMesh.AddNode(Eigen::Vector2d(10, 10));
-    CoordinateNode& n3 = geoMesh.AddNode(Eigen::Vector2d(0, 10));
+    auto& n0 = geoMesh.AddNode(Eigen::Vector2d(0, 0));
+    auto& n1 = geoMesh.AddNode(Eigen::Vector2d(10, 0));
+    auto& n2 = geoMesh.AddNode(Eigen::Vector2d(10, 10));
+    auto& n3 = geoMesh.AddNode(Eigen::Vector2d(0, 10));
 
-    CoordinateNode& n4 = geoMesh.AddNode(Eigen::Vector2d(2, 2));
-    CoordinateNode& n5 = geoMesh.AddNode(Eigen::Vector2d(8, 3));
-    CoordinateNode& n6 = geoMesh.AddNode(Eigen::Vector2d(8, 7));
-    CoordinateNode& n7 = geoMesh.AddNode(Eigen::Vector2d(4, 7));
+    auto& n4 = geoMesh.AddNode(Eigen::Vector2d(2, 2));
+    auto& n5 = geoMesh.AddNode(Eigen::Vector2d(8, 3));
+    auto& n6 = geoMesh.AddNode(Eigen::Vector2d(8, 7));
+    auto& n7 = geoMesh.AddNode(Eigen::Vector2d(4, 7));
 
     const InterpolationSimple& interpolation = geoMesh.CreateInterpolation(InterpolationQuadLinear());
 
@@ -100,12 +100,12 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
 
     // manually add the boundary element
     const InterpolationSimple& interpolationBc = geoMesh.CreateInterpolation(InterpolationTrussLinear());
-    const InterpolationSimple& interpolation = geoMesh.CreateInterpolation(InterpolationQuadLinear());
+    geoMesh.CreateInterpolation(InterpolationQuadLinear());
 
     // extract existing nodes
-    Group<CoordinateNode> boundaryCoordNodes = geoMesh.NodesAtAxis(eDirection::X, 10);
-    CoordinateNode& nc1 = *boundaryCoordNodes.begin();
-    CoordinateNode& nc2 = *(boundaryCoordNodes.begin() + 1);
+    Group<const CoordinateNode> boundaryCoordNodes = geoMesh.NodesAtAxis(eDirection::X, 10);
+    const CoordinateNode& nc1 = *boundaryCoordNodes.begin();
+    const CoordinateNode& nc2 = *(boundaryCoordNodes.begin() + 1);
 
     // add the boundary element
     auto& cElmB = geoMesh.AddElement({nc1, nc2}, interpolationBc);
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(PatchTestForce)
         return Eigen::Vector2d(pressureBC[0] / E * coord[0], -nu * pressureBC[0] / E * coord[1]);
     };
 
-    for (CoordinateNode& node : geoMesh.NodesTotal())
+    for (const CoordinateNode& node : geoMesh.NodesTotal())
     {
         Eigen::VectorXd coord = node.GetCoordinates();
         DofNode& displNode = mesh.NodeAtCoordinate(coord, displ);

@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(MeshValidAfterTransform)
     expected << 0, 0, 4, 0, 4, 42, 0, 42;
     BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractCoordinates(), expected);
 
-    transformedMesh.GetNode(0).SetCoordinate(0, 6174);
+    transformedMesh.ChangeNode(0, 0, 6174);
     expected << 6174, 0, 4, 0, 4, 42, 0, 42;
     BoostUnitTest::CheckEigenMatrix(transformedCoordinateElement.ExtractCoordinates(), expected);
 }

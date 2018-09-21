@@ -26,11 +26,11 @@ BOOST_AUTO_TEST_CASE(MeshAddStuff)
     auto& e0 = mesh.GetElement(0);
     BoostUnitTest::CheckVector(e0.ExtractCoordinates(), std::vector<double>({1, 0, 2, 0, 0, 3}), 6);
 
-    mesh.GetNode(0).SetCoordinate(0, 4);
+    mesh.ChangeNode(0, 0, 4);
     BoostUnitTest::CheckVector(e0.ExtractCoordinates(), std::vector<double>({4, 0, 2, 0, 0, 3}), 6);
 
     NuTo::GeometryMeshFem meshMoved = std::move(mesh);
-    meshMoved.GetNode(0).SetCoordinate(0, 42);
+    meshMoved.ChangeNode(0, 0, 42);
     auto& e0FromMove = meshMoved.GetElement(0);
     BoostUnitTest::CheckVector(e0FromMove.ExtractCoordinates(), std::vector<double>({42, 0, 2, 0, 0, 3}), 6);
 }
