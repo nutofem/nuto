@@ -3,6 +3,7 @@ add_sources(cell/SimpleAssembler.cpp
     constraints/Constraints.cpp
     dofs/DofNumbering.cpp
 
+    mesh/MeshCompanion.cpp
     mesh/MeshFem.cpp
     mesh/MeshFemDofConvert.cpp
     mesh/MeshGmsh.cpp
