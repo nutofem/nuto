@@ -24,6 +24,7 @@
 #include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
 
 #include "nuto/math/SparseMatrixCSRVector2.h"
 #include "nuto/base/ErrorEnum.h"
@@ -183,6 +184,9 @@ void NuTo::RungeKutta4::f(NuTo::StructureBase* mStructure, NuTo::SparseDirectSol
     NuTo::BlockFullVector<double> residual_mod(mStructure->GetDofStatus());
     const auto& cmat = mStructure->GetConstraintMatrix();
 
+    //    std::cout << "    f before Inf norm vel: " << velocity0.J.CalculateInfNorm() << std::endl;
+    //    std::cout << "    f before Inf norm acc: " << acceleration0.J.CalculateInfNorm() << std::endl;
+
     dof_dt0_temp.J = dof_dt0.J + factor * mTimeStep * velocity0.J; // u
     dof_dt1_temp.J = dof_dt1.J + factor * mTimeStep * acceleration0.J; // v
 
@@ -192,7 +196,11 @@ void NuTo::RungeKutta4::f(NuTo::StructureBase* mStructure, NuTo::SparseDirectSol
     dof_dt1_temp.K = mStructure->NodeCalculateDependentDofValues(dof_dt1_temp.J);
     mStructure->NodeMergeDofValues(1, dof_dt1_temp);
 
+    //    NuTo::StructureOutputBlockVector displacements = mStructure->NodeExtractDofValues(0);
+    //    std::cout << "    f before Inf norm displacements: " << displacements.J.CalculateInfNorm() << std::endl;
+
     NuTo::StructureOutputBlockVector intForce = mStructure->BuildGlobalInternalGradient();
+    //    std::cout << "    f before Inf norm intforce: " << intForce.J.CalculateInfNorm() << std::endl;
 
     residual = extLoad - intForce;
     residual.ApplyCMatrix(residual_mod, cmat);
@@ -203,7 +211,72 @@ void NuTo::RungeKutta4::f(NuTo::StructureBase* mStructure, NuTo::SparseDirectSol
     rAcceleration.K = mStructure->NodeCalculateDependentDofValues(rAcceleration.J);
 
     rVelocity = mStructure->NodeExtractDofValues(1);
+
+    //    std::cout << "    f after Inf norm vel: " << rVelocity.J.CalculateInfNorm() << std::endl;
+    //    std::cout << "    f after Inf norm acc: " << rAcceleration.J.CalculateInfNorm() << std::endl;
+    //    std::cout << "============================================" << std::endl;
+
+    //    mWriteForced = true;
+    //    this->PostProcess(extLoad);
+    //    mWriteForced = false;
 }
+
+
+void NuTo::RungeKutta4::f_for1Dcontact(
+        NuTo::StructureBase* mStructure, const std::function<double(double)>& penaltyLaw, int dof1Dcontact,
+        NuTo::SparseDirectSolverMUMPS& mySolver, const NuTo::StructureOutputBlockVector& extLoad,
+        const NuTo::StructureOutputBlockVector& dof_dt0, const NuTo::StructureOutputBlockVector& dof_dt1, double factor,
+        const NuTo::StructureOutputBlockVector& acceleration0, const NuTo::StructureOutputBlockVector& velocity0,
+        NuTo::StructureOutputBlockVector& rAcceleration, NuTo::StructureOutputBlockVector& rVelocity)
+{
+    NuTo::StructureOutputBlockVector dof_dt0_temp(mStructure->GetDofStatus(), true);
+    NuTo::StructureOutputBlockVector dof_dt1_temp(mStructure->GetDofStatus(), true);
+
+    NuTo::StructureOutputBlockVector residual(mStructure->GetDofStatus(), true);
+    NuTo::BlockFullVector<double> residual_mod(mStructure->GetDofStatus());
+    const auto& cmat = mStructure->GetConstraintMatrix();
+
+    //    std::cout << "    f before Inf norm vel: " << velocity0.J.CalculateInfNorm() << std::endl;
+    //    std::cout << "    f before Inf norm acc: " << acceleration0.J.CalculateInfNorm() << std::endl;
+
+    dof_dt0_temp.J = dof_dt0.J + factor * mTimeStep * velocity0.J; // u
+    dof_dt1_temp.J = dof_dt1.J + factor * mTimeStep * acceleration0.J; // v
+
+    dof_dt0_temp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_temp.J);
+    mStructure->NodeMergeDofValues(0, dof_dt0_temp);
+
+    dof_dt1_temp.K = mStructure->NodeCalculateDependentDofValues(dof_dt1_temp.J);
+    mStructure->NodeMergeDofValues(1, dof_dt1_temp);
+
+    //    NuTo::StructureOutputBlockVector displacements = mStructure->NodeExtractDofValues(0);
+    //    std::cout << "    f before Inf norm displacements: " << displacements.J.CalculateInfNorm() << std::endl;
+
+    NuTo::StructureOutputBlockVector intForce = mStructure->BuildGlobalInternalGradient();
+    //    std::cout << "    f before Inf norm intforce: " << intForce.J.CalculateInfNorm() << std::endl;
+
+    double dispIncontact = dof_dt0_temp.J[NuTo::Node::eDof::DISPLACEMENTS](dof1Dcontact);
+    if (dispIncontact < 0)
+        intForce.J[NuTo::Node::eDof::DISPLACEMENTS](dof1Dcontact) += penaltyLaw(dispIncontact);
+
+    residual = extLoad - intForce;
+    residual.ApplyCMatrix(residual_mod, cmat);
+
+    NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
+    mySolver.Solution(residual_mod.Export(), resultForSolver);
+    rAcceleration.J = NuTo::BlockFullVector<double>(resultForSolver, mStructure->GetDofStatus());
+    rAcceleration.K = mStructure->NodeCalculateDependentDofValues(rAcceleration.J);
+
+    rVelocity = mStructure->NodeExtractDofValues(1);
+
+    //    std::cout << "    f after Inf norm vel: " << rVelocity.J.CalculateInfNorm() << std::endl;
+    //    std::cout << "    f after Inf norm acc: " << rAcceleration.J.CalculateInfNorm() << std::endl;
+    //    std::cout << "============================================" << std::endl;
+
+    //    mWriteForced = true;
+    //    this->PostProcess(extLoad);
+    //    mWriteForced = false;
+}
+
 
 //! @brief perform the time integration
 //! @param rStructure ... structure
@@ -309,6 +382,7 @@ NuTo::eError NuTo::RungeKutta4::SolveRK4(double rTimeDelta, int rLoadCase)
             // intForce = mStructure->BuildGlobalInternalGradient();
             // this->PostProcess(extLoad - intForce);
             // !! outofbalance only needed for  GROUP_NODE_FORCE !!
+            mWriteForced = true;
             this->PostProcess(extLoad);
 
             mTime += mTimeStep;
@@ -330,19 +404,23 @@ NuTo::eError NuTo::RungeKutta4::SolveRK4(double rTimeDelta, int rLoadCase)
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
-NuTo::eError NuTo::RungeKutta4::RK4_DoStep(int rLoadCase, double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
-                                           std::vector<StructureOutputBlockVector>& kAcc,
-                                           std::vector<StructureOutputBlockVector>& kVel,
-                                           StructureOutputBlockVector& extLoad,
-                                           NuTo::StructureOutputBlockVector& dof_dt0,
-                                           NuTo::StructureOutputBlockVector& dof_dt1, double simulationTime)
+NuTo::eError NuTo::RungeKutta4::RK4_DoStep_1DContact(int dof1DContact, const std::function<double(double)>& penaltyLaw,
+                                                     double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
+                                                     std::vector<StructureOutputBlockVector>& kAcc,
+                                                     std::vector<StructureOutputBlockVector>& kVel,
+                                                     StructureOutputBlockVector& extLoad,
+                                                     NuTo::StructureOutputBlockVector& dof_dt0,
+                                                     NuTo::StructureOutputBlockVector& dof_dt1, double simulationTime)
 {
     NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
     try
     {
-        std::cout << "==>curTime " << curTime << " (" << curTime / simulationTime
-                  << ") max Disp = " << dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() << std::endl;
+        if (1 || dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() > 10)
+        {
+            std::cout << "==>curTime " << curTime << " (" << curTime / simulationTime
+                      << ") max Disp = " << dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() << std::endl;
+        }
 
         for (int i = 0; i < this->GetNumStages(); i++)
         {
@@ -350,13 +428,14 @@ NuTo::eError NuTo::RungeKutta4::RK4_DoStep(int rLoadCase, double curTime, NuTo::
             // extLoad = mStructure->BuildGlobalExternalLoadVector(rLoadCase);
             // extLoad.ApplyCMatrix(mStructure->GetConstraintMatrix());
 
-            f(mStructure, mySolver, extLoad, dof_dt0, dof_dt1, this->GetStageTimeFactor(i), kAcc[i], kVel[i],
-              kAcc[i + 1], kVel[i + 1]);
+            f_for1Dcontact(mStructure, penaltyLaw, dof1DContact, mySolver, extLoad, dof_dt0, dof_dt1,
+                           this->GetStageTimeFactor(i), kAcc[i], kVel[i], kAcc[i + 1], kVel[i + 1]);
         }
 
         // update
         for (int i = 1; i < this->GetNumStages() + 1; i++)
         {
+            //            std::cout << "Nach f Inf norm: " << kVel[i].J.CalculateInfNorm() << std::endl;
             dof_dt0.J += mTimeStep * GetStageWeights(i - 1) * kVel[i].J;
             dof_dt1.J += mTimeStep * GetStageWeights(i - 1) * kAcc[i].J;
         }
@@ -371,6 +450,71 @@ NuTo::eError NuTo::RungeKutta4::RK4_DoStep(int rLoadCase, double curTime, NuTo::
         // intForce = mStructure->BuildGlobalInternalGradient();
         // this->PostProcess(extLoad - intForce);
         // !! outofbalance only needed for  GROUP_NODE_FORCE !!
+        mWriteForced = true;
+        this->PostProcess(extLoad);
+
+        mTime += mTimeStep;
+        curTime += mTimeStep;
+    }
+    catch (MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::RungeKuttaBase::Solve] performing Newton-Raphson iteration.");
+        throw e;
+    }
+
+    return NuTo::eError::SUCCESSFUL;
+}
+
+
+//! @brief perform the time integration
+//! @param rStructure ... structure
+//! @param rTimeDelta ... length of the simulation
+NuTo::eError NuTo::RungeKutta4::RK4_DoStep(int rLoadCase, double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
+                                           std::vector<StructureOutputBlockVector>& kAcc,
+                                           std::vector<StructureOutputBlockVector>& kVel,
+                                           StructureOutputBlockVector& extLoad,
+                                           NuTo::StructureOutputBlockVector& dof_dt0,
+                                           NuTo::StructureOutputBlockVector& dof_dt1, double simulationTime)
+{
+    NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+
+    try
+    {
+        if (1 || dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() > 10)
+        {
+            std::cout << "==>curTime " << curTime << " (" << curTime / simulationTime
+                      << ") max Disp = " << dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() << std::endl;
+        }
+
+        for (int i = 0; i < this->GetNumStages(); i++)
+        {
+            // no time dependent load
+            // extLoad = mStructure->BuildGlobalExternalLoadVector(rLoadCase);
+            // extLoad.ApplyCMatrix(mStructure->GetConstraintMatrix());
+
+            f(mStructure, mySolver, extLoad, dof_dt0, dof_dt1, this->GetStageTimeFactor(i), kAcc[i], kVel[i],
+              kAcc[i + 1], kVel[i + 1]);
+        }
+
+        // update
+        for (int i = 1; i < this->GetNumStages() + 1; i++)
+        {
+            //            std::cout << "Nach f Inf norm: " << kVel[i].J.CalculateInfNorm() << std::endl;
+            dof_dt0.J += mTimeStep * GetStageWeights(i - 1) * kVel[i].J;
+            dof_dt1.J += mTimeStep * GetStageWeights(i - 1) * kAcc[i].J;
+        }
+
+        dof_dt0.K = mStructure->NodeCalculateDependentDofValues(dof_dt0.J);
+        mStructure->NodeMergeDofValues(0, dof_dt0);
+
+        dof_dt1.K = mStructure->NodeCalculateDependentDofValues(dof_dt1.J);
+        mStructure->NodeMergeDofValues(1, dof_dt1);
+
+        // postprocess data for plotting
+        // intForce = mStructure->BuildGlobalInternalGradient();
+        // this->PostProcess(extLoad - intForce);
+        // !! outofbalance only needed for  GROUP_NODE_FORCE !!
+        mWriteForced = true;
         this->PostProcess(extLoad);
 
         mTime += mTimeStep;

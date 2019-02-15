@@ -156,7 +156,7 @@ public:
     BlockScalar CalculateNormL2();
 
     //! @brief Calculates the infinity norm of the block vector for each dof
-    BlockScalar CalculateInfNorm();
+    BlockScalar CalculateInfNorm() const;
 
 #endif
 

@@ -131,6 +131,13 @@ void NuTo::ContinuumElementIGALayer<TDim>::FillConstitutiveOutputMapVector(Const
     if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA layer is only implemented for displacements.");
     rVector[Node::eDof::DISPLACEMENTS].Resize(0);
+
+    //    for (auto dof : this->mStructure->GetDofStatus().GetActiveDofTypes())
+    //    {
+    //        //        if (not (this->mInterpolationType->IsDof(dof)) /*&& dof != Node::eDof::DISPLACEMENTS*/)
+    //        //        {
+    //        rVector[dof].Resize(0);
+    //    }
 }
 
 template <int TDim>
@@ -298,7 +305,8 @@ Eigen::VectorXd NuTo::ContinuumElementIGALayer<TDim>::InterpolateDofGlobalSurfac
             this->mInterpolationType->Get(Node::eDof::DISPLACEMENTS)
                     .CalculateMatrixNDerivative(rParameter, this->mKnotIDs, rDerivative, rDirection);
 
-    return matrixNDerivativeCoords * nodalInitial + matrixNDerivativeDisp * nodalDisplacements;
+    Eigen::VectorXd coordinates = matrixNDerivativeCoords * nodalInitial + matrixNDerivativeDisp * nodalDisplacements;
+    return coordinates;
 }
 
 namespace NuTo // template specialization in *.cpp somehow requires the definition to be in the namespace...

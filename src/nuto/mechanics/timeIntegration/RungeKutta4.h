@@ -70,6 +70,22 @@ public:
            const NuTo::StructureOutputBlockVector& rAcceleration0, const NuTo::StructureOutputBlockVector& rVelocity0,
            NuTo::StructureOutputBlockVector& rAcceleration, NuTo::StructureOutputBlockVector& rVelocity);
 
+    void f_for1Dcontact(NuTo::StructureBase* mStructure, const std::function<double(double)>& penaltyLaw,
+                        int dof1Dcontact, NuTo::SparseDirectSolverMUMPS& mySolver,
+                        const NuTo::StructureOutputBlockVector& extLoad,
+                        const NuTo::StructureOutputBlockVector& dof_dt0,
+                        const NuTo::StructureOutputBlockVector& dof_dt1, double factor,
+                        const NuTo::StructureOutputBlockVector& acceleration0,
+                        const NuTo::StructureOutputBlockVector& velocity0,
+                        NuTo::StructureOutputBlockVector& rAcceleration, NuTo::StructureOutputBlockVector& rVelocity);
+
+    NuTo::eError RK4_DoStep_1DContact(int dof1DContact, const std::function<double(double)>& penaltyLaw, double curTime,
+                                      NuTo::SparseDirectSolverMUMPS& mySolver,
+                                      std::vector<StructureOutputBlockVector>& kAcc,
+                                      std::vector<StructureOutputBlockVector>& kVel,
+                                      StructureOutputBlockVector& extLoad, NuTo::StructureOutputBlockVector& dof_dt0,
+                                      NuTo::StructureOutputBlockVector& dof_dt1, double simulationTime);
+
     NuTo::eError RK4_DoStep(int rLoadCase, double curTime, NuTo::SparseDirectSolverMUMPS& mySolver,
                             std::vector<StructureOutputBlockVector>& kAcc,
                             std::vector<StructureOutputBlockVector>& kVel, StructureOutputBlockVector& extLoad,

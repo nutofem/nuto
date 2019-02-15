@@ -408,7 +408,6 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
         Eigen::VectorXd shapeFunsMaster =
                 interpolationTypeDispMaster.CalculateShapeFunctions(parameterMinMaster); // master is always iga
 
-
         int numSlaveFunsNormal = shapeFunsSlave.rows() * normal.rows();
         int numMasterFunsNormal = shapeFunsMaster.rows() * normal.rows();
 
@@ -429,7 +428,14 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortarContac
         }
 
         double gap = r.dot(normal); // gap at ip
-        //        std::cout << rTheIP << ": " << gap << std::endl << std::flush;
+        if (gap < 0)
+        {
+            //            std::cout << "coordinatesIPSlave: " << coordinatesIPSlave.transpose() << ", gap: " << gap
+            //                      << ", normal: " << normal.transpose() << std::endl
+            //                      << std::flush;
+
+            //            std::cout << coordinatesIPSlave.transpose() << std::endl << std::flush;
+        }
 
         // ----------- geometrical linearization terms ---- start ------------//
 
@@ -597,6 +603,7 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
     double minDistance = std::numeric_limits<double>::infinity();
     Eigen::Vector2i indexMasterElement(0, 0);
     Eigen::Matrix<double, TDimMaster, 1> localParameter;
+    Eigen::VectorXd coordinatesMasterPre;
     for (int i = 0; i < mElementsMaster.rows(); i++) // y
     {
         for (int j = 0; j < mElementsMaster.cols(); j++) // x
@@ -612,10 +619,10 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
             {
                 Eigen::VectorXd parameter = interpolationTypeDispMaster.CalculateNaturalSurfaceCoordinates(
                         it, surfaceId, elementPtr->GetKnots());
-                Eigen::VectorXd coordinatesMaster =
-                        elementPtr->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
 
-                double distance = (coordinatesMaster - coordinatesIPSlave).norm();
+                coordinatesMasterPre = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
+
+                double distance = (coordinatesMasterPre - coordinatesIPSlave).norm();
                 if (minDistance > distance)
                 {
                     localParameter = it;
@@ -624,6 +631,10 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
                     indexMasterElement(0) = i; // y
                     indexMasterElement(1) = j; // x
                 }
+                //                std::cout << "coordinatesMasterPre: " << coordinatesMasterPre.transpose() << ",
+                //                distance: " << distance
+                //                          << std::endl
+                //                          << std::flush;
             }
         }
     }
@@ -1032,6 +1043,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                 //                        *
                 //                        mGlobalNodalPressure;
 
+                Eigen::VectorXd forceTemp = gapMatrixScaled * mGlobalNodalPressure;
                 rInternalGradient[dofRow] = gapMatrixScaled * mGlobalNodalPressure;
 
                 //                double sum = 0.;
