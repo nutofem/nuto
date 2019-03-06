@@ -1043,7 +1043,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                 //                        *
                 //                        mGlobalNodalPressure;
 
-                Eigen::VectorXd forceTemp = gapMatrixScaled * mGlobalNodalPressure;
+                //                Eigen::VectorXd forceTemp = gapMatrixScaled * mGlobalNodalPressure;
                 rInternalGradient[dofRow] = gapMatrixScaled * mGlobalNodalPressure;
 
                 //                double sum = 0.;

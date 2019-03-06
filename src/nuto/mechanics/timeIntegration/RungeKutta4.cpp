@@ -255,6 +255,8 @@ void NuTo::RungeKutta4::f_for1Dcontact(
     //    std::cout << "    f before Inf norm intforce: " << intForce.J.CalculateInfNorm() << std::endl;
 
     double dispIncontact = dof_dt0_temp.J[NuTo::Node::eDof::DISPLACEMENTS](dof1Dcontact);
+
+    //    std::cout << "Disp node RK4: " << dispIncontact << std::endl;
     if (dispIncontact < 0)
         intForce.J[NuTo::Node::eDof::DISPLACEMENTS](dof1Dcontact) += penaltyLaw(dispIncontact);
 
@@ -401,6 +403,18 @@ NuTo::eError NuTo::RungeKutta4::SolveRK4(double rTimeDelta, int rLoadCase)
     return NuTo::eError::SUCCESSFUL;
 }
 
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+void printProgress(double percentage)
+{
+    int val = (int)(percentage * 100);
+    int lpad = (int)(percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
+}
+
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
@@ -416,11 +430,13 @@ NuTo::eError NuTo::RungeKutta4::RK4_DoStep_1DContact(int dof1DContact, const std
 
     try
     {
-        if (1 || dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() > 10)
+        if (dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() > 10)
         {
             std::cout << "==>curTime " << curTime << " (" << curTime / simulationTime
-                      << ") max Disp = " << dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() << std::endl;
+                      << ") max Disp = " << dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() << "\n";
         }
+
+        printProgress(curTime / simulationTime);
 
         for (int i = 0; i < this->GetNumStages(); i++)
         {
@@ -480,11 +496,13 @@ NuTo::eError NuTo::RungeKutta4::RK4_DoStep(int rLoadCase, double curTime, NuTo::
 
     try
     {
-        if (1 || dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() > 10)
+        if (dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() > 10)
         {
             std::cout << "==>curTime " << curTime << " (" << curTime / simulationTime
                       << ") max Disp = " << dof_dt0.J[Node::eDof::DISPLACEMENTS].cwiseAbs().maxCoeff() << std::endl;
         }
+
+        printProgress(curTime / simulationTime);
 
         for (int i = 0; i < this->GetNumStages(); i++)
         {
