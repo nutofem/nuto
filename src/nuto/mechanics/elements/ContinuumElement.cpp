@@ -733,6 +733,19 @@ Eigen::VectorXd NuTo::ContinuumElement<TDim>::InterpolateDofGlobalCurrentConfigu
     return matrixNInit * nodalInit + matrixNCurrent * nodalCurrent;
 }
 
+
+template <int TDim>
+Eigen::VectorXd NuTo::ContinuumElement<TDim>::InterpolateDof(int rTimeDerivative, int rTheIP, Node::eDof rDofType) const
+{
+
+    const InterpolationBase& interpolationType = mInterpolationType->Get(rDofType);
+
+    Eigen::VectorXd nodes = this->ExtractNodeValues(rTimeDerivative, rDofType);
+    Eigen::MatrixXd matrixN = interpolationType.GetMatrixN(rTheIP);
+
+    return matrixN * nodes;
+}
+
 template <int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
         std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,

@@ -444,6 +444,12 @@ public:
                                        "Element is not of type ContinuumElement<TDim> or ContinuumElementIGA<TDim>.");
     }
 
+    virtual Eigen::VectorXd InterpolateDof(int rTimeDerivative, int rTheIP, Node::eDof rDofType) const
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                                       "Element is not of type ContinuumElement<TDim> or ContinuumElementIGA<TDim>.");
+    }
+
     virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative,
                                                                   const Eigen::VectorXd& rParameter, int rDerivative,
                                                                   int rDirection) const
