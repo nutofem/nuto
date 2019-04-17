@@ -977,24 +977,45 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
         }
     }
 }
+template <int TDimSlave, int TDimMaster>
+Eigen::VectorXd NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GetContactPressure(
+        std::unordered_map<int, int>& rMappingGlobal2LocalSlaveNodes)
+{
+    rMappingGlobal2LocalSlaveNodes = mMappingGlobal2LocalSlaveNodes;
+
+    if (mContactType == 0)
+    {
+        Eigen::VectorXd scaledGapVector =
+                ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mMortarGlobalGapVector;
+
+        for (int i = 0; i < mNumSlaveNodes; i++)
+            mGlobalNodalPressure(i) = mConstitutiveContactLaw->GetContactForce(scaledGapVector(i));
+
+        return mGlobalNodalPressure;
+    }
+    else
+        return ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mGlobalNodalPressure;
+}
 
 template <int TDimSlave, int TDimMaster>
 double NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateContactForce()
 {
     double contactforcesum = 0;
 
-    Eigen::MatrixXd gapMatrixScaled = mGapMatrix * ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal());
-
     Eigen::VectorXd forceVector;
     if (mContactType == 0)
     {
-        for (int i = 0; i < mNumSlaveNodes; i++)
-            mGlobalNodalPressure(i) = mConstitutiveContactLaw->GetContactForce(mMortarGlobalGapVector(i));
+        Eigen::VectorXd scaledGapVector =
+                ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mMortarGlobalGapVector;
 
-        forceVector = gapMatrixScaled * mGlobalNodalPressure;
+        for (int i = 0; i < mNumSlaveNodes; i++)
+            mGlobalNodalPressure(i) = mConstitutiveContactLaw->GetContactForce(scaledGapVector(i));
+
+        forceVector = mGapMatrix * mGlobalNodalPressure;
     }
     else if (mContactType == 1)
     {
+        Eigen::MatrixXd gapMatrixScaled = mGapMatrix * ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal());
         forceVector = gapMatrixScaled * mGlobalNodalPressure;
     }
 
@@ -1039,50 +1060,13 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
 
             if (mContactType == 0)
             {
+                Eigen::VectorXd scaledGapVector =
+                        ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mMortarGlobalGapVector;
+
                 for (int i = 0; i < mNumSlaveNodes; i++)
-                    mGlobalNodalPressure(i) = mConstitutiveContactLaw->GetContactForce(mMortarGlobalGapVector(i));
+                    mGlobalNodalPressure(i) = mConstitutiveContactLaw->GetContactForce(scaledGapVector(i));
 
-                //                mPressureVectorTemp.setZero(mNumSlaveNodes);
-                //                for (int i = 0; i < mNumSlaveNodes; i++)
-                //{
-                //                    mPressureVectorTemp(i) =
-                //                    mConstitutiveContactLaw->GetContactForce(mGapVectorTemp(i));
-                //}
-
-                //                int numForces = 0;
-                //                for (int i = 0; i < mGlobalNodalPressure.rows(); i++)
-                //                {
-                //                    if (mGlobalNodalPressure(i) < 0.)
-                //                        numForces++;
-                //                }
-                //                std::cout << numForces << std::endl;
-
-                //                Eigen::VectorXd force = gapMatrixScaled * mGlobalNodalPressure;
-
-                //                Eigen::VectorXd forceTemp =
-                //                        mGapMatrixTemp * ((mWeightsVectorTemp.cwiseInverse()).asDiagonal()) *
-                //                        mPressureVectorTemp;
-
-                //                std::cout << (forceTemp - force.block(0, 0, forceTemp.rows(), 1)).norm() << std::endl;
-
-                //                Eigen::VectorXd forceTemp =
-                //                        (mGapMatrixTemp * ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()))
-                //                        *
-                //                        mGlobalNodalPressure;
-
-                //                Eigen::VectorXd forceTemp = gapMatrixScaled * mGlobalNodalPressure;
-                rInternalGradient[dofRow] = gapMatrixScaled * mGlobalNodalPressure;
-
-                //                double sum = 0.;
-                //                for (int i = 0; i < mNumSlaveDofs; i++)
-                //                {
-                //                    sum += force(i);
-                //                }
-                //                if (sum > 1.e-8)
-                //                {
-                //                    std::cout << "|force|_1: ";
-                //                    std::cout << sum << std::endl;
-                //                }
+                rInternalGradient[dofRow] = mGapMatrix * mGlobalNodalPressure;
             }
             else if (mContactType == 1)
             {
@@ -1134,16 +1118,17 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
     if (mContactType == 0)
     {
         Eigen::VectorXd globalNodalPressureDerivative(mNumSlaveNodes);
+
+        Eigen::VectorXd scaledGapVector =
+                ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mMortarGlobalGapVector;
+
         for (int i = 0; i < mNumSlaveNodes; i++)
-            globalNodalPressureDerivative(i) =
-                    mConstitutiveContactLaw->GetContactForceDerivative(mMortarGlobalGapVector(i));
+            globalNodalPressureDerivative(i) = mConstitutiveContactLaw->GetContactForceDerivative(scaledGapVector(i));
 
-        Eigen::MatrixXd gapMatrixScaledWithForceDers = mGapMatrix * (globalNodalPressureDerivative.asDiagonal());
+        Eigen::MatrixXd gapMatrixScaledWithForceDers =
+                gapMatrixScaledWithIntegrals * (globalNodalPressureDerivative.asDiagonal());
 
-        // Eigen::MatrixXd mat =
-        // gapMatrixScaledWithIntegrals*(gapMatrixScaledWithForceDers.transpose());
-
-        der = gapMatrixScaledWithIntegrals * (gapMatrixScaledWithForceDers.transpose());
+        der = mGapMatrix * (gapMatrixScaledWithForceDers.transpose());
         //                    rGapMatrix(dofRow, dofCol) =
         //                    mGapMatrix*((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal())*mGapMatrix*(globalNodalPressureDerivative.asDiagonal());
     }

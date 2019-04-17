@@ -154,12 +154,7 @@ public:
                                 std::unordered_map<int, int>& mappingGlobal2LocalSlaveNode,
                                 std::unordered_map<int, int>& mappingGlobal2LocalMasterNode);
 
-    Eigen::VectorXd GetContactPressure(std::unordered_map<int, int>& rMappingGlobal2LocalSlaveNodes)
-    {
-        rMappingGlobal2LocalSlaveNodes = mMappingGlobal2LocalSlaveNodes;
-
-        return ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mGlobalNodalPressure;
-    }
+    Eigen::VectorXd GetContactPressure(std::unordered_map<int, int>& rMappingGlobal2LocalSlaveNodes);
 
     double CalculateContactForce();
 
