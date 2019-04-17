@@ -730,8 +730,9 @@ const NuTo::ContinuumElementIGA<TDimMaster>* NuTo::ContinuumContactElement<TDimS
 
     if ((slavePointIteration - coordinatesIPSlave).lpNorm<Eigen::Infinity>() > 1.e-8)
     {
-        std::cout << "Not converged, deviation L2 norm (" << coordinatesIPSlave.transpose()
-                  << "): " << (slavePointIteration - coordinatesIPSlave).norm() << std::endl;
+        std::cout << "Not converged, deviation L2 norm (" << coordinatesIPSlave.transpose() << "..."
+                  << slavePointIteration.transpose() << "): " << (slavePointIteration - coordinatesIPSlave).norm()
+                  << std::endl;
     }
 
     return masterElement;
@@ -975,6 +976,32 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
             throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
         }
     }
+}
+
+template <int TDimSlave, int TDimMaster>
+double NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateContactForce()
+{
+    double contactforcesum = 0;
+
+    Eigen::MatrixXd gapMatrixScaled = mGapMatrix * ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal());
+
+    Eigen::VectorXd forceVector;
+    if (mContactType == 0)
+    {
+        for (int i = 0; i < mNumSlaveNodes; i++)
+            mGlobalNodalPressure(i) = mConstitutiveContactLaw->GetContactForce(mMortarGlobalGapVector(i));
+
+        forceVector = gapMatrixScaled * mGlobalNodalPressure;
+    }
+    else if (mContactType == 1)
+    {
+        forceVector = gapMatrixScaled * mGlobalNodalPressure;
+    }
+
+    for (int i = 0; i < mNumSlaveDofs; i++)
+        contactforcesum += forceVector(i);
+
+    return contactforcesum;
 }
 
 template <int TDimSlave, int TDimMaster>

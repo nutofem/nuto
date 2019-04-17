@@ -117,10 +117,18 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
             break;
 
         case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
-            throw MechanicsException(__PRETTY_FUNCTION__,
-                                     "Case not handled! IMPORTANT: Everything must be set to zero here!!!");
+            FillConstitutiveOutputMapHessian2(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
-
+        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+        {
+            auto activeDofs = mInterpolationType->GetActiveDofs();
+            if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
+                throw MechanicsException(__PRETTY_FUNCTION__, "Lumped Hessian2 is only implemented for displacements.");
+            int numDofs = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetNumDofs();
+            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].Resize(numDofs);
+            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].setZero();
+            break;
+        }
         case Element::eOutput::UPDATE_STATIC_DATA:
             constitutiveOutput[Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
             break;
@@ -615,33 +623,31 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
 }
 
 
-// template<int TDim>
-// void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap&
-// rConstitutiveOutput, BlockFullMatrix<double>& rHessian2, EvaluateDataContinuum<TDim> &rData) const
-//{
-//    for (auto dofRow : mInterpolationType->GetActiveDofs())
-//    {
-//        for (auto dofCol : mInterpolationType->GetActiveDofs())
-//        {
-//            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian2(dofRow, dofCol);
-//            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(),
-//            mInterpolationType->Get(dofCol).GetNumDofs());
-//            dofSubMatrix.setZero();
-//            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,2))
-//                continue;
-//            switch (Node::CombineDofs(dofRow, dofCol))
-//            {
-//            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
-//                break;
-//            default:
-//                throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Constitutive output
-//                HESSIAN_2_TIME_DERIVATIVE for "
-//                        "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
-//            }
-//        }
-//    }
-//}
-//
+template <int TDim>
+void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap& rConstitutiveOutput,
+                                                                             BlockFullMatrix<double>& rHessian2) const
+{
+    for (auto dofRow : mInterpolationType->GetActiveDofs())
+    {
+        for (auto dofCol : mInterpolationType->GetActiveDofs())
+        {
+            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian2(dofRow, dofCol);
+            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(),
+                                mInterpolationType->Get(dofCol).GetNumDofs());
+            dofSubMatrix.setZero();
+            if (!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow, dofCol, 2))
+                continue;
+            switch (Node::CombineDofs(dofRow, dofCol))
+            {
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+                break;
+            default:
+                throw MechanicsException("Not implemented.");
+            }
+        }
+    }
+}
+
 template <int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput,
                                                                            ElementOutputIpData& rIpData) const

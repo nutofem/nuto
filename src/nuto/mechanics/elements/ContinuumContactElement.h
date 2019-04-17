@@ -161,6 +161,8 @@ public:
         return ((mSlaveShapeFunctionsWeight.cwiseInverse()).asDiagonal()) * mGlobalNodalPressure;
     }
 
+    double CalculateContactForce();
+
     std::unordered_map<int, int> GetDofMapping()
     {
         return mMappingGlobal2LocalDof;
